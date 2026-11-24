@@ -4,7 +4,7 @@
 
 **Blocked by:** 03b, 12
 
-**Status:** ready-for-agent
+**Status:** done: approval lists into a 30-minute pre-open (PRE_OPEN_MINUTES env); book-only limit trading (shorts allowed by margin), market and stop orders refused, no drift; at the open the house starts at 100 and crossing orders fill as makers. Countdown on the list and meme page.
 
 - [ ] The lifecycle state machine has Candidate → Pre-open → Active and Candidate → Rejected. Operator approval in ticket 12 now starts pre-open instead of listing straight away.
 - [ ] Pre-open rejects market and stop orders. Book orders match each other normally.

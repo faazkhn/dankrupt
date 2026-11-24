@@ -37,7 +37,8 @@ export function OrderBookCard({ book, onPick }: { book: Book | null; onPick: (pr
         ))}
       </ul>
       <div className="my-1 rounded-xl border-[3px] border-ink bg-[#ffd23f]/70 px-3 py-1.5 text-sm font-black">
-        <span className="font-display tracking-wide">HOUSE</span> buys at {fmt(book.house.bid)} · sells at {fmt(book.house.ask)}
+        <span className="font-display tracking-wide">HOUSE</span>{" "}
+        {book.house ? `buys at ${fmt(book.house.bid)} · sells at ${fmt(book.house.ask)}` : "opens when pre-open ends, at 100"}
       </div>
       <ul aria-label="Bids (players buying)">
         {book.bids.map((l) => (

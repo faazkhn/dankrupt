@@ -13,6 +13,8 @@ export type MarketRow = {
   spark: number[];
   fair: number;
   heat: number;
+  status: "preopen" | "active" | "dormant" | "halted";
+  opensAt: number | null;
 };
 export type Attention = {
   wikipediaDaily: { day: string; views: number }[];
@@ -54,7 +56,7 @@ export type Preview = {
   limitedBy: "cash" | "shares" | "margin" | "limit" | "liquidity" | null;
 };
 export type BookLevel = { price: number; qty: number; orders: number };
-export type Book = { bids: BookLevel[]; asks: BookLevel[]; house: { bid: number; ask: number } };
+export type Book = { bids: BookLevel[]; asks: BookLevel[]; house: { bid: number; ask: number } | null };
 export type OrderTicket = { memeId: string; side: "buy" | "sell"; qty: number; type: "market" | "limit" | "stop"; price?: number; expiresInMinutes?: number };
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {

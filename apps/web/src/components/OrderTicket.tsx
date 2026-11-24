@@ -41,6 +41,8 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
     setResult(null);
   }
 
+  const preopen = meme?.status === "preopen";
+  if (preopen && type !== "limit") setType("limit"); // pre-open is limit orders only
   const price = Number(priceText);
   const priceValid = type === "market" || (Number.isFinite(price) && price >= 0.01 && Math.abs(Math.round(price * 100) - price * 100) < 1e-6);
   const ticket: Ticket = {
@@ -112,7 +114,13 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
   return (
     <div className="mt-4 space-y-4">
       <Segmented label="Side" value={side} options={["buy", "sell"]} setter={(v) => (setSide(v), setResult(null))} colored />
-      <Segmented label="Order type" value={type} options={["market", "limit", "stop"]} setter={(v) => (setType(v), setResult(null))} />
+      {preopen ? (
+        <p className="rounded-xl border-2 border-ink/20 bg-paper-shade/60 p-3 text-sm font-bold">
+          Pre-open: limit orders only, matched with other players. The house opens at 100 when the countdown ends.
+        </p>
+      ) : (
+        <Segmented label="Order type" value={type} options={["market", "limit", "stop"]} setter={(v) => (setType(v), setResult(null))} />
+      )}
 
       <div>
         <div className="flex items-end justify-between">
@@ -157,9 +165,9 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
               id="limit-price"
               inputMode="decimal"
               value={priceText}
-              placeholder={meme ? fmt(side === "buy" ? meme.bid : meme.ask) : "0.00"}
+              placeholder={meme ? fmt((side === "buy" ? meme.bid : meme.ask) || meme.mid) : "0.00"}
               onChange={(e) => (setPriceText(e.target.value.replace(/[^\d.]/g, "")), setResult(null))}
-              aria-invalid={!priceValid}
+                aria-invalid={!priceValid && priceText !== ""}
               aria-describedby="limit-help"
               className="mt-1 min-h-12 w-full rounded-[14px] border-[3px] border-ink bg-white px-3 text-center text-2xl font-black tabular-nums shadow-[inset_0_3px_0_var(--paper-shade)]"
             />
@@ -181,8 +189,12 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
               ))}
             </select>
           </div>
-          <p id="limit-help" className={`col-span-2 -mt-2 text-sm font-bold ${priceValid ? "text-ink-soft" : "text-berry"}`}>
-            {priceValid ? "Fills now if the market already allows it; the rest waits on the book." : "Use a price from 0.01, in steps of 0.01."}
+          <p id="limit-help" className={`col-span-2 -mt-2 text-sm font-bold ${priceValid || priceText === "" ? "text-ink-soft" : "text-berry"}`}>
+            {priceText === ""
+              ? "Type your price. It fills now if the market already allows it; the rest waits on the book."
+              : priceValid
+                ? "Fills now if the market already allows it; the rest waits on the book."
+                : "Use a price from 0.01, in steps of 0.01."}
           </p>
         </div>
       )}

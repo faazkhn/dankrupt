@@ -189,8 +189,8 @@ function runSteps(steps: { k: string; [x: string]: unknown }[]) {
     const q = e.meme("m");
     const b = e.book("m");
     // no-cross, with the one-share rounding allowance
-    if (b.bids[0]) expect(b.bids[0].price).toBeLessThan(b.house.ask * 1.02 + 0.02);
-    if (b.asks[0]) expect(b.asks[0].price).toBeGreaterThan(b.house.bid * 0.98 - 0.02);
+    if (b.bids[0]) expect(b.bids[0].price).toBeLessThan(b.house!.ask * 1.02 + 0.02);
+    if (b.asks[0]) expect(b.asks[0].price).toBeGreaterThan(b.house!.bid * 0.98 - 0.02);
     if (b.bids[0] && b.asks[0]) expect(b.bids[0].price).toBeLessThan(b.asks[0].price);
     expect(q.price).toBeGreaterThanOrEqual(0.01);
     for (const id of ACCOUNTS) {

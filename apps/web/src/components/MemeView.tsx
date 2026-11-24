@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeftIcon, TrendDownIcon, TrendUpIcon } from "@phosphor-icons/react";
 import { AttentionCard } from "@/components/AttentionCard";
 import { CandleChart } from "@/components/CandleChart";
+import { Countdown } from "@/components/Countdown";
 import { OpenOrdersCard } from "@/components/OpenOrdersCard";
 import { OrderBookCard } from "@/components/OrderBookCard";
 import { OrderTicket } from "@/components/OrderTicket";
@@ -52,6 +53,15 @@ export function MemeView({ memeId }: { memeId: string }) {
             <ArrowLeftIcon weight="bold" className="size-6" aria-hidden="true" /> Markets
           </Link>
         </div>
+        {meme?.status === "preopen" && meme.opensAt && (
+          <div className="mx-auto mt-5 max-w-5xl px-4">
+            <p className="sticker rounded-2xl px-4 py-2 font-bold">
+              <span className="font-display mr-2 text-lg">PRE-OPEN</span>
+              The house opens at 100 in <Countdown to={meme.opensAt} />. Until then, trade with other players using limit orders: the opening
+              price comes from your bids.
+            </p>
+          </div>
+        )}
         <div className="mx-auto grid max-w-5xl gap-6 px-4 pt-6 md:grid-cols-[1.45fr_1fr]">
           <section className="space-y-6">
             <div className="paper -rotate-[0.3deg] p-5 sm:p-6">

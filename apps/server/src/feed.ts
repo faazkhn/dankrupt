@@ -21,6 +21,8 @@ export type MarketRow = {
   /** Data-driven fair value and heat (PRD §5). */
   fair: number;
   heat: number;
+  status: string;
+  opensAt: number | null;
 };
 
 /**
@@ -40,6 +42,9 @@ export class Feed {
   private persistedThrough: number;
   private db: Db;
   private wss?: WebSocketServer;
+
+  /** Status lookup, injected so rows can say "pre-open" and when the house opens. */
+  statusOf: (memeId: string) => { status: string; opensAt: number | null } = () => ({ status: "active", opensAt: null });
 
   private constructor(db: Db, persistedThrough: number) {
     this.db = db;
@@ -108,6 +113,7 @@ export class Feed {
         spark,
         fair: this.features.get(p.memeId)?.fair ?? p.price,
         heat: this.features.get(p.memeId)?.heat ?? 1,
+        ...this.statusOf(p.memeId),
       };
     });
   }

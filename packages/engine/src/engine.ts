@@ -80,9 +80,14 @@ type Order = {
 /** A stop-market order waiting for the mid to reach its trigger. Holds nothing until it fires. */
 type Stop = { orderId: number; accountId: string; memeId: string; side: Side; stop: number; qty: number };
 
+export type MemeStatus = "preopen" | "active" | "dormant" | "halted";
+
 type Meme = {
   memeId: string;
   name: string;
+  status: MemeStatus;
+  /** When pre-open ends and the house opens. */
+  opensAt: number | null;
   curve: Curve;
   spread: number;
   /** Data-driven fair value F, from `meme.features` events (the listing price until the first one). */
@@ -211,10 +216,20 @@ export class Engine {
 
   // ---------- reads ----------
 
-  meme(memeId: string): PriceUpdate & { name: string; fairValue: number; heat: number; listedAt: number; mark: number; borrowPerHour: number } {
+  meme(memeId: string) {
     const m = this.s.memes[memeId];
     if (!m) throw new Error(`unknown meme ${memeId}`);
-    return { ...this.quote(m, this.s.time), name: m.name, fairValue: m.fairValue, heat: m.heat, listedAt: m.listedAt, mark: this.mark(m), borrowPerHour: this.borrowRate(m) };
+    return {
+      ...this.quote(m, this.s.time),
+      name: m.name,
+      status: m.status,
+      opensAt: m.opensAt,
+      fairValue: m.fairValue,
+      heat: m.heat,
+      listedAt: m.listedAt,
+      mark: this.mark(m),
+      borrowPerHour: this.borrowRate(m),
+    };
   }
 
   memes() {
@@ -235,7 +250,7 @@ export class Engine {
       }
       return out;
     };
-    return { bids: levels(m.bids), asks: levels(m.asks), house: { bid: this.houseBid(m), ask: this.houseAsk(m) } };
+    return { bids: levels(m.bids), asks: levels(m.asks), house: m.status === "preopen" ? null : { bid: this.houseBid(m), ask: this.houseAsk(m) } };
   }
 
   /** Money view of an account. µc throughout. */
@@ -395,6 +410,14 @@ export class Engine {
       const em = new Emitter(out, `t${g}`, this.s.seq, g);
       for (const m of memes) {
         this.expire(em, m, g);
+        if (m.status === "preopen") {
+          if (m.opensAt === null || g < m.opensAt) {
+            this.checkMargins(em, m);
+            out.prices.push(this.quote(m, g));
+            continue;
+          }
+          m.status = "active"; // IPO: the house opens at the listing price; crossing orders fill below via no-cross
+        }
         this.drift(m, g);
         this.noCross(em, m);
         this.triggerStops(em, m);
@@ -461,17 +484,20 @@ export class Engine {
 
   // ---------- quotes ----------
 
+  /** The house's quote; in pre-open the house is closed (no ask, no bid). */
   private houseAsk(m: Meme) {
-    return m.curve.price * (1 + m.spread / 2);
+    return m.status === "preopen" ? INF : m.curve.price * (1 + m.spread / 2);
   }
   private houseBid(m: Meme) {
-    return m.curve.price * (1 - m.spread / 2);
+    return m.status === "preopen" ? 0 : m.curve.price * (1 - m.spread / 2);
   }
 
   private quote(m: Meme, time: number): PriceUpdate {
     const bid = Math.max(this.houseBid(m), m.bids[0] ? m.bids[0].px / COIN : 0);
     const ask = Math.min(this.houseAsk(m), m.asks[0] ? m.asks[0].px / COIN : INF);
-    return { memeId: m.memeId, time, price: m.curve.price, bid, ask, mid: (bid + ask) / 2 };
+    // Without a two-sided market (pre-open), the mid falls back to fair value.
+    const mid = bid > 0 && ask < INF ? (bid + ask) / 2 : m.fairValue;
+    return { memeId: m.memeId, time, price: m.curve.price, bid, ask: ask === INF ? 0 : ask, mid };
   }
 
   // ---------- events ----------
@@ -496,9 +522,12 @@ export class Engine {
     switch (ev.type) {
       case "meme.list": {
         if (this.s.memes[ev.memeId]) return reject("meme already listed");
+        const preopen = ev.preOpenUntil != null && ev.preOpenUntil > ev.time;
         const m: Meme = {
           memeId: ev.memeId,
           name: ev.name,
+          status: preopen ? "preopen" : "active",
+          opensAt: preopen ? ev.preOpenUntil! : null,
           curve: { price: ev.price, L: depthToL(ev.depth, ev.price) },
           spread: this.s.params.spreadBase,
           fairValue: ev.fairValue ?? ev.price,
@@ -575,6 +604,7 @@ export class Engine {
         if (!a) return reject("unknown account");
         if (!m) return reject("unknown meme");
         if (!Number.isSafeInteger(ev.qty) || ev.qty <= 0) return reject("quantity must be a whole number above 0");
+        if (m.status === "preopen" && ev.type === "order.market") return reject("this meme is in pre-open: only limit orders until it opens");
         let limit = INF;
         let hold = 0;
         if (ev.type === "order.limit") {
@@ -616,6 +646,7 @@ export class Engine {
         if (!a) return reject("unknown account");
         if (!m) return reject("unknown meme");
         if (!Number.isSafeInteger(ev.qty) || ev.qty <= 0) return reject("quantity must be a whole number above 0");
+        if (m.status === "preopen") return reject("this meme is in pre-open: stops can be set once it opens");
         const px = Math.round(ev.stopPrice * COIN);
         if (!(px >= PRICE_STEP) || px % PRICE_STEP !== 0) return reject("trigger price must be at least 0.01 and in steps of 0.01");
         const mid = this.quote(m, ev.time).mid;
@@ -750,6 +781,7 @@ export class Engine {
           this.bookTrade(em, m, best, a, q, "buy");
           filled += q;
         } else {
+          if (m.status === "preopen") break; // book only until the house opens
           const stop = Math.min(bookPx, limit);
           const affordable = free === INF ? remaining : maxBuyable(m.curve, free / COIN, m.spread / 2, feeRate);
           let d = Math.min(remaining, affordable, stop === INF ? remaining : this.sharesToAsk(m, stop / COIN));
@@ -774,6 +806,7 @@ export class Engine {
           this.bookTrade(em, m, best, a, q, "sell");
           filled += q;
         } else {
+          if (m.status === "preopen") break;
           const stop = Math.max(bookPx, floor);
           let d = Math.min(remaining, stop <= 0 ? this.sharesToFloor(m) : this.sharesToBid(m, stop / COIN));
           if (d <= 0) {

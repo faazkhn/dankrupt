@@ -19,7 +19,7 @@ test("an operator adds a candidate with a checked Wikipedia title, approves it, 
   const [c] = (await admin.candidates()) as { wikipedia: string[]; links: string[]; status: string }[];
   expect(c).toMatchObject({ wikipedia: ["Moo Deng"], links: ["https://en.wikipedia.org/wiki/Moo_Deng"], status: "candidate" });
   await admin.approve("faaz", id);
-  expect(seq.engine.meme("moo-deng")).toMatchObject({ name: "Moo Deng", price: 100 });
+  expect(seq.engine.meme("moo-deng")).toMatchObject({ name: "Moo Deng", price: 100, status: "preopen" });
   expect(await admin.memeMeta("moo-deng")).toMatchObject({ description: "A baby hippo" });
   expect((await admin.actions()).map((a) => (a as { action: string }).action)).toEqual(["candidate.approve", "candidate.add"]);
 });

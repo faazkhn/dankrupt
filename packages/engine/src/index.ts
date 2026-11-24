@@ -1,4 +1,4 @@
-export { Engine, DEFAULT_PARAMS, PARAM_BOUNDS, type Params, type Preview } from "./engine.ts";
+export { Engine, DEFAULT_PARAMS, PARAM_BOUNDS, type MemeStatus, type Params, type Preview } from "./engine.ts";
 export {
   COIN,
   PRICE_STEP,

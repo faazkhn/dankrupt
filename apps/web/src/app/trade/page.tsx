@@ -9,6 +9,7 @@ import {
   TrendUpIcon,
   WarningCircleIcon,
 } from "@phosphor-icons/react";
+import { Countdown } from "@/components/Countdown";
 import { Sparkline } from "@/components/Sparkline";
 import { TradeHeader } from "@/components/TradeHeader";
 import { fmt, fmtInt, fmtPct, useMarkets, useMe } from "@/lib/market";
@@ -136,12 +137,20 @@ export default function Markets() {
                           </span>
                         )}
                       </span>
-                      <span
-                        className={`flex items-center justify-end gap-1 font-black tabular-nums ${up ? "text-mint" : "text-berry"}`}
-                      >
-                        <Trend weight="bold" aria-hidden="true" />
-                        {fmtPct(m.change24h)}
-                      </span>
+                      {m.status === "preopen" && m.opensAt ? (
+                        <span className="sticker px-2 py-0.5 text-center text-xs font-black">
+                          OPENS IN
+                          <br />
+                          <Countdown to={m.opensAt} />
+                        </span>
+                      ) : (
+                        <span
+                          className={`flex items-center justify-end gap-1 font-black tabular-nums ${up ? "text-mint" : "text-berry"}`}
+                        >
+                          <Trend weight="bold" aria-hidden="true" />
+                          {fmtPct(m.change24h)}
+                        </span>
+                      )}
                       <CaretRightIcon
                         weight="bold"
                         className="hidden size-5 transition-transform group-hover:translate-x-1 sm:block"

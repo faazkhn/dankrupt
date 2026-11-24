@@ -16,6 +16,10 @@ const seq = await Sequencer.boot(db, seed, [feed.onApplied, projections.onApplie
 await projections.flush();
 await projections.snapshotEquity(seq.engine); // a fresh point for every account at boot
 projections.start(seq.engine);
+feed.statusOf = (id) => {
+  const m = seq.engine.meme(id);
+  return { status: m.status, opensAt: m.opensAt };
+};
 await seq.clock(); // catch the house up on the time the server was down
 seq.startClock(1_000);
 const signals = new Signals(db, seq, wikipediaClient());

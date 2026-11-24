@@ -6,7 +6,16 @@ export const PRICE_STEP = 10_000;
 export type Side = "buy" | "sell";
 
 export type EventBody =
-  | { type: "meme.list"; memeId: string; name: string; price: number; depth: number; fairValue?: number }
+  | {
+      type: "meme.list";
+      memeId: string;
+      name: string;
+      price: number;
+      depth: number;
+      fairValue?: number;
+      /** If set, the meme is in pre-open (book-only, no house) until this time, then the house opens at `price`. */
+      preOpenUntil?: number;
+    }
   | { type: "account.open"; accountId: string }
   /** Free top-up back to the starting cash; allowed when equity < 1,000 coins (even negative) and no positions. */
   | { type: "account.reset"; accountId: string }

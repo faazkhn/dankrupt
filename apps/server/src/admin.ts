@@ -4,6 +4,7 @@ import type { Sequencer } from "./sequencer.ts";
 import type { Signals } from "./signals.ts";
 
 const SLUG = /^[a-z0-9][a-z0-9-]{1,40}$/;
+const PRE_OPEN_MS = Number(process.env.PRE_OPEN_MINUTES ?? 30) * 60_000;
 
 /**
  * Who may use operator screens. Production: only the handles in OPERATORS. Development with no
@@ -74,13 +75,20 @@ export class Admin {
     return rows;
   }
 
-  /** Approving lists the meme (shortcut until ticket 10: straight to trading at 100; pre-open comes next). */
+  /** Approving starts a 30-minute pre-open (players trade with each other); then the house opens at 100. */
   async approve(operator: string, id: number) {
     const c = await this.one(id);
     if (c.status !== "candidate") throw new AdminError(`already ${c.status}`);
     const wiki = c.wikipedia as string[];
     if (!wiki.length) throw new AdminError("map at least one data source first");
-    const out = await this.seq.submit({ type: "meme.list", memeId: c.meme_id as string, name: c.name as string, price: 100, depth: 500_000 });
+    const out = await this.seq.submit({
+      type: "meme.list",
+      memeId: c.meme_id as string,
+      name: c.name as string,
+      price: 100,
+      depth: 500_000,
+      preOpenUntil: Date.now() + PRE_OPEN_MS,
+    });
     if (out.rejects.length) throw new AdminError(out.rejects[0].reason);
     await this.db.query(
       `insert into meme_meta (meme_id, description, links) values ($1, $2, $3::jsonb)
