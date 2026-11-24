@@ -4,7 +4,7 @@
 
 **Blocked by:** 04
 
-**Status:** ready-for-agent
+**Status:** in-progress: simulator core, CLI report against §11.3 and synthetic tests done; draft meme list in apps/sim/memes.json awaits approval; history fetch (pnpm --filter sim fetch-history) then `pnpm --filter sim sim` to produce the first report.
 
 **Needs from Faaz:** approve the list of 30+ past memes, which the agent drafts first. They must be post-July 2015 and pass the content screen.
 

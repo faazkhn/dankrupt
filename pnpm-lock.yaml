@@ -36,6 +36,25 @@ importers:
         specifier: ^5.1.1
         version: 5.1.1(@types/node@26.6.6)(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0))
 
+  apps/sim:
+    dependencies:
+      '@dankrupt/engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
+      '@dankrupt/features':
+        specifier: workspace:*
+        version: link:../../packages/features
+    devDependencies:
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.1.1
+        version: 5.1.1(@types/node@26.6.6)(vite@8.3.8(@types/node@26.6.6)(jiti@2.7.0))
+
   apps/web:
     dependencies:
       '@dankrupt/db':
