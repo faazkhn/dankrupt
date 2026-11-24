@@ -32,6 +32,8 @@ export type EventBody =
       stopPrice: number;
     }
   | { type: "order.cancel"; accountId: string; orderId: number }
+  /** Operator changes tunable params live (PRD story 16); recorded in the log so replays stay exact. */
+  | { type: "params.set"; params: Record<string, number> }
   /** A new fair value and heat from the attention pipeline (PRD §5). */
   | { type: "meme.features"; memeId: string; fairValue: number; heat: number };
 

@@ -4,7 +4,7 @@
 
 **Blocked by:** 04
 
-**Status:** ready-for-agent
+**Status:** done: /admin operator desk (OPERATORS env in production; any dev login locally). Add candidates with Wikipedia titles resolved live (redirects followed), approve (lists at 100 until ticket 10) or reject with a content-screen reason, meme descriptions and https links, live params via params.set events with bounds, and an audit log.
 
 - [ ] Only accounts with the operator flag can reach operator screens and endpoints. This is checked on the server.
 - [ ] Add and edit meme. The signal map editor checks that Wikipedia titles resolve before saving.

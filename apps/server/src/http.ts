@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import type { Db } from "@dankrupt/db";
 import { COIN } from "@dankrupt/engine";
+import { Admin, AdminError, isOperator } from "./admin.ts";
 import { leaderboard, type Style, type Window } from "./board.ts";
 import type { Feed } from "./feed.ts";
 import type { Projections } from "./projections.ts";
@@ -79,7 +80,7 @@ export function parseOrder(input: unknown): OrderRequest {
   return out;
 }
 
-export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projections?: Projections, boardDb?: Db) {
+export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projections?: Projections, boardDb?: Db, admin?: Admin) {
   const e = seq.engine;
   const coins = (uc: number) => uc / COIN;
   const memeParam = (url: URL) => {
@@ -157,6 +158,9 @@ export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projec
         avgOut: perShareOut,
       });
     }
+    if (req.method === "GET" && url.pathname === "/api/meme-meta") {
+      return send(200, admin ? await admin.memeMeta(memeParam(url)) : { description: "", links: [] });
+    }
     if (req.method === "GET" && url.pathname === "/api/book") {
       const memeId = memeParam(url);
       if (!e.memes().some((m) => m.memeId === memeId)) throw new HttpError(404, "no such meme");
@@ -166,6 +170,39 @@ export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projec
     const me = playerId(req);
     if (!me) throw new HttpError(401, "sign in first");
 
+    if (url.pathname.startsWith("/api/admin/")) {
+      if (!admin || !isOperator(me)) throw new HttpError(403, "operators only");
+      const path = url.pathname.slice("/api/admin/".length);
+      try {
+        if (req.method === "GET" && path === "candidates") return send(200, await admin.candidates());
+        if (req.method === "POST" && path === "candidates") return send(200, { id: await admin.addCandidate(me, await body(req)) });
+        const m = path.match(/^candidates\/(\d+)\/(approve|reject)$/);
+        if (req.method === "POST" && m) {
+          if (m[2] === "approve") await admin.approve(me, Number(m[1]));
+          else await admin.reject(me, Number(m[1]), ((await body(req)) as { reason?: unknown }).reason);
+          return send(200, { ok: true });
+        }
+        if (req.method === "GET" && path === "params") return send(200, admin.params());
+        if (req.method === "POST" && path === "params") {
+          await admin.setParams(me, await body(req));
+          return send(200, admin.params());
+        }
+        if (req.method === "GET" && path === "actions") return send(200, await admin.actions());
+        if (req.method === "POST" && path === "meme-meta") {
+          const b = (await body(req)) as { memeId?: string };
+          if (!b.memeId || !ID.test(b.memeId)) throw new HttpError(400, "memeId is required");
+          await admin.setMemeMeta(me, b.memeId, b);
+          return send(200, { ok: true });
+        }
+      } catch (err) {
+        if (err instanceof AdminError) throw new HttpError(422, err.message);
+        throw err;
+      }
+      throw new HttpError(404, "not found");
+    }
+    if (req.method === "GET" && url.pathname === "/api/whoami") {
+      return send(200, { accountId: me, operator: isOperator(me) });
+    }
     if (req.method === "GET" && url.pathname === "/api/me") {
       await ensureAccount(me);
       return send(200, accountView(me));

@@ -82,3 +82,14 @@ describe("features updates (ticket 04)", () => {
     expect(move).toBeGreaterThan(0.005);
   });
 });
+
+describe("live params (ticket 12)", () => {
+  test("params.set changes behaviour from that event on and rejects out-of-range values", () => {
+    const e = listed(quiet, 150);
+    expect(e.apply({ seq: 2, time: 0, type: "params.set", params: { driftHalfLifeHours: 999 } }).rejects[0].reason).toMatch(/between/);
+    e.apply({ seq: 3, time: 0, type: "params.set", params: { driftHalfLifeHours: 3 } });
+    e.advance(3 * HOUR);
+    expect(e.meme("m").price).toBeCloseTo(122.47, 1); // half the gap in 3h now
+    expect(e.params.driftHalfLifeHours).toBe(3);
+  });
+});

@@ -110,6 +110,32 @@ const MIGRATIONS: string[] = [
      cash_event text,
      primary key (account_id, time)
    )`,
+  `create table meme_meta (
+     meme_id text primary key,
+     description text not null default '',
+     links jsonb not null default '[]'
+   )`,
+  `create table candidates (
+     id bigint generated always as identity primary key,
+     meme_id text not null,
+     name text not null,
+     description text not null default '',
+     links jsonb not null default '[]',
+     wikipedia jsonb not null default '[]',
+     status text not null default 'candidate',
+     reason text,
+     source text not null default 'operator',
+     created_at timestamptz not null default now(),
+     decided_at timestamptz,
+     decided_by text
+   )`,
+  `create table operator_actions (
+     id bigint generated always as identity primary key,
+     time timestamptz not null default now(),
+     operator text not null,
+     action text not null,
+     detail jsonb not null default '{}'
+   )`,
 ];
 
 /** Applies pending migrations in order; safe to call on every boot. */

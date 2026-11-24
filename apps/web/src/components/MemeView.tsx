@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeftIcon, TrendDownIcon, TrendUpIcon } from "@phosphor-icons/react";
 import { AttentionCard } from "@/components/AttentionCard";
 import { CandleChart } from "@/components/CandleChart";
@@ -10,7 +10,7 @@ import { OrderBookCard } from "@/components/OrderBookCard";
 import { OrderTicket } from "@/components/OrderTicket";
 import { PositionCard } from "@/components/PositionCard";
 import { TradeHeader } from "@/components/TradeHeader";
-import { fmt, fmtInt, fmtPct, useBook, useCandles, useMarkets, useMe, type Fill } from "@/lib/market";
+import { fmt, fmtInt, fmtPct, getMemeMeta, useBook, useCandles, useMarkets, useMe, type Fill } from "@/lib/market";
 
 export function MemeView({ memeId }: { memeId: string }) {
   const { rows } = useMarkets();
@@ -19,6 +19,10 @@ export function MemeView({ memeId }: { memeId: string }) {
   const { me, setMe, status } = useMe();
   const [fills, setFills] = useState<(Fill & { at: number })[]>([]);
   const [picked, setPicked] = useState<number | null>(null);
+  const [meta, setMeta] = useState<{ description: string; links: string[] } | null>(null);
+  useEffect(() => {
+    getMemeMeta(memeId).then(setMeta).catch(() => {});
+  }, [memeId]);
 
   const meme = rows?.get(memeId);
   if (rows && !meme)
@@ -52,6 +56,16 @@ export function MemeView({ memeId }: { memeId: string }) {
           <section className="space-y-6">
             <div className="paper -rotate-[0.3deg] p-5 sm:p-6">
               <h1 className="font-display text-4xl leading-tight sm:text-5xl">{meme?.name ?? "…"}</h1>
+              {meta?.description && <p className="mt-1 font-semibold text-ink-soft">{meta.description}</p>}
+              {meta?.links.length ? (
+                <p className="mt-1 flex flex-wrap gap-3 text-sm font-bold">
+                  {meta.links.map((l) => (
+                    <a key={l} href={l} target="_blank" rel="noopener noreferrer" className="underline decoration-2 underline-offset-2">
+                      {new URL(l).hostname.replace(/^www\./, "")}
+                    </a>
+                  ))}
+                </p>
+              ) : null}
               <div className="mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1">
                 <p className="text-5xl font-black tabular-nums">{meme ? fmt(meme.ltp ?? meme.mid) : "--"}</p>
                 <p className={`flex items-center gap-1 text-xl font-black ${up ? "text-mint" : "text-berry"}`}>

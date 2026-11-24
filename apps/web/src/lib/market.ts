@@ -158,6 +158,19 @@ export async function resetAccount() {
 }
 
 export const getProfile = () => api<Profile>("profile");
+export const getWhoami = () => api<{ accountId: string; operator: boolean }>("whoami");
+export const getMemeMeta = (memeId: string) => api<{ description: string; links: string[] }>(`meme-meta?memeId=${encodeURIComponent(memeId)}`);
+export async function adminCall<T>(path: string, body?: unknown): Promise<T> {
+  const res = await fetch(`/api/engine/admin/${path}`, {
+    method: body === undefined ? "GET" : "POST",
+    headers: { "content-type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+    cache: "no-store",
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "request failed");
+  return data as T;
+}
 export type BoardRow = { rank: number; accountId: string; twr: number; style: "scalper" | "swing" | "trend"; trades: number; resets: number };
 export const getLeaderboard = (window: string, style: string | null) =>
   api<BoardRow[]>(`leaderboard?window=${window}${style ? `&style=${style}` : ""}`);

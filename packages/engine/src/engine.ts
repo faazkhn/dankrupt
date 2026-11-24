@@ -38,6 +38,22 @@ export const DEFAULT_PARAMS: Params = {
   resetBelow: 1_000 * COIN,
 };
 
+/** Allowed ranges for live-tunable params; anything outside is rejected. */
+export const PARAM_BOUNDS: Partial<Record<keyof Params, [number, number]>> = {
+  takerFeeBps: [0, 100],
+  spreadBase: [0, 0.05],
+  spreadVolCoef: [0, 5],
+  spreadMax: [0.001, 0.2],
+  driftHalfLifeHours: [0.5, 168],
+  vwapWeight: [0, 1],
+  noisePerSqrtHour: [0, 0.05],
+  initialMargin: [0.1, 2],
+  maintenanceMargin: [0.05, 1],
+  liquidationFeeBps: [0, 1_000],
+  borrowBasePerHour: [0, 0.01],
+  borrowSlopePerHour: [0, 0.05],
+};
+
 const MINUTE = 60_000;
 const DAY = 86_400_000;
 const INF = Number.POSITIVE_INFINITY;
@@ -187,6 +203,10 @@ export class Engine {
 
   get time() {
     return this.s.time;
+  }
+
+  get params(): Params {
+    return { ...this.s.params };
   }
 
   // ---------- reads ----------
@@ -498,6 +518,16 @@ export class Engine {
         };
         this.s.memes[ev.memeId] = m;
         out.prices.push(this.quote(m, ev.time));
+        return out;
+      }
+      case "params.set": {
+        const bounds = PARAM_BOUNDS as Record<string, [number, number]>;
+        for (const [k, v] of Object.entries(ev.params)) {
+          if (!(k in bounds)) return reject(`unknown param ${k}`);
+          const [lo, hi] = bounds[k];
+          if (typeof v !== "number" || !Number.isFinite(v) || v < lo || v > hi) return reject(`${k} must be between ${lo} and ${hi}`);
+        }
+        this.s.params = { ...this.s.params, ...ev.params };
         return out;
       }
       case "meme.features": {

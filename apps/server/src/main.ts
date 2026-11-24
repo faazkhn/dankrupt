@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { createDb, migrate } from "@dankrupt/db";
+import { Admin, wikipediaResolver } from "./admin.ts";
 import { Feed } from "./feed.ts";
 import { Projections } from "./projections.ts";
 import { createApi } from "./http.ts";
@@ -20,7 +21,8 @@ seq.startClock(1_000);
 const signals = new Signals(db, seq, wikipediaClient());
 for (const m of seed) await signals.mapSources(m.memeId, m.wikipedia ?? []);
 signals.start();
-const server = createApi(seq, feed, signals, projections, db);
+const admin = new Admin(db, seq, signals, wikipediaResolver());
+const server = createApi(seq, feed, signals, projections, db, admin);
 feed.attach(server);
 const port = Number(process.env.PORT ?? 4000);
 server.listen(port, () => console.log(`dankrupt engine on :${port}, replayed to seq ${seq.engine.seq}`));
