@@ -18,6 +18,12 @@ export type Params = {
   borrowBasePerHour: number; // r0, fraction per hour
   borrowSlopePerHour: number; // r1
   resetBelow: number; // µc of equity under which a reset is allowed
+  dormantHeat: number;
+  dormantDays: number;
+  reviveZ: number;
+  reviveAcc: number; // a_rev, tuned in simulation
+  dormantBorrowMultiplier: number;
+  dormantShortMaxU: number;
 };
 
 export const DEFAULT_PARAMS: Params = {
@@ -36,6 +42,12 @@ export const DEFAULT_PARAMS: Params = {
   borrowBasePerHour: 0.00005,
   borrowSlopePerHour: 0.0005,
   resetBelow: 1_000 * COIN,
+  dormantHeat: 0.3,
+  dormantDays: 7,
+  reviveZ: 2,
+  reviveAcc: 0.05,
+  dormantBorrowMultiplier: 5,
+  dormantShortMaxU: 0.5,
 };
 
 /** Allowed ranges for live-tunable params; anything outside is rejected. */
@@ -52,6 +64,12 @@ export const PARAM_BOUNDS: Partial<Record<keyof Params, [number, number]>> = {
   liquidationFeeBps: [0, 1_000],
   borrowBasePerHour: [0, 0.01],
   borrowSlopePerHour: [0, 0.05],
+  dormantHeat: [0, 2],
+  dormantDays: [1, 60],
+  reviveZ: [0, 10],
+  reviveAcc: [-1, 5],
+  dormantBorrowMultiplier: [1, 50],
+  dormantShortMaxU: [0, 5],
 };
 
 const MINUTE = 60_000;
@@ -88,6 +106,11 @@ type Meme = {
   status: MemeStatus;
   /** When pre-open ends and the house opens. */
   opensAt: number | null;
+  /** When heat last dropped under the dormancy threshold (reset by any warm update). */
+  coldSince: number | null;
+  dormantSince: number | null;
+  /** When the meme last revived (drives the Comeback banner). */
+  comebackAt: number | null;
   curve: Curve;
   spread: number;
   /** Data-driven fair value F, from `meme.features` events (the listing price until the first one). */
@@ -224,7 +247,9 @@ export class Engine {
       name: m.name,
       status: m.status,
       opensAt: m.opensAt,
-      fairValue: m.fairValue,
+      comebackAt: m.comebackAt ?? null,
+      fairValue: this.fair(m),
+      rawFairValue: m.fairValue,
       heat: m.heat,
       listedAt: m.listedAt,
       mark: this.mark(m),
@@ -339,12 +364,19 @@ export class Engine {
     };
   }
 
+  /** Fair value with dormancy decay (PRD §8.5): halves every 7 days while dormant, never below 1. */
+  private fair(m: Meme): number {
+    if (m.status !== "dormant" || m.dormantSince === null) return m.fairValue;
+    const days = (this.s.time - m.dormantSince) / DAY;
+    return Math.max(1, m.fairValue * 2 ** (-days / this.s.params.dormantDays));
+  }
+
   // ---------- risk ----------
 
   /** Mark price (PRD §6.6): median of mid, the 5-minute EMA of traded prices, and fair value. */
   private mark(m: Meme): number {
     const mid = this.quote(m, this.s.time).mid;
-    const v = [mid, m.emaLast ?? mid, m.fairValue].sort((x, y) => x - y);
+    const v = [mid, m.emaLast ?? mid, this.fair(m)].sort((x, y) => x - y);
     return v[1] * COIN;
   }
 
@@ -372,7 +404,9 @@ export class Engine {
     const owned = Math.max(0, (a.shares[m.memeId] ?? 0) - (a.heldShares[m.memeId] ?? 0));
     const r = this.risk(a);
     const perShare = this.s.params.initialMargin * this.mark(m);
-    const short = perShare > 0 ? Math.max(0, Math.floor((r.equity - r.im) / perShare)) : 0;
+    // Dormant memes block new shorts once utilisation passes the cap (PRD §7.4): no farming the decay.
+    const blocked = m.status === "dormant" && this.utilisation(m) > this.s.params.dormantShortMaxU;
+    const short = perShare > 0 && !blocked ? Math.max(0, Math.floor((r.equity - r.im) / perShare)) : 0;
     return { long: owned, short, total: owned + short };
   }
 
@@ -383,9 +417,13 @@ export class Engine {
 
   /** Short-sale borrow rate per hour (PRD §7.3): r₀ + r₁·U, U = short OI / (long OI + house virtual shares). */
   private borrowRate(m: Meme) {
+    const r = this.s.params.borrowBasePerHour + this.s.params.borrowSlopePerHour * this.utilisation(m);
+    return m.status === "dormant" ? r * this.s.params.dormantBorrowMultiplier : r;
+  }
+
+  private utilisation(m: Meme) {
     const x = m.curve.L / Math.sqrt(m.curve.price);
-    const u = m.shortOI / (m.longOI + x);
-    return this.s.params.borrowBasePerHour + this.s.params.borrowSlopePerHour * u;
+    return m.shortOI / (m.longOI + x);
   }
 
   // ---------- time ----------
@@ -409,6 +447,7 @@ export class Engine {
       this.s.time = g;
       const em = new Emitter(out, `t${g}`, this.s.seq, g);
       for (const m of memes) {
+        if (m.status === "halted") continue;
         this.expire(em, m, g);
         if (m.status === "preopen") {
           if (m.opensAt === null || g < m.opensAt) {
@@ -424,16 +463,26 @@ export class Engine {
         this.checkMargins(em, m);
         out.prices.push(this.quote(m, g));
       }
-      if (g % MINUTE === 0) this.chargeBorrow(em);
+      if (g % MINUTE === 0) {
+        this.chargeBorrow(em);
+        for (const m of memes) this.checkDormancy(m, g);
+      }
     }
     this.s.time = time;
+  }
+
+  private checkDormancy(m: Meme, t: number) {
+    if (m.status === "active" && m.coldSince !== null && t - m.coldSince >= this.s.params.dormantDays * DAY) {
+      m.status = "dormant";
+      m.dormantSince = t;
+    }
   }
 
   private drift(m: Meme, g: number) {
     const P = this.s.params;
     const dtH = P.tickMs / 3_600_000;
     const vwap = this.vwapOf(m, g);
-    const target = m.fairValue ** (1 - P.vwapWeight) * vwap ** P.vwapWeight;
+    const target = this.fair(m) ** (1 - P.vwapWeight) * vwap ** P.vwapWeight;
     const [z, rng] = normal(m.rng);
     m.rng = rng;
     const pull = 1 - 2 ** (-dtH / P.driftHalfLifeHours);
@@ -457,7 +506,7 @@ export class Engine {
     let pq = 0;
     let q = 0;
     for (const [, a, b] of m.vwap) (pq += a), (q += b);
-    return q > 0 ? pq / q : m.fairValue;
+    return q > 0 ? pq / q : this.fair(m);
   }
 
   /**
@@ -496,7 +545,7 @@ export class Engine {
     const bid = Math.max(this.houseBid(m), m.bids[0] ? m.bids[0].px / COIN : 0);
     const ask = Math.min(this.houseAsk(m), m.asks[0] ? m.asks[0].px / COIN : INF);
     // Without a two-sided market (pre-open), the mid falls back to fair value.
-    const mid = bid > 0 && ask < INF ? (bid + ask) / 2 : m.fairValue;
+    const mid = bid > 0 && ask < INF ? (bid + ask) / 2 : this.fair(m);
     return { memeId: m.memeId, time, price: m.curve.price, bid, ask: ask === INF ? 0 : ask, mid };
   }
 
@@ -528,6 +577,9 @@ export class Engine {
           name: ev.name,
           status: preopen ? "preopen" : "active",
           opensAt: preopen ? ev.preOpenUntil! : null,
+          coldSince: null,
+          dormantSince: null,
+          comebackAt: null,
           curve: { price: ev.price, L: depthToL(ev.depth, ev.price) },
           spread: this.s.params.spreadBase,
           fairValue: ev.fairValue ?? ev.price,
@@ -565,9 +617,39 @@ export class Engine {
         if (!(ev.fairValue > 0) || !(ev.heat >= 0)) return reject("fair value and heat must be positive");
         m.fairValue = Math.max(1, ev.fairValue);
         m.heat = ev.heat;
+        const P = this.s.params;
+        if (ev.heat < P.dormantHeat) m.coldSince ??= ev.time;
+        else m.coldSince = null;
+        if (m.status === "dormant" && (ev.z ?? 0) > P.reviveZ && (ev.acc ?? 0) > P.reviveAcc) {
+          m.status = "active"; // revival (PRD §8.5): decay resets; the house climbs toward the new fair value
+          m.dormantSince = null;
+          m.coldSince = null;
+          m.comebackAt = ev.time;
+        }
+        this.checkDormancy(m, ev.time);
         // Depth follows heat (PRD §6.2): Y = Y₀ · clip(H, 0.2, 5). Rescale L with the price held fixed; not a trade.
         m.curve.L = depthToL(m.depth0 * clipHeat(ev.heat), m.curve.price);
         return settle(m);
+      }
+      case "meme.halt": {
+        const m = this.s.memes[ev.memeId];
+        if (!m) return reject("unknown meme");
+        if (m.status === "halted") return reject("already halted");
+        for (const o of [...m.bids, ...m.asks]) this.removeOrder(em, o, "cancelled");
+        for (const st of m.stops) delete this.s.orderIndex[st.orderId];
+        m.stops = [];
+        const mark = this.mark(m);
+        for (const a of Object.values(this.s.accounts)) {
+          const q = a.shares[m.memeId] ?? 0;
+          if (!q) continue;
+          const cash = q > 0 ? Math.floor(q * mark) : -Math.ceil(-q * mark); // settle in the house's favour by a micro-coin
+          this.move(em, a, m, -q, cash);
+          em.post("house", "coin", -cash);
+          em.post("house", `share:${m.memeId}`, q);
+          em.out.notices.push({ accountId: a.accountId, time: ev.time, kind: "halt", memeId: m.memeId, text: `${m.name} was pulled (${ev.reason}). Your ${Math.abs(q)} shares settled at ${(mark / COIN).toFixed(2)}.` });
+        }
+        m.status = "halted";
+        return out;
       }
       case "account.open": {
         if (this.s.accounts[ev.accountId]) return reject("account exists");
@@ -604,6 +686,7 @@ export class Engine {
         if (!a) return reject("unknown account");
         if (!m) return reject("unknown meme");
         if (!Number.isSafeInteger(ev.qty) || ev.qty <= 0) return reject("quantity must be a whole number above 0");
+        if (m.status === "halted") return reject("this meme is halted");
         if (m.status === "preopen" && ev.type === "order.market") return reject("this meme is in pre-open: only limit orders until it opens");
         let limit = INF;
         let hold = 0;
@@ -646,6 +729,7 @@ export class Engine {
         if (!a) return reject("unknown account");
         if (!m) return reject("unknown meme");
         if (!Number.isSafeInteger(ev.qty) || ev.qty <= 0) return reject("quantity must be a whole number above 0");
+        if (m.status === "halted") return reject("this meme is halted");
         if (m.status === "preopen") return reject("this meme is in pre-open: stops can be set once it opens");
         const px = Math.round(ev.stopPrice * COIN);
         if (!(px >= PRICE_STEP) || px % PRICE_STEP !== 0) return reject("trigger price must be at least 0.01 and in steps of 0.01");

@@ -1,3 +1,5 @@
+import { connection } from "next/server";
+
 const ENGINE = process.env.ENGINE_URL ?? "http://localhost:4000";
 
 export type CardTrade = {
@@ -14,6 +16,7 @@ export type CardTrade = {
 
 /** Server-side fetch of one public closed trade, or null. */
 export async function fetchCardTrade(account: string, memeId: string, closedAt: string): Promise<CardTrade | null> {
+  await connection(); // a live per-request lookup, never prerendered
   const q = new URLSearchParams({ account, memeId, closedAt });
   try {
     const res = await fetch(`${ENGINE}/api/trade?${q}`, { cache: "no-store" });

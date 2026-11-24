@@ -109,9 +109,10 @@ export class Signals {
       this.latest.set(memeId, features);
       const f = features.at(-1);
       if (!f) continue;
-      const fairMoved = Math.abs(f.fair / meme.fairValue - 1) > 0.0005;
+      const fairMoved = Math.abs(f.fair / meme.rawFairValue - 1) > 0.0005;
       const heatMoved = Math.abs(f.heat - meme.heat) > 0.01;
-      if (fairMoved || heatMoved) await this.seq.submit({ type: "meme.features", memeId, fairValue: round(f.fair, 4), heat: round(f.heat, 4) });
+      if (fairMoved || heatMoved)
+        await this.seq.submit({ type: "meme.features", memeId, fairValue: round(f.fair, 4), heat: round(f.heat, 4), z: round(f.z, 4), acc: round(f.acc, 4) });
     }
   }
 

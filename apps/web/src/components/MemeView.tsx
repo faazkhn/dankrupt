@@ -53,6 +53,28 @@ export function MemeView({ memeId }: { memeId: string }) {
             <ArrowLeftIcon weight="bold" className="size-6" aria-hidden="true" /> Markets
           </Link>
         </div>
+        {meme?.status === "dormant" && (
+          <div className="mx-auto mt-5 max-w-5xl px-4">
+            <p className="rounded-2xl border-[3px] border-ink bg-ink/80 px-4 py-2 font-bold text-paper">
+              <span className="font-display mr-2 text-lg">IN THE GRAVEYARD</span>
+              Attention has been cold for a week, so fair value decays by half every 7 days. Still tradable: holders keep their shares, and a
+              spike in attention brings it back. Borrow costs 5× here.
+            </p>
+          </div>
+        )}
+        {meme?.status === "halted" && (
+          <div className="mx-auto mt-5 max-w-5xl px-4">
+            <p className="paper px-4 py-2 font-bold text-berry">This meme was pulled. Every position was settled at the mark, and trading has stopped.</p>
+          </div>
+        )}
+        {meme?.comebackAt && meme.status === "active" && (
+          <div className="mx-auto mt-5 max-w-5xl px-4">
+            <p className="sticker rounded-2xl px-4 py-2 font-bold">
+              <span className="font-display mr-2 text-lg">COMEBACK!</span>
+              Back from the Graveyard: attention spiked, the decay is gone and the house is climbing toward the new fair value.
+            </p>
+          </div>
+        )}
         {meme?.status === "preopen" && meme.opensAt && (
           <div className="mx-auto mt-5 max-w-5xl px-4">
             <p className="sticker rounded-2xl px-4 py-2 font-bold">

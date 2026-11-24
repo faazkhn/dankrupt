@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CaretRightIcon,
   FlameIcon,
@@ -17,8 +17,20 @@ import { fmt, fmtInt, fmtPct, useMarkets, useMe } from "@/lib/market";
 export default function Markets() {
   const { list, error } = useMarkets();
   const { me, status } = useMe();
-  const [sort, setSort] = useState<"trending" | "movers">("trending");
-  const rows = list?.toSorted((a, b) => (sort === "trending" ? b.heat - a.heat : Math.abs(b.change24h) - Math.abs(a.change24h)));
+  const [sort, setSort] = useState<"trending" | "movers" | "graveyard">("trending");
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    const t = setTimeout(() => setNow(Date.now()), 0);
+    return () => clearTimeout(t);
+  }, []);
+  const comeback = (m: { comebackAt: number | null }) => now > 0 && m.comebackAt !== null && now - m.comebackAt < 86_400_000;
+  const rows = list
+    ?.filter((m) => (sort === "graveyard" ? m.status === "dormant" : m.status !== "dormant" && m.status !== "halted"))
+    .toSorted((a, b) =>
+      sort === "movers"
+        ? Math.abs(b.change24h) - Math.abs(a.change24h)
+        : Number(comeback(b)) - Number(comeback(a)) || b.heat - a.heat, // comebacks get pushed to the top of trending
+    );
 
   return (
     <>
@@ -62,6 +74,7 @@ export default function Markets() {
               [
                 ["trending", "Trending"],
                 ["movers", "Top movers"],
+                ["graveyard", "Graveyard"],
               ] as const
             ).map(([k, label]) => (
               <button
@@ -93,6 +106,13 @@ export default function Markets() {
                     aria-hidden="true"
                   />
                 ))}
+              {rows?.length === 0 && (
+                <li className="p-5 font-bold text-ink-soft">
+                  {sort === "graveyard"
+                    ? "The Graveyard is empty. Memes rest here after 7 cold days, still tradable, waiting for a comeback."
+                    : "No memes trading yet."}
+                </li>
+              )}
               {rows?.map((m) => {
                 const up = m.change24h >= 0;
                 const Trend = up ? TrendUpIcon : TrendDownIcon;
@@ -108,6 +128,8 @@ export default function Markets() {
                         <span className="font-display flex items-center gap-1.5 text-lg leading-tight [overflow-wrap:anywhere] sm:text-2xl">
                           {m.name}
                           {m.heat > 1.5 && <FlameIcon weight="fill" className="size-5 shrink-0 text-candy" aria-label="Hot right now" />}
+                          {comeback(m) && <span className="sticker px-2 py-0.5 font-sans text-[11px] font-black">COMEBACK!</span>}
+                          {m.status === "dormant" && <span className="rounded bg-ink/70 px-1.5 py-0.5 font-sans text-[11px] font-black text-paper">DORMANT</span>}
                         </span>
                         <span
                           className={`text-xs font-bold text-ink-soft ${held > 0 ? "block" : "hidden sm:block"}`}

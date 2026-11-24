@@ -100,6 +100,7 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
     }
   }
 
+  if (meme?.status === "halted") return <p className="mt-3 font-bold text-ink-soft">Trading has stopped on this meme.</p>;
   if (signedOut)
     return (
       <p className="mt-3 font-bold">

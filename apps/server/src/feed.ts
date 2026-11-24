@@ -23,6 +23,7 @@ export type MarketRow = {
   heat: number;
   status: string;
   opensAt: number | null;
+  comebackAt: number | null;
 };
 
 /**
@@ -44,7 +45,11 @@ export class Feed {
   private wss?: WebSocketServer;
 
   /** Status lookup, injected so rows can say "pre-open" and when the house opens. */
-  statusOf: (memeId: string) => { status: string; opensAt: number | null } = () => ({ status: "active", opensAt: null });
+  statusOf: (memeId: string) => { status: string; opensAt: number | null; comebackAt: number | null; fair?: number } = () => ({
+    status: "active",
+    opensAt: null,
+    comebackAt: null,
+  });
 
   private constructor(db: Db, persistedThrough: number) {
     this.db = db;
@@ -102,6 +107,7 @@ export class Feed {
       const h = this.history.get(p.memeId) ?? [];
       const ref = h[0]?.open ?? this.book.current(p.memeId)?.open ?? p.mid;
       const spark = [...h.slice(-59).map((c) => c.close), p.mid];
+      const st = this.statusOf(p.memeId);
       return {
         memeId: p.memeId,
         name: this.names.get(p.memeId) ?? p.memeId,
@@ -111,9 +117,12 @@ export class Feed {
         ask: p.ask,
         change24h: ((p.mid - ref) / ref) * 100,
         spark,
-        fair: this.features.get(p.memeId)?.fair ?? p.price,
         heat: this.features.get(p.memeId)?.heat ?? 1,
-        ...this.statusOf(p.memeId),
+        // Fair value from the engine includes dormancy decay; fall back to the last features event.
+        fair: st.fair ?? this.features.get(p.memeId)?.fair ?? p.price,
+        status: st.status,
+        opensAt: st.opensAt,
+        comebackAt: st.comebackAt,
       };
     });
   }

@@ -18,7 +18,7 @@ await projections.snapshotEquity(seq.engine); // a fresh point for every account
 projections.start(seq.engine);
 feed.statusOf = (id) => {
   const m = seq.engine.meme(id);
-  return { status: m.status, opensAt: m.opensAt };
+  return { status: m.status, opensAt: m.opensAt, comebackAt: m.comebackAt, fair: m.fairValue };
 };
 await seq.clock(); // catch the house up on the time the server was down
 seq.startClock(1_000);

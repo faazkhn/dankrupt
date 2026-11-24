@@ -15,6 +15,7 @@ export type MarketRow = {
   heat: number;
   status: "preopen" | "active" | "dormant" | "halted";
   opensAt: number | null;
+  comebackAt: number | null;
 };
 export type Attention = {
   wikipediaDaily: { day: string; views: number }[];
@@ -42,7 +43,7 @@ export type Me = {
   canReset: boolean;
   orders: OpenOrder[];
 };
-export type Notice = { time: number; kind: "liquidation" | "reset"; memeId: string | null; text: string; read: boolean };
+export type Notice = { time: number; kind: "liquidation" | "reset" | "halt"; memeId: string | null; text: string; read: boolean };
 export type ClosedTrade = { memeId: string; name: string; side: "long" | "short"; openedAt: number; closedAt: number; peakQty: number; pnl: number; basis: number };
 export type Profile = { account: Me; trades: ClosedTrade[]; equity: { time: number; equity: number; cashEvent: string | null }[] };
 export type Fill = { memeId: string; side: "buy" | "sell"; qty: number; cost: number; fee: number; source: "house" | "book"; role: "taker" | "maker" };

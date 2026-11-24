@@ -44,7 +44,17 @@ export type EventBody =
   /** Operator changes tunable params live (PRD story 16); recorded in the log so replays stay exact. */
   | { type: "params.set"; params: Record<string, number> }
   /** A new fair value and heat from the attention pipeline (PRD §5). */
-  | { type: "meme.features"; memeId: string; fairValue: number; heat: number };
+  | {
+      type: "meme.features";
+      memeId: string;
+      fairValue: number;
+      heat: number;
+      /** Heat z-score and attention acceleration, for dormancy and revival (PRD §8). */
+      z?: number;
+      acc?: number;
+    }
+  /** Operator pulls a meme for content reasons: every position settles at the mark and trading stops. */
+  | { type: "meme.halt"; memeId: string; reason: string };
 
 /** Every input carries a global sequence number and a sequencer-assigned timestamp (ms). */
 export type EngineEvent = EventBody & { seq: number; time: number };
@@ -84,7 +94,7 @@ export type PriceUpdate = { memeId: string; time: number; price: number; bid: nu
 export type OrderUpdate = { orderId: number; accountId: string; memeId: string; status: "open" | "filled" | "cancelled" | "expired" | "triggered"; remaining: number };
 
 /** Something a player should be told about, shown in-app (liquidations, reset). */
-export type Notice = { accountId: string; time: number; kind: "liquidation" | "reset"; memeId?: string; qty?: number; fee?: number; text: string };
+export type Notice = { accountId: string; time: number; kind: "liquidation" | "reset" | "halt"; memeId?: string; qty?: number; fee?: number; text: string };
 
 /** A round trip in one meme, from no position back to no position (a glossary "trade"). */
 export type ClosedTrade = {

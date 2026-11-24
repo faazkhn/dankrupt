@@ -88,7 +88,7 @@ function Notices() {
             <ul className="mt-2 max-h-80 divide-y-2 divide-dashed divide-ink/20 overflow-auto">
               {items.map((n) => (
                 <li key={`${n.time}-${n.kind}-${n.memeId}`} className="py-2">
-                  <p className={`font-bold ${n.kind === "liquidation" ? "text-berry" : "text-mint"}`}>{n.text}</p>
+                  <p className={`font-bold ${n.kind === "reset" ? "text-mint" : "text-berry"}`}>{n.text}</p>
                   <p className="text-xs font-bold text-ink-soft">
                     {new Date(n.time).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
                   </p>

@@ -4,7 +4,7 @@
 
 **Blocked by:** 07, 10
 
-**Status:** ready-for-agent
+**Status:** done: heat < 0.3 for 7 days → dormant (fair value halves every 7 days, floor 1; borrow 5×; new shorts blocked above U 0.5), revival on z > 2 and acceleration > a_rev (param, default 0.05) with a Comeback banner and trending boost, operator halt settles every position at the mark. Graveyard tab.
 
 - [ ] The Active → Dormant trigger is every features update over a rolling 7 days below H = 0.3.
 - [ ] D = 2^(−t_d / 7 days) while dormant, and 1 when active. F stays ≥ 1. Dormant memes stay tradable.

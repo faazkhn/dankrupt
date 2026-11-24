@@ -20,6 +20,7 @@ type Candidate = {
 };
 type Params = { values: Record<string, number>; bounds: Record<string, [number, number]> };
 type Action = { time: string; operator: string; action: string; detail: Record<string, unknown> };
+type Listed = { memeId: string; name: string; status: string; price: number; heat: number };
 
 const SCREEN = ["Hate symbols or slurs", "Sexual content", "Real private individuals", "Tragedies or violent events", "Involves minors", "Real-money tokens"];
 const PARAM_LABELS: Record<string, string> = {
@@ -44,10 +45,17 @@ export default function AdminPage() {
   const [params, setParams] = useState<Params | null>(null);
   const [edits, setEdits] = useState<Record<string, string>>({});
   const [actions, setActions] = useState<Action[]>([]);
+  const [listed, setListed] = useState<Listed[]>([]);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const load = useCallback(async () => {
-    const [c, p, a] = await Promise.all([adminCall<Candidate[]>("candidates"), adminCall<Params>("params"), adminCall<Action[]>("actions")]);
+    const [c, p, a, l] = await Promise.all([
+      adminCall<Candidate[]>("candidates"),
+      adminCall<Params>("params"),
+      adminCall<Action[]>("actions"),
+      adminCall<Listed[]>("listed"),
+    ]);
+    setListed(l);
     setCands(c);
     setParams(p);
     setActions(a);
@@ -120,6 +128,27 @@ export default function AdminPage() {
                         </div>
                       )}
                     </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            <section className="paper p-6">
+              <h2 className="font-display text-3xl">Listed memes</h2>
+              <p className="text-sm font-bold text-ink-soft">Halting settles every position at the mark and stops trading. It can&apos;t be undone.</p>
+              <ul className="mt-3 divide-y-2 divide-dashed divide-ink/20">
+                {listed.map((m) => (
+                  <li key={m.memeId} className="flex flex-wrap items-center justify-between gap-3 py-2 font-bold">
+                    <span>
+                      {m.name} <span className="text-sm text-ink-soft">/{m.memeId}</span>
+                      <span className="ml-2 rounded bg-ink/10 px-1.5 text-xs uppercase">{m.status}</span>
+                    </span>
+                    {m.status !== "halted" && (
+                      <HaltButton
+                        name={m.name}
+                        onHalt={(reason) => act(() => adminCall("halt", { memeId: m.memeId, reason }), `${m.name} halted and settled.`)}
+                      />
+                    )}
                   </li>
                 ))}
               </ul>
@@ -217,6 +246,29 @@ function AddCandidate({ onAdd }: { onAdd: (c: { memeId: string; name: string; de
         </button>
       </form>
     </section>
+  );
+}
+
+function HaltButton({ name, onHalt }: { name: string; onHalt: (reason: string) => void }) {
+  const [open, setOpen] = useState(false);
+  if (!open)
+    return (
+      <button className="btn-candy is-muted is-small px-3 text-sm" onClick={() => setOpen(true)}>
+        Halt…
+      </button>
+    );
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="text-sm">Halt {name} because:</span>
+      {["Takedown request", ...SCREEN].map((r) => (
+        <button key={r} className="btn-candy is-sell is-small px-2 text-sm" onClick={() => onHalt(r)}>
+          {r}
+        </button>
+      ))}
+      <button className="btn-candy is-secondary is-small px-2 text-sm" onClick={() => setOpen(false)}>
+        Cancel
+      </button>
+    </div>
   );
 }
 

@@ -110,6 +110,18 @@ export class Admin {
     await this.log(operator, "candidate.reject", { id, memeId: c.meme_id, reason: why });
   }
 
+  listed() {
+    return this.seq.engine.memes().map((m) => ({ memeId: m.memeId, name: m.name, status: m.status, price: m.price, heat: m.heat }));
+  }
+
+  async halt(operator: string, memeId: unknown, reason: unknown) {
+    const why = typeof reason === "string" ? reason.trim().slice(0, 200) : "";
+    if (typeof memeId !== "string" || !why) throw new AdminError("say which meme and why");
+    const out = await this.seq.submit({ type: "meme.halt", memeId, reason: why });
+    if (out.rejects.length) throw new AdminError(out.rejects[0].reason);
+    await this.log(operator, "meme.halt", { memeId, reason: why });
+  }
+
   params() {
     return { values: this.seq.engine.params, bounds: PARAM_BOUNDS };
   }

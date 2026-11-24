@@ -182,6 +182,12 @@ export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projec
           else await admin.reject(me, Number(m[1]), ((await body(req)) as { reason?: unknown }).reason);
           return send(200, { ok: true });
         }
+        if (req.method === "GET" && path === "listed") return send(200, admin.listed());
+        if (req.method === "POST" && path === "halt") {
+          const b = (await body(req)) as { memeId?: unknown; reason?: unknown };
+          await admin.halt(me, b.memeId, b.reason);
+          return send(200, { ok: true });
+        }
         if (req.method === "GET" && path === "params") return send(200, admin.params());
         if (req.method === "POST" && path === "params") {
           await admin.setParams(me, await body(req));
