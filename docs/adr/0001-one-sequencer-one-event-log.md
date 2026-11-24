@@ -1,0 +1,3 @@
+# One sequencer and one event log for all memes
+
+The PRD proposed one sequencer per meme on the grounds that memes never share state, but a player's cash, free cash and margin span every meme: a fill in one meme changes what the player can afford in another, and a falling long in one meme can liquidate a short in another. Separate per-meme logs cannot replay that interleaving, so the MVP runs every meme through a single sequencer with a single, globally sequence-numbered event log. Sharding memes across processes later would need a separate account and risk service; that is out of scope until load demands it.
