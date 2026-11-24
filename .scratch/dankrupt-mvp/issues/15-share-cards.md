@@ -4,7 +4,7 @@
 
 **Blocked by:** 14
 
-**Status:** ready-for-agent
+**Status:** done: server-rendered 1200×630 cards (Satori, cardboard style, percentages only), public /c/ page with OG and Twitter metadata, Share button on every closed trade (native sheet or copy link). Loss cards say LESSON LEARNED.
 
 - [ ] Cards are generated as images on the server, with the link page's preview metadata pointing to the image.
 - [ ] Players can share from the closed-trades list and the trade-closed notice: copy link, download image, or the native share sheet on phones.

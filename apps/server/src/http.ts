@@ -135,6 +135,28 @@ export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projec
       if (!boardDb) return send(200, []);
       return send(200, await leaderboard(boardDb, e, w, st));
     }
+    if (req.method === "GET" && url.pathname === "/api/trade") {
+      // Public: share cards show handle, meme, side, timing and percentages only, never balances.
+      const account = (url.searchParams.get("account") ?? "").toLowerCase();
+      const memeId = url.searchParams.get("memeId") ?? "";
+      const closedAt = Number(url.searchParams.get("closedAt"));
+      if (!ID.test(account) || !ID.test(memeId) || !Number.isSafeInteger(closedAt)) throw new HttpError(400, "bad trade reference");
+      const t = await projections?.closedTrade(account, memeId, closedAt);
+      if (!t || t.basis <= 0) throw new HttpError(404, "no such trade");
+      const perShareIn = t.basis / t.peakQty / COIN;
+      const perShareOut = t.side === "long" ? (t.basis + t.pnl) / t.peakQty / COIN : (t.basis - t.pnl) / t.peakQty / COIN;
+      return send(200, {
+        account,
+        memeId,
+        name: e.memes().find((m) => m.memeId === memeId)?.name ?? memeId,
+        side: t.side,
+        openedAt: t.openedAt,
+        closedAt: t.closedAt,
+        returnPct: (t.pnl / t.basis) * 100,
+        avgIn: perShareIn,
+        avgOut: perShareOut,
+      });
+    }
     if (req.method === "GET" && url.pathname === "/api/book") {
       const memeId = memeParam(url);
       if (!e.memes().some((m) => m.memeId === memeId)) throw new HttpError(404, "no such meme");

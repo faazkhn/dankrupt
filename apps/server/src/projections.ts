@@ -94,6 +94,17 @@ export class Projections {
     }));
   }
 
+  /** One closed trade, for public share cards. */
+  async closedTrade(accountId: string, memeId: string, closedAt: number) {
+    const { rows } = await this.db.query<{ side: string; opened_at: string; closed_at: string; peak_qty: number; pnl: number; basis: number }>(
+      `select side, opened_at::text, closed_at::text, peak_qty::float8 as peak_qty, pnl::float8 as pnl, basis::float8 as basis
+       from closed_trades where account_id = $1 and meme_id = $2 and closed_at = to_timestamp($3 / 1000.0) limit 1`,
+      [accountId, memeId, closedAt],
+    );
+    const r = rows[0];
+    return r && { side: r.side as "long" | "short", openedAt: Date.parse(r.opened_at), closedAt: Date.parse(r.closed_at), peakQty: Number(r.peak_qty), pnl: Number(r.pnl), basis: Number(r.basis) };
+  }
+
   async equityHistory(accountId: string, since: number) {
     const { rows } = await this.db.query<{ time: string; equity: number; cash_event: string | null }>(
       "select time::text, equity::float8 as equity, cash_event from equity_snapshots where account_id = $1 and time >= to_timestamp($2 / 1000.0) order by time",

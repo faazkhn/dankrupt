@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { ArrowCounterClockwiseIcon, ArrowLeftIcon } from "@phosphor-icons/react";
+import { ShareButton } from "@/components/ShareButton";
 import { Sparkline } from "@/components/Sparkline";
 import { TradeHeader } from "@/components/TradeHeader";
 import { fmt, fmtInt, getProfile, resetAccount, type Profile } from "@/lib/market";
@@ -141,10 +142,15 @@ export default function MePage() {
                         {fmtInt(t.peakQty)} shares · held {duration(t.closedAt - t.openedAt)} · closed {new Date(t.closedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                       </span>
                     </span>
-                    <span className={`text-right tabular-nums ${t.pnl >= 0 ? "text-mint" : "text-berry"}`}>
-                      {t.pnl >= 0 ? "+" : "−"}
-                      {fmt(Math.abs(t.pnl))}
-                      {t.basis > 0 && <span className="block text-xs">{((t.pnl / t.basis) * 100).toFixed(1)}%</span>}
+                    <span className="flex items-center gap-3">
+                      <span className={`text-right tabular-nums ${t.pnl >= 0 ? "text-mint" : "text-berry"}`}>
+                        {t.pnl >= 0 ? "+" : "−"}
+                        {fmt(Math.abs(t.pnl))}
+                        {t.basis > 0 && <span className="block text-xs">{((t.pnl / t.basis) * 100).toFixed(1)}%</span>}
+                      </span>
+                      {a && t.basis > 0 && (
+                        <ShareButton path={`/c/${a.accountId}/${t.memeId}/${t.closedAt}`} title={t.pnl >= 0 ? `I called ${t.name} on Dankrupt` : `My ${t.name} trade on Dankrupt`} />
+                      )}
                     </span>
                   </li>
                 ))}
