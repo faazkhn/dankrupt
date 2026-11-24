@@ -58,6 +58,10 @@ body {
     radial-gradient(ellipse at 30% 0%, rgba(255, 236, 200, 0.35), transparent 60%);
 }
 
+.cardboard.is-dark {
+  background-color: #b07d45;
+}
+
 /* A taped box seam across cardboard. */
 .box-seam {
   height: 0;
