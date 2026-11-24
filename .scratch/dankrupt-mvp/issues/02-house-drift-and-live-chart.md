@@ -4,7 +4,7 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** done: drift, noise, VWAP target and vol spread in the engine; 1-minute mid-price candles persisted; websocket feed; candy candle chart. Shortcut: the gateway runs in-process (no Redis yet); split it out with Redis in ticket 20.
 
 - [ ] Ticks are applied on a 2-second grid from event timestamps and never stored. Replay reproduces the price path exactly.
 - [ ] The drift follows PRD §6.3: T = F^0.7 · V^0.3, where V is the 24-hour VWAP of all fills, or F if there were none. Noise is σ_n = 0.3% per √hour × clip(H, 0.2, 5), from a seeded per-meme generator.

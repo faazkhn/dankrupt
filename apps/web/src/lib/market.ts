@@ -2,7 +2,17 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-export type MemeQuote = { memeId: string; name: string; price: number; bid: number; ask: number };
+export type MarketRow = {
+  memeId: string;
+  name: string;
+  ltp: number | null;
+  mid: number;
+  bid: number;
+  ask: number;
+  change24h: number;
+  spark: number[];
+};
+export type Candle = { minute: number; open: number; high: number; low: number; close: number; volume: number };
 export type Me = { accountId: string; cash: number; shares: Record<string, number> };
 export type Fill = { memeId: string; side: "buy" | "sell"; qty: number; cost: number; fee: number; price: number };
 
@@ -13,40 +23,67 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
   return data as T;
 }
 
-/**
- * Polls quotes. Keeps a short per-session price history for sparklines.
- * shortcut: polling every 2s; ticket 02 swaps this for the websocket feed.
- */
-export function useMarket(intervalMs = 2000) {
-  const [memes, setMemes] = useState<MemeQuote[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [history, setHistory] = useState<ReadonlyMap<string, number[]>>(new Map());
+const wsUrl = () => process.env.NEXT_PUBLIC_WS_URL ?? `ws://${window.location.hostname}:4000/ws`;
 
-  const refresh = useCallback(async () => {
-    try {
-      const list = await api<MemeQuote[]>("memes");
-      setHistory((prev) => {
-        const next = new Map(prev);
-        for (const m of list) {
-          const h = prev.get(m.memeId) ?? [];
-          next.set(m.memeId, h.at(-1) === m.price ? h : [...h, m.price].slice(-120));
-        }
-        return next;
-      });
-      setMemes(list);
-      setError(null);
-    } catch (e) {
-      setError((e as Error).message);
-    }
+/** Live market rows over the websocket; falls back to polling if the socket can't connect. */
+export function useMarkets() {
+  const [rows, setRows] = useState<Map<string, MarketRow> | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const merge = useCallback((incoming: MarketRow[]) => {
+    setRows((prev) => {
+      const next = new Map(prev ?? []);
+      for (const r of incoming) next.set(r.memeId, r);
+      return next;
+    });
   }, []);
 
   useEffect(() => {
-    const first = setTimeout(refresh, 0);
-    const id = setInterval(refresh, intervalMs);
-    return () => (clearTimeout(first), clearInterval(id));
-  }, [refresh, intervalMs]);
+    let ws: WebSocket | null = null;
+    let poll: ReturnType<typeof setInterval> | null = null;
+    let closed = false;
+    const startPolling = () => {
+      if (poll) return;
+      const tick = () =>
+        api<MarketRow[]>("markets")
+          .then((r) => (merge(r), setError(null)))
+          .catch((e: Error) => setError(e.message));
+      tick();
+      poll = setInterval(tick, 2_000);
+    };
+    const connect = () => {
+      ws = new WebSocket(wsUrl());
+      ws.onmessage = (m) => {
+        const msg = JSON.parse(m.data);
+        if (msg.type !== "markets") return;
+        merge(msg.rows);
+        setError(null);
+      };
+      ws.onerror = () => startPolling();
+      ws.onclose = () => {
+        if (!closed) setTimeout(connect, 3_000);
+      };
+    };
+    connect();
+    return () => {
+      closed = true;
+      ws?.close();
+      if (poll) clearInterval(poll);
+    };
+  }, [merge]);
 
-  return { memes, error, refresh, history };
+  return { rows, list: rows ? [...rows.values()] : null, error };
+}
+
+export function useCandles(memeId: string, refreshMs = 15_000) {
+  const [candles, setCandles] = useState<Candle[]>([]);
+  useEffect(() => {
+    const load = () => api<Candle[]>(`candles?memeId=${encodeURIComponent(memeId)}`).then(setCandles).catch(() => {});
+    const first = setTimeout(load, 0);
+    const id = setInterval(load, refreshMs);
+    return () => (clearTimeout(first), clearInterval(id));
+  }, [memeId, refreshMs]);
+  return candles;
 }
 
 export function useMe() {
@@ -76,4 +113,6 @@ export async function placeOrder(memeId: string, side: "buy" | "sell", qty: numb
 }
 
 export const fmt = (n: number, digits = 2) =>
-  n.toLocaleString("en-IN", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  n.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+export const fmtInt = (n: number) => n.toLocaleString("en-US");
+export const fmtPct = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`;

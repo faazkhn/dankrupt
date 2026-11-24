@@ -16,7 +16,7 @@ export const viewport: Viewport = { themeColor: "#c8955b" };
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${lilita.variable} ${nunito.variable} h-full antialiased`}>
-      <body className="cardboard flex min-h-full flex-col">{children}</body>
+      <body className="cardboard isolate flex min-h-full flex-col">{children}</body>
     </html>
   );
 }

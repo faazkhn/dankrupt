@@ -1,5 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { COIN } from "@dankrupt/engine";
+import type { Feed } from "./feed.ts";
 import type { Sequencer } from "./sequencer.ts";
 
 const ID = /^[a-z0-9_-]{1,32}$/;
@@ -45,7 +46,7 @@ export function parseOrder(input: unknown): { memeId: string; side: "buy" | "sel
   return { memeId: o.memeId, side: o.side, qty: o.qty as number };
 }
 
-export function createApi(seq: Sequencer) {
+export function createApi(seq: Sequencer, feed?: Feed) {
   const e = seq.engine;
   const coins = (uc: number) => uc / COIN;
 
@@ -62,6 +63,12 @@ export function createApi(seq: Sequencer) {
 
     if (req.method === "GET" && url.pathname === "/api/health") return send(200, { ok: true, seq: e.seq });
     if (req.method === "GET" && url.pathname === "/api/memes") return send(200, e.memes());
+    if (req.method === "GET" && url.pathname === "/api/markets") return send(200, feed?.markets() ?? []);
+    if (req.method === "GET" && url.pathname === "/api/candles") {
+      const memeId = url.searchParams.get("memeId") ?? "";
+      if (!ID.test(memeId)) throw new HttpError(400, "memeId is required");
+      return send(200, feed?.candles(memeId) ?? []);
+    }
 
     const me = playerId(req);
     if (!me) throw new HttpError(401, "sign in first");

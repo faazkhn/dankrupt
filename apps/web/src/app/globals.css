@@ -142,6 +142,43 @@ body {
 .btn-candy.is-secondary {
   background-color: var(--sky);
 }
+.btn-candy.is-buy {
+  background-color: var(--leaf);
+}
+.btn-candy.is-sell {
+  background-color: #ff7b6b;
+}
+.btn-candy.is-small {
+  min-height: 48px;
+  min-width: 48px;
+  padding: 0 0.75rem;
+  border-radius: 14px;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 0 var(--ink);
+}
+.btn-candy.is-muted {
+  background-color: var(--paper-shade);
+  background-image: none;
+  color: var(--ink-soft);
+  box-shadow: 0 2px 0 var(--ink);
+}
+
+/* Round yellow sticker (coin balance, badges). */
+.sticker {
+  background: #ffd23f;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.45), transparent 60%);
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 3px 0 var(--ink);
+}
+
+/* Lined ledger paper for tables. */
+.ledger {
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(90deg, transparent 2.6rem, rgba(216, 52, 44, 0.35) 2.6rem 2.75rem, transparent 2.75rem),
+    repeating-linear-gradient(180deg, transparent 0 calc(4.5rem - 2px), rgba(89, 195, 232, 0.35) calc(4.5rem - 2px) 4.5rem);
+}
 
 :focus-visible {
   outline: 4px solid var(--sky);

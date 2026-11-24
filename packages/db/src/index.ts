@@ -45,6 +45,16 @@ const MIGRATIONS: string[] = [
    )`,
   `create index journal_seq on journal (seq)`,
   `create index journal_account on journal (account, commodity)`,
+  `create table candles_1m (
+     meme_id text not null,
+     minute timestamptz not null,
+     open double precision not null,
+     high double precision not null,
+     low double precision not null,
+     close double precision not null,
+     volume bigint not null default 0,
+     primary key (meme_id, minute)
+   )`,
 ];
 
 /** Applies pending migrations in order; safe to call on every boot. */

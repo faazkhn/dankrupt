@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 
 const ENGINE = process.env.ENGINE_URL ?? "http://localhost:4000";
-const ALLOWED = new Set(["health", "memes", "me", "orders"]);
+const ALLOWED = new Set(["health", "memes", "markets", "candles", "me", "orders"]);
 
 /** Forwards a fixed set of engine API calls, attaching the player's identity from their cookie. */
 async function proxy(req: Request, { params }: { params: Promise<{ path: string[] }> }) {
@@ -9,7 +9,7 @@ async function proxy(req: Request, { params }: { params: Promise<{ path: string[
   if (path.length !== 1 || !ALLOWED.has(path[0])) return Response.json({ error: "not found" }, { status: 404 });
   const user = (await cookies()).get("dk_dev_user")?.value;
   try {
-    const res = await fetch(`${ENGINE}/api/${path[0]}`, {
+    const res = await fetch(`${ENGINE}/api/${path[0]}${new URL(req.url).search}`, {
       method: req.method,
       headers: { "content-type": "application/json", ...(user ? { "x-dev-user": user } : {}) },
       body: req.method === "POST" ? await req.text() : undefined,

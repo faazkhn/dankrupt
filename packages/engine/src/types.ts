@@ -4,7 +4,7 @@ export const COIN = 1_000_000;
 export type Side = "buy" | "sell";
 
 export type EventBody =
-  | { type: "meme.list"; memeId: string; name: string; price: number; depth: number }
+  | { type: "meme.list"; memeId: string; name: string; price: number; depth: number; fairValue?: number }
   | { type: "account.open"; accountId: string }
   | { type: "order.market"; accountId: string; memeId: string; side: Side; qty: number };
 
@@ -30,4 +30,7 @@ export type Fill = {
 
 export type Reject = { seq: number; reason: string };
 
-export type Output = { fills: Fill[]; journal: JournalLine[]; rejects: Reject[] };
+/** House quote after a tick or a fill. */
+export type PriceUpdate = { memeId: string; time: number; price: number; bid: number; ask: number };
+
+export type Output = { fills: Fill[]; journal: JournalLine[]; rejects: Reject[]; prices: PriceUpdate[] };
