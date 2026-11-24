@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { BellIcon, CoinsIcon } from "@phosphor-icons/react";
+import { BellIcon, CoinsIcon, TrophyIcon } from "@phosphor-icons/react";
 import banner from "../../public/banner.webp";
 import { fmt, getNotices, markNoticesRead, type Me, type Notice } from "@/lib/market";
 import { Backdrop } from "./Backdrop";
@@ -27,6 +27,9 @@ export function TradeHeader({ me }: { me: Me | null }) {
                 <CoinsIcon weight="fill" className="size-5" aria-hidden="true" />
                 <span className="sr-only">Equity:</span>
                 {fmt(me.equity)}
+              </Link>
+              <Link href="/leaderboard" aria-label="Leaderboards" className="btn-candy is-small px-3">
+                <TrophyIcon weight="fill" className="size-5" aria-hidden="true" />
               </Link>
               <Notices />
               <Link href="/me" className="outline-text font-display hidden text-xl sm:inline">

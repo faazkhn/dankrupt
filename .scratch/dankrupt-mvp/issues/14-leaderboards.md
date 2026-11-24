@@ -4,7 +4,7 @@
 
 **Blocked by:** 08
 
-**Status:** ready-for-agent
+**Status:** done: TWR chained across resets (before/after snapshots), IST daily/weekly windows, all-time, style boards by median round-trip holding time, 5-trade minimum; leaderboard page with your rank; trophy button in the header.
 
 - [ ] TWR chains equity returns between cash events (resets). The all-time board compounds across resets, so a wipeout's −100% stays on the record.
 - [ ] A trade is a flat-to-flat round trip. Style is the median holding time of the window's trades: under 1 hour, 1 hour to 3 days, or over 3 days.

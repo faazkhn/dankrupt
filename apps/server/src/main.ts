@@ -12,13 +12,15 @@ const seed: SeedMeme[] = JSON.parse(readFileSync(new URL("../seed/memes.json", i
 const feed = await Feed.create(db);
 const projections = new Projections(db);
 const seq = await Sequencer.boot(db, seed, [feed.onApplied, projections.onApplied]);
+await projections.flush();
+await projections.snapshotEquity(seq.engine); // a fresh point for every account at boot
 projections.start(seq.engine);
 await seq.clock(); // catch the house up on the time the server was down
 seq.startClock(1_000);
 const signals = new Signals(db, seq, wikipediaClient());
 for (const m of seed) await signals.mapSources(m.memeId, m.wikipedia ?? []);
 signals.start();
-const server = createApi(seq, feed, signals, projections);
+const server = createApi(seq, feed, signals, projections, db);
 feed.attach(server);
 const port = Number(process.env.PORT ?? 4000);
 server.listen(port, () => console.log(`dankrupt engine on :${port}, replayed to seq ${seq.engine.seq}`));

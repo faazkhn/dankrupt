@@ -13,7 +13,19 @@ export class Projections {
     this.db = db;
   }
 
-  readonly onApplied = (_ev: EngineEvent | null, out: Output) => {
+  readonly onApplied = (ev: EngineEvent | null, out: Output) => {
+    if (ev?.type === "account.open" && !out.rejects.length) {
+      // Every TWR chain needs a starting point: the starting cash, at the moment the account opened.
+      const time = ev.time;
+      const id = ev.accountId;
+      this.queue = this.queue.then(() =>
+        this.db.query(
+          `insert into equity_snapshots (account_id, time, equity, cash_event) select $1, to_timestamp($2 / 1000.0), $3, 'open'
+           where not exists (select 1 from equity_snapshots where account_id = $1 and time <= to_timestamp($2 / 1000.0))`,
+          [id, time, out.journal.find((l) => l.account === `player:${id}`)?.amount ?? 0],
+        ),
+      );
+    }
     if (!out.notices.length && !out.closed.length) return;
     const notices = [...out.notices];
     const closed = [...out.closed];

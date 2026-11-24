@@ -158,6 +158,9 @@ export async function resetAccount() {
 }
 
 export const getProfile = () => api<Profile>("profile");
+export type BoardRow = { rank: number; accountId: string; twr: number; style: "scalper" | "swing" | "trend"; trades: number; resets: number };
+export const getLeaderboard = (window: string, style: string | null) =>
+  api<BoardRow[]>(`leaderboard?window=${window}${style ? `&style=${style}` : ""}`);
 export const getNotices = () => api<Notice[]>("notices");
 export const markNoticesRead = () => api<{ ok: boolean }>("notices/read", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
 

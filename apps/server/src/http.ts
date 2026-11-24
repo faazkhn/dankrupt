@@ -1,5 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import type { Db } from "@dankrupt/db";
 import { COIN } from "@dankrupt/engine";
+import { leaderboard, type Style, type Window } from "./board.ts";
 import type { Feed } from "./feed.ts";
 import type { Projections } from "./projections.ts";
 import type { Sequencer } from "./sequencer.ts";
@@ -77,7 +79,7 @@ export function parseOrder(input: unknown): OrderRequest {
   return out;
 }
 
-export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projections?: Projections) {
+export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projections?: Projections, boardDb?: Db) {
   const e = seq.engine;
   const coins = (uc: number) => uc / COIN;
   const memeParam = (url: URL) => {
@@ -124,6 +126,14 @@ export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projec
     if (req.method === "GET" && url.pathname === "/api/attention") {
       const memeId = memeParam(url);
       return send(200, signals ? await signals.attention(memeId) : { wikipediaDaily: [], series: [], delayed: true, heat: null, momentum: null });
+    }
+    if (req.method === "GET" && url.pathname === "/api/leaderboard") {
+      const w = (url.searchParams.get("window") ?? "daily") as Window;
+      const st = url.searchParams.get("style") as Style | null;
+      if (!["daily", "weekly", "alltime"].includes(w)) throw new HttpError(400, "window must be daily, weekly or alltime");
+      if (st && !["scalper", "swing", "trend"].includes(st)) throw new HttpError(400, "style must be scalper, swing or trend");
+      if (!boardDb) return send(200, []);
+      return send(200, await leaderboard(boardDb, e, w, st));
     }
     if (req.method === "GET" && url.pathname === "/api/book") {
       const memeId = memeParam(url);
