@@ -11,6 +11,15 @@ export type MarketRow = {
   ask: number;
   change24h: number;
   spark: number[];
+  fair: number;
+  heat: number;
+};
+export type Attention = {
+  wikipediaDaily: { day: string; views: number }[];
+  series: { time: number; heat: number; fair: number }[];
+  delayed: boolean;
+  heat: number | null;
+  momentum: number | null;
 };
 export type Candle = { minute: number; open: number; high: number; low: number; close: number; volume: number };
 export type OpenOrder = { orderId: number; kind: "limit" | "stop"; memeId: string; side: "buy" | "sell"; price: number; qty: number; expiresAt: number | null };
@@ -152,6 +161,17 @@ export function usePreview(t: OrderTicket | null, enabled: boolean) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `key` is the ticket's identity
   }, [key, enabled]);
   return preview;
+}
+
+export function useAttention(memeId: string) {
+  const [data, setData] = useState<Attention | null>(null);
+  useEffect(() => {
+    const load = () => api<Attention>(`attention?memeId=${encodeURIComponent(memeId)}`).then(setData).catch(() => {});
+    const first = setTimeout(load, 0);
+    const id = setInterval(load, 5 * 60_000);
+    return () => (clearTimeout(first), clearInterval(id));
+  }, [memeId]);
+  return data;
 }
 
 export function useBook(memeId: string, refreshMs = 2_000) {

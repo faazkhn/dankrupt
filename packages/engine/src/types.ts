@@ -29,7 +29,9 @@ export type EventBody =
       /** Fires a market order when the mid reaches this price (buy: at or above; sell: at or below). */
       stopPrice: number;
     }
-  | { type: "order.cancel"; accountId: string; orderId: number };
+  | { type: "order.cancel"; accountId: string; orderId: number }
+  /** A new fair value and heat from the attention pipeline (PRD §5). */
+  | { type: "meme.features"; memeId: string; fairValue: number; heat: number };
 
 /** Every input carries a global sequence number and a sequencer-assigned timestamp (ms). */
 export type EngineEvent = EventBody & { seq: number; time: number };

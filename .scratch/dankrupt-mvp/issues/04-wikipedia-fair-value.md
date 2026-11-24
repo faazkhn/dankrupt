@@ -4,7 +4,7 @@
 
 **Blocked by:** 02; and the data-source terms research in `docs/research/data-source-terms.md`, whose constraints this ticket must follow.
 
-**Status:** ready-for-agent
+**Status:** done: Wikipedia daily ingest (rate-limited, 429 backoff, 60-day backfill), pure features module (fixed baselines, EWMAs, momentum, heat, fair value, staleness), meme.features events drive the drift target, heat-scaled depth and noise; fair-value line, attention card, trending sort. Before launch, set WIKI_USER_AGENT with a contact URL or email (Wikimedia policy).
 
 - [ ] The signal map comes from the seed file. Ingest sends a descriptive User-Agent, makes calls one at a time with about 1 second between them (well within 200 a minute and 3 at once), and stores raw counts.
 - [ ] Day D counts as missing only if it still hasn't loaded by 00:00 UTC on D+2, so the normal next-day lag never marks Wikipedia stale. Before that cutoff, a 404 means "not loaded yet". After it, a missing day counts as zero views, because the API leaves zero days out.

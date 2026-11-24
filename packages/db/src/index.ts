@@ -69,6 +69,19 @@ const MIGRATIONS: string[] = [
    )`,
   `create index journal_time on journal (time)`,
   `create index journal_account2 on journal (account, commodity)`,
+  `create table meme_signal_map (
+     meme_id text not null,
+     source text not null,
+     ref text not null,
+     primary key (meme_id, source, ref)
+   )`,
+  `create table signal_raw (
+     meme_id text not null,
+     source text not null,
+     day date not null,
+     count bigint not null,
+     primary key (meme_id, source, day)
+   )`,
 ];
 
 /** Applies pending migrations in order; safe to call on every boot. */

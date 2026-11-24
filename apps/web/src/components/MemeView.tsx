@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowLeftIcon, TrendDownIcon, TrendUpIcon } from "@phosphor-icons/react";
+import { AttentionCard } from "@/components/AttentionCard";
 import { CandleChart } from "@/components/CandleChart";
 import { OpenOrdersCard } from "@/components/OpenOrdersCard";
 import { OrderBookCard } from "@/components/OrderBookCard";
@@ -63,9 +64,10 @@ export function MemeView({ memeId }: { memeId: string }) {
                 {meme?.ltp == null ? "No trades yet: showing the mid price" : "Last traded price"}
                 {meme && ` · Bid ${fmt(meme.bid)} · Ask ${fmt(meme.ask)}`}
               </p>
-              <CandleChart candles={candles} className="mt-4 min-h-48" />
+              <CandleChart candles={candles} fair={meme?.fair} className="mt-4 min-h-48" />
               <p className="mt-1 text-xs font-bold text-ink-soft">The chart follows the mid price between the best bid and ask, one candle per minute.</p>
             </div>
+            <AttentionCard memeId={memeId} fair={meme?.fair} />
             <OrderBookCard book={book} onPick={setPicked} />
           </section>
 

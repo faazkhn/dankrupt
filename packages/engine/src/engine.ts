@@ -27,6 +27,7 @@ export const DEFAULT_PARAMS: Params = {
 };
 
 const MINUTE = 60_000;
+const clipHeat = (h: number) => Math.min(5, Math.max(0.2, h));
 const DAY = 86_400_000;
 const INF = Number.POSITIVE_INFINITY;
 
@@ -51,8 +52,13 @@ type Meme = {
   name: string;
   curve: Curve;
   spread: number;
-  /** Data-driven fair value F. Fixed from listing until signals arrive (ticket 04). */
+  /** Data-driven fair value F, from `meme.features` events (the listing price until the first one). */
   fairValue: number;
+  /** Heat H (PRD §5 step 4); 1 until the first features update. Scales depth and noise. */
+  heat: number;
+  /** Y₀: depth in coins at heat 1, from the listing. */
+  depth0: number;
+  listedAt: number;
   rng: number;
   /** Last 61 one-minute closes of the house price, for realised volatility. */
   closes: number[];
@@ -147,10 +153,10 @@ export class Engine {
 
   // ---------- reads ----------
 
-  meme(memeId: string): PriceUpdate & { name: string } {
+  meme(memeId: string): PriceUpdate & { name: string; fairValue: number; heat: number; listedAt: number } {
     const m = this.s.memes[memeId];
     if (!m) throw new Error(`unknown meme ${memeId}`);
-    return { ...this.quote(m, this.s.time), name: m.name };
+    return { ...this.quote(m, this.s.time), name: m.name, fairValue: m.fairValue, heat: m.heat ?? 1, listedAt: m.listedAt ?? 0 };
   }
 
   memes() {
@@ -268,7 +274,7 @@ export class Engine {
     const [z, rng] = normal(m.rng);
     m.rng = rng;
     const pull = 1 - 2 ** (-dtH / P.driftHalfLifeHours);
-    const heat = 1; // shortcut: heat arrives with signals (ticket 04); until then noise and depth use H = 1
+    const heat = clipHeat(m.heat ?? 1);
     let lnP = Math.log(m.curve.price);
     lnP += pull * (Math.log(target) - lnP) + P.noisePerSqrtHour * heat * Math.sqrt(dtH) * z;
     m.curve.price = Math.max(PRICE_FLOOR, Math.exp(lnP));
@@ -328,6 +334,9 @@ export class Engine {
           curve: { price: ev.price, L: depthToL(ev.depth, ev.price) },
           spread: this.s.params.spreadBase,
           fairValue: ev.fairValue ?? ev.price,
+          heat: 1,
+          depth0: ev.depth,
+          listedAt: ev.time,
           rng: seedFrom(ev.memeId),
           closes: [],
           vwap: [],
@@ -396,6 +405,19 @@ export class Engine {
         m.stops.push({ orderId: ev.seq, accountId: a.accountId, memeId: m.memeId, side: ev.side, stop: px / COIN, qty: ev.qty });
         this.s.orderIndex[ev.seq] = m.memeId;
         out.orders.push({ orderId: ev.seq, accountId: a.accountId, memeId: m.memeId, status: "open", remaining: ev.qty });
+        return out;
+      }
+      case "meme.features": {
+        const m = this.s.memes[ev.memeId];
+        if (!m) return reject("unknown meme");
+        if (!(ev.fairValue > 0) || !(ev.heat >= 0)) return reject("fair value and heat must be positive");
+        m.fairValue = Math.max(1, ev.fairValue);
+        m.heat = ev.heat;
+        // Depth follows heat (PRD §6.2): Y = Y₀ · clip(H, 0.2, 5). Rescale L with the price held fixed; not a trade.
+        m.curve.L = depthToL((m.depth0 ?? 500_000) * clipHeat(ev.heat), m.curve.price);
+        this.noCross(em, m);
+        this.triggerStops(em, m);
+        out.prices.push(this.quote(m, ev.time));
         return out;
       }
       case "order.cancel": {

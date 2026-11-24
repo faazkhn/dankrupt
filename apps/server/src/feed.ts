@@ -18,6 +18,9 @@ export type MarketRow = {
   change24h: number;
   /** Up to 60 recent one-minute closes, oldest first. */
   spark: number[];
+  /** Data-driven fair value and heat (PRD §5). */
+  fair: number;
+  heat: number;
 };
 
 /**
@@ -31,6 +34,7 @@ export class Feed {
   private names = new Map<string, string>();
   private latest = new Map<string, PriceUpdate>();
   private ltp = new Map<string, number>();
+  private features = new Map<string, { fair: number; heat: number }>();
   private dirty = new Set<string>();
   private pending: Candle[] = [];
   private persistedThrough: number;
@@ -48,7 +52,14 @@ export class Feed {
   }
 
   readonly onApplied = (ev: EngineEvent | null, out: Output) => {
-    if (ev?.type === "meme.list") this.names.set(ev.memeId, ev.name);
+    if (ev?.type === "meme.list") {
+      this.names.set(ev.memeId, ev.name);
+      this.features.set(ev.memeId, { fair: ev.fairValue ?? ev.price, heat: 1 });
+    }
+    if (ev?.type === "meme.features") {
+      this.features.set(ev.memeId, { fair: ev.fairValue, heat: ev.heat });
+      this.dirty.add(ev.memeId);
+    }
     for (const t of out.trades) {
       this.ltp.set(t.memeId, t.price);
       this.book.fill(t.memeId, t.time, t.qty);
@@ -95,6 +106,8 @@ export class Feed {
         ask: p.ask,
         change24h: ((p.mid - ref) / ref) * 100,
         spark,
+        fair: this.features.get(p.memeId)?.fair ?? p.price,
+        heat: this.features.get(p.memeId)?.heat ?? 1,
       };
     });
   }

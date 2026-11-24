@@ -2,6 +2,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from "node:ht
 import { COIN } from "@dankrupt/engine";
 import type { Feed } from "./feed.ts";
 import type { Sequencer } from "./sequencer.ts";
+import type { Signals } from "./signals.ts";
 
 const ID = /^[a-z0-9_-]{1,32}$/;
 
@@ -75,7 +76,7 @@ export function parseOrder(input: unknown): OrderRequest {
   return out;
 }
 
-export function createApi(seq: Sequencer, feed?: Feed) {
+export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals) {
   const e = seq.engine;
   const coins = (uc: number) => uc / COIN;
   const memeParam = (url: URL) => {
@@ -112,6 +113,10 @@ export function createApi(seq: Sequencer, feed?: Feed) {
     if (req.method === "GET" && url.pathname === "/api/memes") return send(200, e.memes());
     if (req.method === "GET" && url.pathname === "/api/markets") return send(200, feed?.markets() ?? []);
     if (req.method === "GET" && url.pathname === "/api/candles") return send(200, feed?.candles(memeParam(url)) ?? []);
+    if (req.method === "GET" && url.pathname === "/api/attention") {
+      const memeId = memeParam(url);
+      return send(200, signals ? await signals.attention(memeId) : { wikipediaDaily: [], series: [], delayed: true, heat: null, momentum: null });
+    }
     if (req.method === "GET" && url.pathname === "/api/book") {
       const memeId = memeParam(url);
       if (!e.memes().some((m) => m.memeId === memeId)) throw new HttpError(404, "no such meme");

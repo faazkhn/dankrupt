@@ -66,3 +66,19 @@ describe("house drift toward target (PRD §6.3)", () => {
     expect(e.meme("m").price).toBeGreaterThan(100);
   });
 });
+
+describe("features updates (ticket 04)", () => {
+  test("a new fair value becomes the drift target; heat 5 makes the house 5× deeper", () => {
+    const e = listed(quiet, 100);
+    e.apply({ seq: 2, time: 0, type: "meme.features", memeId: "m", fairValue: 150, heat: 5 });
+    e.advance(6 * HOUR);
+    expect(e.meme("m").price).toBeCloseTo(122.47, 1);
+    // 10,000 coins move a heat-5 meme by (1 + 10k / 2.5M)² ≈ +0.8% instead of +4%
+    e.apply({ seq: 3, time: 6 * HOUR, type: "account.open", accountId: "a" });
+    const before = e.meme("m").price;
+    e.apply({ seq: 4, time: 6 * HOUR, type: "order.market", accountId: "a", memeId: "m", side: "buy", qty: 80 });
+    const move = e.meme("m").price / before - 1;
+    expect(move).toBeLessThan(0.01);
+    expect(move).toBeGreaterThan(0.005);
+  });
+});

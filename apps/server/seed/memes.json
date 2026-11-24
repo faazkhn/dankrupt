@@ -1,5 +1,13 @@
 [
-  { "memeId": "stonks", "name": "Stonks", "price": 100, "depth": 500000 },
-  { "memeId": "this-is-fine", "name": "This Is Fine", "price": 100, "depth": 500000 },
-  { "memeId": "distracted-boyfriend", "name": "Distracted Boyfriend", "price": 100, "depth": 500000 }
+  { "memeId": "stonks", "name": "Stonks", "price": 100, "depth": 500000, "wikipedia": ["Stonk"] },
+  { "memeId": "this-is-fine", "name": "This Is Fine", "price": 100, "depth": 500000, "wikipedia": ["This Is Fine"] },
+  { "memeId": "distracted-boyfriend", "name": "Distracted Boyfriend", "price": 100, "depth": 500000, "wikipedia": ["Distracted boyfriend"] },
+  { "memeId": "moo-deng", "name": "Moo Deng", "price": 100, "depth": 500000, "wikipedia": ["Moo Deng"] },
+  { "memeId": "italian-brainrot", "name": "Italian Brainrot", "price": 100, "depth": 500000, "wikipedia": ["Italian brainrot"] },
+  { "memeId": "wojak", "name": "Wojak", "price": 100, "depth": 500000, "wikipedia": ["Wojak"] },
+  { "memeId": "trollface", "name": "Trollface", "price": 100, "depth": 500000, "wikipedia": ["Trollface"] },
+  { "memeId": "doge", "name": "Doge", "price": 100, "depth": 500000, "wikipedia": ["Doge (meme)"] },
+  { "memeId": "rickroll", "name": "Rickroll", "price": 100, "depth": 500000, "wikipedia": ["Rickrolling"] },
+  { "memeId": "nyan-cat", "name": "Nyan Cat", "price": 100, "depth": 500000, "wikipedia": ["Nyan Cat"] },
+  { "memeId": "brain-rot", "name": "Brain Rot", "price": 100, "depth": 500000, "wikipedia": ["Brain rot"] }
 ]

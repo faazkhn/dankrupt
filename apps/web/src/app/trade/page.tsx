@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import {
   CaretRightIcon,
+  FlameIcon,
   TrendDownIcon,
   TrendUpIcon,
   WarningCircleIcon,
@@ -14,7 +16,8 @@ import { fmt, fmtInt, fmtPct, useMarkets, useMe } from "@/lib/market";
 export default function Markets() {
   const { list, error } = useMarkets();
   const { me, status } = useMe();
-  const rows = list?.toSorted((a, b) => b.change24h - a.change24h);
+  const [sort, setSort] = useState<"trending" | "movers">("trending");
+  const rows = list?.toSorted((a, b) => (sort === "trending" ? b.heat - a.heat : Math.abs(b.change24h) - Math.abs(a.change24h)));
 
   return (
     <>
@@ -53,7 +56,26 @@ export default function Markets() {
             </p>
           )}
 
-          <div className="paper ledger mt-6 -rotate-[0.3deg] overflow-hidden p-0">
+          <div role="tablist" aria-label="Sort markets" className="mt-6 flex gap-3">
+            {(
+              [
+                ["trending", "Trending"],
+                ["movers", "Top movers"],
+              ] as const
+            ).map(([k, label]) => (
+              <button
+                key={k}
+                role="tab"
+                aria-selected={sort === k}
+                onClick={() => setSort(k)}
+                className={`btn-candy is-small px-4 ${sort === k ? "" : "is-muted"}`}
+              >
+                {k === "trending" && <FlameIcon weight="fill" aria-hidden="true" />} {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="paper ledger mt-4 -rotate-[0.3deg] overflow-hidden p-0">
             <div className="grid grid-cols-[1fr_3.5rem_auto_auto] items-center gap-2 border-b-[3px] border-ink bg-paper-shade py-2 pr-3 pl-12 text-sm font-black tracking-wide text-ink-soft uppercase sm:grid-cols-[1fr_7rem_6.5rem_6rem_1.5rem] sm:gap-3 sm:pl-14">
               <span>Meme</span>
               <span className="sr-only sm:not-sr-only">24h chart</span>
@@ -82,8 +104,9 @@ export default function Markets() {
                       className="group grid min-h-[4.5rem] grid-cols-[1fr_3.5rem_auto_auto] items-center gap-2 pr-3 pl-12 transition-colors hover:bg-[#fff3d6] sm:grid-cols-[1fr_7rem_6.5rem_6rem_1.5rem] sm:gap-3 sm:pl-14"
                     >
                       <span className="min-w-0">
-                        <span className="font-display block text-lg leading-tight [overflow-wrap:anywhere] sm:text-2xl">
+                        <span className="font-display flex items-center gap-1.5 text-lg leading-tight [overflow-wrap:anywhere] sm:text-2xl">
                           {m.name}
+                          {m.heat > 1.5 && <FlameIcon weight="fill" className="size-5 shrink-0 text-candy" aria-label="Hot right now" />}
                         </span>
                         <span
                           className={`text-xs font-bold text-ink-soft ${held > 0 ? "block" : "hidden sm:block"}`}

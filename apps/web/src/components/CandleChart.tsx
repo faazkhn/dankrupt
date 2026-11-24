@@ -12,7 +12,7 @@ const PAD = { l: 8, r: 56, t: 12, b: 22 };
  * Candy-striped 1-minute candlesticks of the mid price. Tap or hover a candle to read its numbers.
  * Up candles are green-striped, down candles red-striped; the readout states it in words too.
  */
-export function CandleChart({ candles, className = "" }: { candles: Candle[]; className?: string }) {
+export function CandleChart({ candles, fair, className = "" }: { candles: Candle[]; fair?: number; className?: string }) {
   const [pick, setPick] = useState<number | null>(null);
   if (candles.length < 2)
     return (
@@ -22,8 +22,12 @@ export function CandleChart({ candles, className = "" }: { candles: Candle[]; cl
     );
 
   const data = candles.slice(-90);
-  const lo = Math.min(...data.map((c) => c.low));
-  const hi = Math.max(...data.map((c) => c.high));
+  // Keep fair value in view when it's near the action, but don't let a far-off one squash the candles.
+  const lows = data.map((c) => c.low);
+  const highs = data.map((c) => c.high);
+  const near = fair !== undefined && fair > Math.min(...lows) * 0.8 && fair < Math.max(...highs) * 1.25;
+  const lo = Math.min(...lows, ...(near ? [fair] : []));
+  const hi = Math.max(...highs, ...(near ? [fair] : []));
   const span = hi - lo || hi * 0.01 || 1;
   const y = (v: number) => PAD.t + (1 - (v - lo) / span) * (H - PAD.t - PAD.b);
   const step = (W - PAD.l - PAD.r) / data.length;
@@ -68,6 +72,14 @@ export function CandleChart({ candles, className = "" }: { candles: Candle[]; cl
             </text>
           </g>
         ))}
+        {near && fair !== undefined && (
+          <g>
+            <line x1={PAD.l} x2={W - PAD.r} y1={y(fair)} y2={y(fair)} stroke="#ff7a2f" strokeWidth="2.5" strokeDasharray="3 7" strokeLinecap="round" />
+            <text x={PAD.l + 4} y={y(fair) - 6} fontSize="12" fontWeight="800" fill="#d9561a">
+              fair value {fmt(fair)}
+            </text>
+          </g>
+        )}
         {data.map((c, i) => {
           const x = PAD.l + i * step + step / 2;
           const isUp = c.close >= c.open;
