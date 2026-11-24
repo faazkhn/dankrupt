@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done: engine, sequencer with event log and replay, API, and a dev-login trading page. The engine library holds all the exchange rules; events are persisted before they are applied.
 
 - [ ] Memes are seeded from a file; this one has a single meme at p = 100 and Y = 500,000.
 - [ ] A market buy or sell fills against the house curve with the spread at s₀ and a 0.1% taker fee. Fill costs are integer micro-coins, rounded in the house's favour (ADR-0002).

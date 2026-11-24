@@ -1,0 +1,5 @@
+[
+  { "memeId": "stonks", "name": "Stonks", "price": 100, "depth": 500000 },
+  { "memeId": "this-is-fine", "name": "This Is Fine", "price": 100, "depth": 500000 },
+  { "memeId": "distracted-boyfriend", "name": "Distracted Boyfriend", "price": 100, "depth": 500000 }
+]
