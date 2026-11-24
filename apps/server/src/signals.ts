@@ -132,6 +132,11 @@ export class Signals {
     }
   }
 
+  /** When each meme's features were last computed (the last hour they cover). */
+  lastUpdates(): Record<string, number | null> {
+    return Object.fromEntries([...this.latest].map(([id, rows]) => [id, rows.at(-1)?.time ?? null]));
+  }
+
   /** Recent attention for the meme page: raw daily views, and hourly heat and fair value (every 3h). */
   async attention(memeId: string) {
     const { rows } = await this.db.query<{ d: string; count: number }>(

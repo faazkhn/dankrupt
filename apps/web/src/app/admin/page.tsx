@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { ArrowLeftIcon, CheckIcon, PlusIcon, XIcon } from "@phosphor-icons/react";
+import { AdminDashboard } from "@/components/AdminDashboard";
 import { TradeHeader } from "@/components/TradeHeader";
 import { adminCall, getWhoami, useMe } from "@/lib/market";
 
@@ -97,6 +98,7 @@ export default function AdminPage() {
         )}
         {allowed && (
           <>
+            <AdminDashboard />
             <AddCandidate onAdd={(c) => act(() => adminCall("candidates", c), `${c.name} is in the listing queue.`)} />
 
             <section className="paper p-6">

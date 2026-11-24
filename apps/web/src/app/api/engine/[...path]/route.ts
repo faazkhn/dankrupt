@@ -7,7 +7,7 @@ const ALLOWED = new Set(["health", "memes", "markets", "candles", "book", "atten
 async function proxy(req: Request, { params }: { params: Promise<{ path: string[] }> }) {
   const { path } = await params;
   const route = path.join("/");
-  const adminRoute = /^admin\/(candidates(\/\d+\/(approve|reject))?|params|actions|meme-meta|listed|halt)$/.test(route);
+  const adminRoute = /^admin\/(candidates(\/\d+\/(approve|reject))?|params|actions|meme-meta|listed|halt|dashboard)$/.test(route);
   if (!ALLOWED.has(route) && !adminRoute) return Response.json({ error: "not found" }, { status: 404 });
   const user = (await cookies()).get("dk_dev_user")?.value;
   try {

@@ -133,6 +133,10 @@ export class Feed {
     return [...h, ...(cur ? [cur] : [])].slice(-limit);
   }
 
+  clientCount() {
+    return this.wss?.clients.size ?? 0;
+  }
+
   /** Websocket fan-out on /ws: a full snapshot on connect, then changed rows at most once a second. */
   attach(server: Server) {
     this.wss = new WebSocketServer({ server, path: "/ws" });

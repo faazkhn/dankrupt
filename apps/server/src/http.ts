@@ -3,6 +3,7 @@ import type { Db } from "@dankrupt/db";
 import { COIN } from "@dankrupt/engine";
 import { Admin, AdminError, isOperator } from "./admin.ts";
 import { leaderboard, type Style, type Window } from "./board.ts";
+import { dashboard, Latency } from "./dashboard.ts";
 import type { InGame } from "./attention.ts";
 import type { Feed } from "./feed.ts";
 import type { Projections } from "./projections.ts";
@@ -84,6 +85,7 @@ export function parseOrder(input: unknown): OrderRequest {
 export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projections?: Projections, boardDb?: Db, admin?: Admin, ingame?: InGame) {
   const e = seq.engine;
   const coins = (uc: number) => uc / COIN;
+  const latency = new Latency();
   const memeParam = (url: URL) => {
     const memeId = url.searchParams.get("memeId") ?? "";
     if (!ID.test(memeId)) throw new HttpError(400, "memeId is required");
@@ -186,6 +188,8 @@ export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projec
           return send(200, { ok: true });
         }
         if (req.method === "GET" && path === "listed") return send(200, admin.listed());
+        if (req.method === "GET" && path === "dashboard")
+          return send(200, await dashboard(boardDb!, e, latency, { wsClients: feed?.clientCount() ?? 0, features: signals?.lastUpdates() ?? {} }));
         if (req.method === "POST" && path === "halt") {
           const b = (await body(req)) as { memeId?: unknown; reason?: unknown };
           await admin.halt(me, b.memeId, b.reason);
@@ -242,6 +246,8 @@ export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projec
       return send(200, { ...p, total: coins(p.total), fee: coins(p.fee) });
     }
     if (req.method === "POST" && url.pathname === "/api/orders") {
+      const started = performance.now();
+      res.once("finish", () => latency.record(performance.now() - started));
       const o = parseOrder(await body(req));
       await ensureAccount(me);
       const out = await seq.submit(

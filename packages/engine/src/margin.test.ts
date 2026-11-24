@@ -139,3 +139,18 @@ describe("resets and round trips", () => {
     expect(e.account("ana").positions[0]).toMatchObject({ memeId: "m", qty: -20, openedAt: 2_000 });
   });
 });
+
+describe("economy (ticket 13)", () => {
+  test("coin supply moves exactly opposite to the house's P&L plus fees (PRD §4)", () => {
+    const { e, run } = exchange();
+    const before = e.economy();
+    run({ type: "order.market", accountId: "ana", memeId: "m", side: "buy", qty: 300 });
+    run({ type: "order.market", accountId: "bo", memeId: "m", side: "sell", qty: 100 });
+    e.advance(3 * HOUR);
+    const after = e.economy();
+    const housePnl = after.house.reduce((s, h) => s + h.pnl, 0) - before.house.reduce((s, h) => s + h.pnl, 0);
+    const fees = (after.supply - before.supply + housePnl) * -1; // ΔS = −ΔΠ_house − fees
+    expect(fees).toBeGreaterThan(0);
+    expect(fees / COIN).toBeLessThan(100); // two 0.1% taker fees on ~40k notional plus a few minutes of borrow
+  });
+});

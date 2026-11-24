@@ -130,6 +130,8 @@ type Meme = {
   emaAt: number;
   longOI: number;
   shortOI: number;
+  /** Coins the house has taken in (positive) or paid out on this meme, µc. With its shares at mark, its P&L. */
+  houseCash: number;
   /** Best first: bids by price desc, asks by price asc; time priority (orderId) within a price. */
   bids: Order[];
   asks: Order[];
@@ -309,6 +311,18 @@ export class Engine {
 
   accounts() {
     return Object.keys(this.s.accounts);
+  }
+
+  /** Economy totals for the operator dashboard, µc: coin supply (player equity) and the house's P&L per meme. */
+  economy() {
+    let supply = 0;
+    for (const a of Object.values(this.s.accounts)) supply += this.risk(a).equity;
+    const house = Object.values(this.s.memes).map((m) => {
+      const shares = m.shortOI - m.longOI; // the house holds the other side of every net player position
+      const mark = m.status === "halted" ? 0 : this.mark(m);
+      return { memeId: m.memeId, name: m.name, status: m.status, cash: m.houseCash ?? 0, shares, pnl: (m.houseCash ?? 0) + shares * mark };
+    });
+    return { supply, accounts: Object.keys(this.s.accounts).length, house };
   }
 
   openOrders(accountId: string) {
@@ -593,6 +607,7 @@ export class Engine {
           emaAt: ev.time,
           longOI: 0,
           shortOI: 0,
+          houseCash: 0,
           bids: [],
           asks: [],
           stops: [],
@@ -645,6 +660,7 @@ export class Engine {
           const cash = q > 0 ? Math.floor(q * mark) : -Math.ceil(-q * mark); // settle in the house's favour by a micro-coin
           this.move(em, a, m, -q, cash);
           em.post("house", "coin", -cash);
+          m.houseCash = (m.houseCash ?? 0) - cash;
           em.post("house", `share:${m.memeId}`, q);
           em.out.notices.push({ accountId: a.accountId, time: ev.time, kind: "halt", memeId: m.memeId, text: `${m.name} was pulled (${ev.reason}). Your ${Math.abs(q)} shares settled at ${(mark / COIN).toFixed(2)}.` });
         }
@@ -946,6 +962,7 @@ export class Engine {
     m.curve.price = p1;
     this.move(em, a, m, d, -(cost + fee));
     em.post("house", "coin", cost);
+    m.houseCash = (m.houseCash ?? 0) + cost;
     em.post("sink", "coin", fee);
     em.post("house", `share:${m.memeId}`, -d);
     this.record(em, m, a, "buy", d, cost, fee, taker ? "taker" : "maker", orderId, this.houseAsk(m));
@@ -961,6 +978,7 @@ export class Engine {
     m.curve.price = p1;
     this.move(em, a, m, -d, proceeds - fee);
     em.post("house", "coin", -proceeds);
+    m.houseCash = (m.houseCash ?? 0) - proceeds;
     em.post("sink", "coin", fee);
     em.post("house", `share:${m.memeId}`, d);
     this.record(em, m, a, "sell", d, proceeds, fee, taker ? "taker" : "maker", orderId, this.houseBid(m));
