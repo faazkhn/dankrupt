@@ -52,10 +52,14 @@ describe("selling and limits", () => {
     expect(a.cash).toBeLessThan(150 * COIN); // under ~one share's price left over
   });
 
-  test("you can't sell shares you don't hold (shorting comes later)", () => {
+  test("selling shares you don't hold opens a short, as far as margin allows", () => {
     const e = setup();
-    const out = e.apply({ seq: 3, time: t0, type: "order.market", accountId: "ana", memeId: "stonks", side: "sell", qty: 1 });
-    expect(out.rejects[0].reason).toMatch(/no free shares/);
+    const out = e.apply({ seq: 3, time: t0, type: "order.market", accountId: "ana", memeId: "stonks", side: "sell", qty: 10_000 });
+    const sold = out.fills.reduce((s, f) => s + f.qty, 0);
+    expect(e.account("ana").shares.stonks).toBe(-sold);
+    // 100,000 equity at 50% initial margin shorts roughly 2,000 shares at ~100
+    expect(sold).toBeGreaterThan(1_500);
+    expect(sold).toBeLessThan(2_100);
   });
 
   test("events must arrive in sequence", () => {

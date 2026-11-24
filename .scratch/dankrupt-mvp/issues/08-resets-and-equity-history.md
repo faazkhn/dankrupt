@@ -4,7 +4,7 @@
 
 **Blocked by:** 06b
 
-**Status:** ready-for-agent
+**Status:** done (see commit "Shorting, margin, liquidation, borrow fees, resets, round trips").
 
 - [ ] Reset is offered only when E < 1,000 and the player has no positions. It cancels resting orders and sets cash to 100,000 through the mint, which writes off any negative balance.
 - [ ] A reset is a cash event. Equity is recorded just before and just after it.

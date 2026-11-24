@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { COIN } from "@dankrupt/engine";
 import type { Feed } from "./feed.ts";
+import type { Projections } from "./projections.ts";
 import type { Sequencer } from "./sequencer.ts";
 import type { Signals } from "./signals.ts";
 
@@ -76,7 +77,7 @@ export function parseOrder(input: unknown): OrderRequest {
   return out;
 }
 
-export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals) {
+export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projections?: Projections) {
   const e = seq.engine;
   const coins = (uc: number) => uc / COIN;
   const memeParam = (url: URL) => {
@@ -96,8 +97,15 @@ export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals) {
       cash: coins(a.cash),
       freeCash: coins(a.freeCash),
       heldCash: coins(a.heldCash),
+      heldMargin: coins(a.heldMargin),
+      equity: coins(a.equity),
+      initialMargin: coins(a.initialMargin),
+      maintenance: coins(a.maintenance),
       shares: a.shares,
       heldShares: a.heldShares,
+      positions: a.positions.map((p) => ({ ...p, mark: coins(p.mark), value: coins(p.value), pnl: coins(p.pnl), basis: coins(p.basis) })),
+      resets: a.resets,
+      canReset: a.canReset,
       orders: e.openOrders(id),
     };
   }
@@ -166,6 +174,34 @@ export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals) {
         orders: out.orders.filter((x) => x.accountId === me),
         rejects: out.rejects,
         account: accountView(me),
+      });
+    }
+    if (req.method === "POST" && url.pathname === "/api/reset") {
+      await ensureAccount(me);
+      const now = Date.now();
+      const out = await seq.submit({ type: "account.reset", accountId: me });
+      if (!out.rejects.length && projections) {
+        // A reset is a cash event: TWR chains break here, so record equity on both sides of it.
+        await projections.snapshotEquity(e, now - 1, "before-reset", me);
+        await projections.snapshotEquity(e, now, "reset", me);
+      }
+      return send(out.rejects.length ? 422 : 200, { rejects: out.rejects, account: accountView(me) });
+    }
+    if (req.method === "GET" && url.pathname === "/api/notices") {
+      return send(200, projections ? await projections.notices(me) : []);
+    }
+    if (req.method === "POST" && url.pathname === "/api/notices/read") {
+      await projections?.markRead(me);
+      return send(200, { ok: true });
+    }
+    if (req.method === "GET" && url.pathname === "/api/profile") {
+      await ensureAccount(me);
+      const trades = projections ? await projections.closedTrades(me) : [];
+      const history = projections ? await projections.equityHistory(me, Date.now() - 30 * 86_400_000) : [];
+      return send(200, {
+        account: accountView(me),
+        trades: trades.map((t) => ({ ...t, pnl: coins(t.pnl), basis: coins(t.basis), name: e.memes().find((m) => m.memeId === t.memeId)?.name ?? t.memeId })),
+        equity: history.map((h) => ({ ...h, equity: coins(h.equity) })),
       });
     }
     if (req.method === "POST" && url.pathname === "/api/orders/cancel") {

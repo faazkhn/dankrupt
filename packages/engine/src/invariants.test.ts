@@ -37,14 +37,14 @@ test("conservation: every commodity's journal lines sum to zero after every even
   );
 });
 
-test("no account ever goes below zero cash or shares (no shorting yet)", () => {
+test("margin: after every event each account has equity ≥ maintenance, or no shorts left", () => {
   fc.assert(
     fc.property(fc.array(order, { maxLength: 60 }), (orders) => {
       const { e } = run([...setupEvents, ...orders]);
       for (const id of ACCOUNTS) {
         const a = e.account(id);
-        expect(a.cash).toBeGreaterThanOrEqual(0);
-        for (const q of Object.values(a.shares)) expect(q).toBeGreaterThanOrEqual(0);
+        const short = Object.values(a.shares).some((q) => q < 0);
+        if (short) expect(a.equity).toBeGreaterThanOrEqual(a.maintenance);
       }
     }),
   );

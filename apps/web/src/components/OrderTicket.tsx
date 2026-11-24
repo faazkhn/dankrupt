@@ -61,7 +61,11 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
   };
 
   function setMax() {
-    if (side === "sell") setQty(Math.max(1, freeShares));
+    if (side === "sell" && meme && me) {
+      // Owned shares, plus whatever short sale the margin allows (50% of the mark per share).
+      const shortRoom = Math.max(0, Math.floor((me.equity - me.initialMargin) / (0.5 * meme.mid)));
+      setQty(Math.max(1, Math.max(0, freeShares) + shortRoom));
+    }
     else if (meme && me) {
       const per = (type === "limit" && priceValid ? price : meme.ask) * 1.001;
       setQty(Math.max(1, Math.floor(me.freeCash / per)));
@@ -135,7 +139,11 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
           </button>
         </div>
         <p className="mt-1 text-sm font-bold text-ink-soft">
-          {side === "buy" ? `Free cash ${fmt(me?.freeCash ?? 0)}` : `You can sell ${fmtInt(Math.max(0, freeShares))}`}
+          {side === "buy"
+            ? `Free cash ${fmt(me?.freeCash ?? 0)}`
+            : freeShares > 0
+              ? `You own ${fmtInt(freeShares)} free. Sell more than that and you're shorting.`
+              : "You don't own any, so this would be a short sale."}
         </p>
       </div>
 
@@ -213,8 +221,8 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
             <InfoIcon weight="fill" className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             {type === "limit"
               ? `Nothing fills right now. All ${fmtInt(qty)} would wait on the book at ${fmt(price)}.`
-              : side === "sell" && freeShares <= 0
-                ? "You don't have shares to sell."
+              : side === "sell"
+                ? "Not enough margin to short even one share."
                 : "Not enough free cash for one share."}
           </span>
         ) : (
@@ -228,6 +236,13 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
               {side === "buy" ? "Total cost" : "You receive"}{" "}
               <span className="text-base font-black tabular-nums">{fmt(preview.total)}</span> <span className="text-ink-soft">incl. {fmt(preview.fee)} fee</span>
             </p>
+            {preview.shortQty > 0 && (
+              <p className="flex gap-1.5 text-ink">
+                <InfoIcon weight="fill" className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                {fmtInt(preview.shortQty)} of these are a short sale: it locks 50% margin, pays a small borrow fee every minute, and gets bought back automatically if the price
+                runs too far against you.
+              </p>
+            )}
             {short && (
               <p className="flex gap-1.5 text-berry">
                 <WarningIcon weight="fill" className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
@@ -235,7 +250,9 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
                   ? `${fmtInt(qty - preview.qty)} more would wait on the book at ${fmt(price)}.`
                   : preview.limitedBy === "cash"
                     ? `Only ${fmtInt(preview.qty)} of ${fmtInt(qty)}: big orders push the price up as they fill, so your cash runs out first.`
-                    : `Only ${fmtInt(preview.qty)} of ${fmtInt(qty)} can sell.`}
+                    : preview.limitedBy === "margin"
+                      ? `Only ${fmtInt(preview.qty)} of ${fmtInt(qty)}: your margin can't back a bigger short.`
+                      : `Only ${fmtInt(preview.qty)} of ${fmtInt(qty)} can sell.`}
               </p>
             )}
           </div>

@@ -23,17 +23,36 @@ export type Attention = {
 };
 export type Candle = { minute: number; open: number; high: number; low: number; close: number; volume: number };
 export type OpenOrder = { orderId: number; kind: "limit" | "stop"; memeId: string; side: "buy" | "sell"; price: number; qty: number; expiresAt: number | null };
+export type Position = { memeId: string; qty: number; mark: number; value: number; openedAt: number; pnl: number; basis: number };
 export type Me = {
   accountId: string;
   cash: number;
   freeCash: number;
   heldCash: number;
+  heldMargin: number;
+  equity: number;
+  initialMargin: number;
+  maintenance: number;
   shares: Record<string, number>;
   heldShares: Record<string, number>;
+  positions: Position[];
+  resets: number;
+  canReset: boolean;
   orders: OpenOrder[];
 };
+export type Notice = { time: number; kind: "liquidation" | "reset"; memeId: string | null; text: string; read: boolean };
+export type ClosedTrade = { memeId: string; name: string; side: "long" | "short"; openedAt: number; closedAt: number; peakQty: number; pnl: number; basis: number };
+export type Profile = { account: Me; trades: ClosedTrade[]; equity: { time: number; equity: number; cashEvent: string | null }[] };
 export type Fill = { memeId: string; side: "buy" | "sell"; qty: number; cost: number; fee: number; source: "house" | "book"; role: "taker" | "maker" };
-export type Preview = { qty: number; total: number; fee: number; avgPrice: number; lastPrice: number; limitedBy: "cash" | "shares" | "limit" | "liquidity" | null };
+export type Preview = {
+  qty: number;
+  total: number;
+  fee: number;
+  avgPrice: number;
+  lastPrice: number;
+  shortQty: number;
+  limitedBy: "cash" | "shares" | "margin" | "limit" | "liquidity" | null;
+};
 export type BookLevel = { price: number; qty: number; orders: number };
 export type Book = { bids: BookLevel[]; asks: BookLevel[]; house: { bid: number; ask: number } };
 export type OrderTicket = { memeId: string; side: "buy" | "sell"; qty: number; type: "market" | "limit" | "stop"; price?: number; expiresInMinutes?: number };
@@ -133,6 +152,14 @@ export async function placeOrder(t: OrderTicket) {
     body: JSON.stringify(t),
   });
 }
+
+export async function resetAccount() {
+  return api<{ rejects: { reason: string }[]; account: Me }>("reset", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+}
+
+export const getProfile = () => api<Profile>("profile");
+export const getNotices = () => api<Notice[]>("notices");
+export const markNoticesRead = () => api<{ ok: boolean }>("notices/read", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
 
 export async function cancelOrder(orderId: number) {
   return api<{ rejects: { reason: string }[]; account: Me }>("orders/cancel", {

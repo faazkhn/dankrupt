@@ -4,7 +4,7 @@
 
 **Blocked by:** 03b, 04
 
-**Status:** ready-for-agent
+**Status:** done (see commit "Shorting, margin, liquidation, borrow fees, resets, round trips").
 
 - [ ] Equity = cash + Σ q·M. IM = 0.5 × short value and MR = 0.3 × short value, both at mark.
 - [ ] A short or add-to-short is rejected if E − IM < 0 after the order. Resting short sells hold back margin.

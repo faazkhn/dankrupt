@@ -75,7 +75,7 @@ export function CandleChart({ candles, fair, className = "" }: { candles: Candle
         {near && fair !== undefined && (
           <g>
             <line x1={PAD.l} x2={W - PAD.r} y1={y(fair)} y2={y(fair)} stroke="#ff7a2f" strokeWidth="2.5" strokeDasharray="3 7" strokeLinecap="round" />
-            <text x={PAD.l + 4} y={y(fair) - 6} fontSize="12" fontWeight="800" fill="#d9561a">
+            <text x={PAD.l + 4} y={y(fair) < 28 ? y(fair) + 16 : y(fair) - 6} fontSize="12" fontWeight="800" fill="#d9561a">
               fair value {fmt(fair)}
             </text>
           </g>

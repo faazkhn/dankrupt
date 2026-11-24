@@ -82,6 +82,34 @@ const MIGRATIONS: string[] = [
      count bigint not null,
      primary key (meme_id, source, day)
    )`,
+  `create table notices (
+     account_id text not null,
+     time timestamptz not null,
+     kind text not null,
+     meme_id text not null default '',
+     text text not null,
+     read boolean not null default false,
+     primary key (account_id, time, kind, meme_id)
+   )`,
+  `create table closed_trades (
+     account_id text not null,
+     meme_id text not null,
+     side text not null,
+     opened_at timestamptz not null,
+     closed_at timestamptz not null,
+     peak_qty bigint not null,
+     pnl bigint not null,
+     basis bigint not null,
+     primary key (account_id, meme_id, opened_at, closed_at)
+   )`,
+  `create index closed_trades_closed on closed_trades (closed_at)`,
+  `create table equity_snapshots (
+     account_id text not null,
+     time timestamptz not null,
+     equity bigint not null,
+     cash_event text,
+     primary key (account_id, time)
+   )`,
 ];
 
 /** Applies pending migrations in order; safe to call on every boot. */

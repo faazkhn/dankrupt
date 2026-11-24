@@ -8,6 +8,8 @@ export {
   type Fill,
   type JournalLine,
   type OrderUpdate,
+  type ClosedTrade,
+  type Notice,
   type Output,
   type PriceUpdate,
   type Reject,

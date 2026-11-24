@@ -2,6 +2,7 @@ import type { AddressInfo } from "node:net";
 import { afterEach, beforeEach, expect, test } from "vitest";
 import { createDb, migrate } from "@dankrupt/db";
 import { createApi } from "./http.ts";
+import { Projections } from "./projections.ts";
 import { Sequencer } from "./sequencer.ts";
 
 let base = "";
@@ -9,7 +10,9 @@ let close = () => {};
 beforeEach(async () => {
   const db = createDb("pglite:");
   await migrate(db);
-  const server = createApi(await Sequencer.boot(db, [{ memeId: "stonks", name: "Stonks", price: 100, depth: 500_000 }]));
+  const projections = new Projections(db);
+  const seq = await Sequencer.boot(db, [{ memeId: "stonks", name: "Stonks", price: 100, depth: 500_000 }], [projections.onApplied]);
+  const server = createApi(seq, undefined, undefined, projections);
   await new Promise<void>((r) => server.listen(0, r));
   base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   close = () => server.close();
@@ -59,4 +62,15 @@ test("preview tells you how much a market buy will fill and what it costs", asyn
   expect(p.total).toBeLessThanOrEqual(100_000);
   const res = await (await fetch(`${base}/api/orders`, as("cy", { method: "POST", body: JSON.stringify({ memeId: "stonks", side: "buy", qty: 980 }) }))).json();
   expect(res.fills.reduce((s: number, f: { qty: number }) => s + f.qty, 0)).toBe(p.qty);
+});
+
+test("profile lists a closed round trip; reset is refused while you're not broke", async () => {
+  const post = (path: string, data: unknown) => fetch(`${base}${path}`, as("dee", { method: "POST", body: JSON.stringify(data) }));
+  await post("/api/orders", { memeId: "stonks", side: "buy", qty: 10 });
+  await post("/api/orders", { memeId: "stonks", side: "sell", qty: 10 });
+  await new Promise((r) => setTimeout(r, 50));
+  const profile = await (await fetch(`${base}/api/profile`, as("dee"))).json();
+  expect(profile.account.equity).toBeGreaterThan(99_000);
+  const reset = await post("/api/reset", {});
+  expect(reset.status).toBe(422);
 });

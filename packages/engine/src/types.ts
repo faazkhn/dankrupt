@@ -8,6 +8,8 @@ export type Side = "buy" | "sell";
 export type EventBody =
   | { type: "meme.list"; memeId: string; name: string; price: number; depth: number; fairValue?: number }
   | { type: "account.open"; accountId: string }
+  /** Free top-up back to the starting cash; allowed when equity < 1,000 coins (even negative) and no positions. */
+  | { type: "account.reset"; accountId: string }
   | { type: "order.market"; accountId: string; memeId: string; side: Side; qty: number }
   | {
       type: "order.limit";
@@ -70,6 +72,24 @@ export type PriceUpdate = { memeId: string; time: number; price: number; bid: nu
 
 export type OrderUpdate = { orderId: number; accountId: string; memeId: string; status: "open" | "filled" | "cancelled" | "expired" | "triggered"; remaining: number };
 
+/** Something a player should be told about, shown in-app (liquidations, reset). */
+export type Notice = { accountId: string; time: number; kind: "liquidation" | "reset"; memeId?: string; qty?: number; fee?: number; text: string };
+
+/** A round trip in one meme, from no position back to no position (a glossary "trade"). */
+export type ClosedTrade = {
+  accountId: string;
+  memeId: string;
+  side: "long" | "short";
+  openedAt: number;
+  closedAt: number;
+  /** Largest position held during the round trip. */
+  peakQty: number;
+  /** Net µc made (negative = lost), fees and borrow included. */
+  pnl: number;
+  /** µc put at risk: what the opening side cost (long) or would cost to buy back at entry (short). */
+  basis: number;
+};
+
 export type Output = {
   fills: Fill[];
   trades: Trade[];
@@ -77,6 +97,8 @@ export type Output = {
   rejects: Reject[];
   prices: PriceUpdate[];
   orders: OrderUpdate[];
+  notices: Notice[];
+  closed: ClosedTrade[];
 };
 
-export const emptyOutput = (): Output => ({ fills: [], trades: [], journal: [], rejects: [], prices: [], orders: [] });
+export const emptyOutput = (): Output => ({ fills: [], trades: [], journal: [], rejects: [], prices: [], orders: [], notices: [], closed: [] });

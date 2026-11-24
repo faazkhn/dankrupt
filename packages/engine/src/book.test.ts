@@ -87,7 +87,7 @@ describe("limit orders", () => {
   test("you can't place a buy you can't pay for, or sell shares you don't have", () => {
     const { run } = exchange();
     expect(run({ type: "order.limit", accountId: "ana", memeId: "m", side: "buy", qty: 2_000, price: 60 }).rejects[0].reason).toMatch(/free cash/);
-    expect(run({ type: "order.limit", accountId: "ana", memeId: "m", side: "sell", qty: 1, price: 150 }).rejects[0].reason).toMatch(/free shares/);
+    expect(run({ type: "order.limit", accountId: "ana", memeId: "m", side: "sell", qty: 5_000, price: 150 }).rejects[0].reason).toMatch(/margin/);
     expect(run({ type: "order.limit", accountId: "ana", memeId: "m", side: "buy", qty: 1, price: 10.005 }).rejects[0].reason).toMatch(/steps of 0.01/);
   });
 
@@ -144,7 +144,10 @@ describe("preview", () => {
     const out = run({ type: "order.market", accountId: "ana", memeId: "m", side: "buy", qty: 980 });
     expect(out.fills[0].qty).toBe(p.qty);
     expect(out.fills[0].cost + out.fills[0].fee).toBe(p.total);
-    expect(e.preview("ana", "m", "sell", 5_000)).toMatchObject({ qty: p.qty, limitedBy: "shares" });
+    const sell = e.preview("ana", "m", "sell", 50_000);
+    expect(sell.limitedBy).toBe("margin");
+    expect(sell.shortQty).toBeGreaterThan(0);
+    expect(sell.qty).toBe(p.qty + sell.shortQty);
   });
 
   test("preview changes nothing", () => {
@@ -192,12 +195,13 @@ function runSteps(steps: { k: string; [x: string]: unknown }[]) {
     expect(q.price).toBeGreaterThanOrEqual(0.01);
     for (const id of ACCOUNTS) {
       const a = e.account(id);
-      expect(a.freeCash).toBeGreaterThanOrEqual(0);
       expect(a.heldCash).toBeGreaterThanOrEqual(0);
-      for (const [k, v] of Object.entries(a.shares)) {
+      expect(a.heldMargin).toBeGreaterThanOrEqual(0);
+      for (const [k, v] of Object.entries(a.heldShares)) {
         expect(v).toBeGreaterThanOrEqual(0);
-        expect(v - (a.heldShares[k] ?? 0)).toBeGreaterThanOrEqual(0);
+        expect(v).toBeLessThanOrEqual(Math.max(0, a.shares[k] ?? 0));
       }
+      if (Object.values(a.shares).some((q) => q < 0)) expect(a.equity).toBeGreaterThanOrEqual(a.maintenance);
     }
   };
   for (const s of steps) {

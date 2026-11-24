@@ -4,7 +4,7 @@
 
 **Blocked by:** 06a
 
-**Status:** ready-for-agent
+**Status:** done (see commit "Shorting, margin, liquidation, borrow fees, resets, round trips").
 
 - [ ] Liquidation is checked on every mark change, using an index of accounts that have shorts, keyed by every meme they hold.
 - [ ] The buy-back stops once E ≥ IM. The 1% fee goes to the sink.

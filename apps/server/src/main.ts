@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { createDb, migrate } from "@dankrupt/db";
 import { Feed } from "./feed.ts";
+import { Projections } from "./projections.ts";
 import { createApi } from "./http.ts";
 import { Sequencer, type SeedMeme } from "./sequencer.ts";
 import { Signals, wikipediaClient } from "./signals.ts";
@@ -9,13 +10,15 @@ const db = createDb(process.env.DATABASE_URL ?? `pglite:${process.cwd()}/.data/p
 await migrate(db);
 const seed: SeedMeme[] = JSON.parse(readFileSync(new URL("../seed/memes.json", import.meta.url), "utf8"));
 const feed = await Feed.create(db);
-const seq = await Sequencer.boot(db, seed, [feed.onApplied]);
+const projections = new Projections(db);
+const seq = await Sequencer.boot(db, seed, [feed.onApplied, projections.onApplied]);
+projections.start(seq.engine);
 await seq.clock(); // catch the house up on the time the server was down
 seq.startClock(1_000);
 const signals = new Signals(db, seq, wikipediaClient());
 for (const m of seed) await signals.mapSources(m.memeId, m.wikipedia ?? []);
 signals.start();
-const server = createApi(seq, feed, signals);
+const server = createApi(seq, feed, signals, projections);
 feed.attach(server);
 const port = Number(process.env.PORT ?? 4000);
 server.listen(port, () => console.log(`dankrupt engine on :${port}, replayed to seq ${seq.engine.seq}`));

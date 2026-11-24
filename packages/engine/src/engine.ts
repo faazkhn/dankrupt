@@ -12,6 +12,12 @@ export type Params = {
   driftHalfLifeHours: number; // τ
   vwapWeight: number; // ω
   noisePerSqrtHour: number; // σn
+  initialMargin: number; // m_I
+  maintenanceMargin: number; // m_M
+  liquidationFeeBps: number;
+  borrowBasePerHour: number; // r0, fraction per hour
+  borrowSlopePerHour: number; // r1
+  resetBelow: number; // µc of equity under which a reset is allowed
 };
 
 export const DEFAULT_PARAMS: Params = {
@@ -24,12 +30,19 @@ export const DEFAULT_PARAMS: Params = {
   driftHalfLifeHours: 6,
   vwapWeight: 0.3,
   noisePerSqrtHour: 0.003,
+  initialMargin: 0.5,
+  maintenanceMargin: 0.3,
+  liquidationFeeBps: 100,
+  borrowBasePerHour: 0.00005,
+  borrowSlopePerHour: 0.0005,
+  resetBelow: 1_000 * COIN,
 };
 
 const MINUTE = 60_000;
-const clipHeat = (h: number) => Math.min(5, Math.max(0.2, h));
 const DAY = 86_400_000;
 const INF = Number.POSITIVE_INFINITY;
+const MARK_EMA_MS = 5 * MINUTE;
+const clipHeat = (h: number) => Math.min(5, Math.max(0.2, h));
 
 type Order = {
   orderId: number;
@@ -41,6 +54,10 @@ type Order = {
   qty: number;
   /** Buys: µc held back per remaining share (limit price + worst-case taker fee). */
   holdPerShare: number;
+  /** Sells: how many of the remaining shares are owned shares held back (the rest are short sales). */
+  heldLong: number;
+  /** Sells: µc of margin held back per remaining short share. */
+  marginPerShare: number;
   expiresAt: number | null;
 };
 
@@ -64,20 +81,33 @@ type Meme = {
   closes: number[];
   /** Trades bucketed per minute for the 24h VWAP: [minuteStart, Σ price·qty, Σ qty]. */
   vwap: [number, number, number][];
+  /** 5-minute EMA of traded prices (for the mark), and when it was last updated. */
+  emaLast: number | null;
+  emaAt: number;
+  longOI: number;
+  shortOI: number;
   /** Best first: bids by price desc, asks by price asc; time priority (orderId) within a price. */
   bids: Order[];
   asks: Order[];
   stops: Stop[];
 };
 
+/** Bookkeeping for one open position, for round-trip trades (styles, share cards). */
+type Position = { openedAt: number; flow: number; peak: number; basis: number };
+
 type Account = {
   accountId: string;
   cash: number;
   /** Cash held back by resting buy orders. */
   heldCash: number;
+  /** Margin held back by resting short sells. */
+  heldMargin: number;
+  /** Signed: negative is a short. */
   shares: Record<string, number>;
-  /** Shares held back by resting sell orders. */
+  /** Owned shares held back by resting sell orders. */
   heldShares: Record<string, number>;
+  pos: Record<string, Position>;
+  resets: number;
 };
 
 type State = {
@@ -88,8 +118,10 @@ type State = {
   params: Params;
   memes: Record<string, Meme>;
   accounts: Record<string, Account>;
-  /** orderId → memeId for every resting order. */
+  /** orderId → memeId for every resting order and stop. */
   orderIndex: Record<string, string>;
+  /** Accounts holding at least one short, for margin checks. */
+  shorts: Record<string, true>;
 };
 
 /** Where journal lines, fills and quotes go while one event or tick is being applied. */
@@ -121,8 +153,10 @@ export type Preview = {
   avgPrice: number;
   /** Price of the last share, coins. */
   lastPrice: number;
+  /** How many of the shares sold would be a short sale. */
+  shortQty: number;
   /** Why it would stop short of the requested quantity, if it would. */
-  limitedBy: "cash" | "shares" | "limit" | "liquidity" | null;
+  limitedBy: "cash" | "shares" | "margin" | "limit" | "liquidity" | null;
 };
 
 /**
@@ -133,7 +167,7 @@ export class Engine {
   private s: State;
 
   constructor(params: Params = DEFAULT_PARAMS) {
-    this.s = { seq: 0, time: 0, tick: 0, params, memes: {}, accounts: {}, orderIndex: {} };
+    this.s = { seq: 0, time: 0, tick: 0, params, memes: {}, accounts: {}, orderIndex: {}, shorts: {} };
   }
 
   static fromSnapshot(json: string): Engine {
@@ -151,12 +185,16 @@ export class Engine {
     return this.s.seq;
   }
 
+  get time() {
+    return this.s.time;
+  }
+
   // ---------- reads ----------
 
-  meme(memeId: string): PriceUpdate & { name: string; fairValue: number; heat: number; listedAt: number } {
+  meme(memeId: string): PriceUpdate & { name: string; fairValue: number; heat: number; listedAt: number; mark: number; borrowPerHour: number } {
     const m = this.s.memes[memeId];
     if (!m) throw new Error(`unknown meme ${memeId}`);
-    return { ...this.quote(m, this.s.time), name: m.name, fairValue: m.fairValue, heat: m.heat ?? 1, listedAt: m.listedAt ?? 0 };
+    return { ...this.quote(m, this.s.time), name: m.name, fairValue: m.fairValue, heat: m.heat, listedAt: m.listedAt, mark: this.mark(m), borrowPerHour: this.borrowRate(m) };
   }
 
   memes() {
@@ -180,10 +218,37 @@ export class Engine {
     return { bids: levels(m.bids), asks: levels(m.asks), house: { bid: this.houseBid(m), ask: this.houseAsk(m) } };
   }
 
+  /** Money view of an account. µc throughout. */
   account(accountId: string) {
     const a = this.s.accounts[accountId];
     if (!a) throw new Error(`unknown account ${accountId}`);
-    return { accountId, cash: a.cash, heldCash: a.heldCash, freeCash: a.cash - a.heldCash, shares: { ...a.shares }, heldShares: { ...a.heldShares } };
+    const r = this.risk(a);
+    const positions = Object.entries(a.shares)
+      .filter(([, q]) => q !== 0)
+      .map(([memeId, qty]) => {
+        const p = a.pos[memeId];
+        const mark = this.mark(this.s.memes[memeId]);
+        return { memeId, qty, mark, value: qty * mark, openedAt: p?.openedAt ?? 0, pnl: (p?.flow ?? 0) + qty * mark, basis: p?.basis ?? 0 };
+      });
+    return {
+      accountId,
+      cash: a.cash,
+      heldCash: a.heldCash,
+      heldMargin: a.heldMargin,
+      freeCash: this.freeCash(a),
+      equity: r.equity,
+      initialMargin: r.im,
+      maintenance: r.mr,
+      shares: { ...a.shares },
+      heldShares: { ...a.heldShares },
+      positions,
+      resets: a.resets ?? 0,
+      canReset: this.canReset(a),
+    };
+  }
+
+  accounts() {
+    return Object.keys(this.s.accounts);
   }
 
   openOrders(accountId: string) {
@@ -191,7 +256,7 @@ export class Engine {
     for (const m of Object.values(this.s.memes)) {
       for (const o of [...m.bids, ...m.asks])
         if (o.accountId === accountId) out.push({ orderId: o.orderId, kind: "limit", memeId: o.memeId, side: o.side, price: o.px / COIN, qty: o.qty, expiresAt: o.expiresAt });
-      for (const o of m.stops ?? [])
+      for (const o of m.stops)
         if (o.accountId === accountId) out.push({ orderId: o.orderId, kind: "stop", memeId: o.memeId, side: o.side, price: o.stop, qty: o.qty, expiresAt: null });
     }
     return out.sort((a, b) => b.orderId - a.orderId);
@@ -206,22 +271,24 @@ export class Engine {
    * shortcut: clones the whole state per call; fine at alpha scale, narrow the clone if it shows up in profiles.
    */
   preview(accountId: string, memeId: string, side: Side, qty: number, price?: number): Preview {
+    const none: Preview = { qty: 0, total: 0, fee: 0, avgPrice: 0, lastPrice: 0, shortQty: 0, limitedBy: null };
     const sim = Engine.fromSnapshot(this.snapshot());
     const a = sim.s.accounts[accountId];
     const m = sim.s.memes[memeId];
-    if (!a || !m || !(qty > 0)) return { qty: 0, total: 0, fee: 0, avgPrice: 0, lastPrice: 0, limitedBy: null };
+    if (!a || !m || !(qty > 0)) return none;
     const out = emptyOutput();
     const em = new Emitter(out, "preview", sim.s.seq, sim.s.time);
     const limit = price === undefined ? INF : Math.round(price * COIN);
-    const free = (a.shares[memeId] ?? 0) - (a.heldShares[memeId] ?? 0);
-    const want = side === "sell" ? Math.min(qty, Math.max(0, free)) : qty;
+    const before = a.shares[memeId] ?? 0;
+    const cap = side === "sell" ? sim.sellCapacity(a, m) : null;
+    const want = Math.min(qty, cap ? cap.total : qty);
     const filled = want > 0 ? sim.take(em, a, m, side, want, limit, sim.s.seq) : 0;
     const mine = out.fills.filter((f) => f.accountId === accountId);
     const gross = mine.reduce((s, f) => s + f.cost, 0);
     const fee = mine.reduce((s, f) => s + f.fee, 0);
     let limitedBy: Preview["limitedBy"] = null;
     if (filled < qty) {
-      if (side === "sell" && free < qty) limitedBy = "shares";
+      if (side === "sell" && want < qty) limitedBy = "margin"; // owned shares ran out and margin caps the short sale
       else if (price !== undefined) limitedBy = "limit";
       else if (side === "buy") limitedBy = "cash";
       else limitedBy = "liquidity";
@@ -232,8 +299,58 @@ export class Engine {
       fee,
       avgPrice: filled ? gross / COIN / filled : 0,
       lastPrice: out.trades.at(-1)?.price ?? 0,
+      shortQty: side === "sell" ? Math.max(0, filled - Math.max(0, before - (a.heldShares[memeId] ?? 0))) : 0,
       limitedBy,
     };
+  }
+
+  // ---------- risk ----------
+
+  /** Mark price (PRD §6.6): median of mid, the 5-minute EMA of traded prices, and fair value. */
+  private mark(m: Meme): number {
+    const mid = this.quote(m, this.s.time).mid;
+    const v = [mid, m.emaLast ?? mid, m.fairValue].sort((x, y) => x - y);
+    return v[1] * COIN;
+  }
+
+  private risk(a: Account) {
+    let value = 0;
+    let shortValue = 0;
+    for (const [memeId, q] of Object.entries(a.shares)) {
+      if (q === 0) continue;
+      const mk = this.mark(this.s.memes[memeId]);
+      value += q * mk;
+      if (q < 0) shortValue += -q * mk;
+    }
+    const P = this.s.params;
+    return { equity: a.cash + value, im: P.initialMargin * shortValue + a.heldMargin, mr: P.maintenanceMargin * shortValue, shortValue };
+  }
+
+  /** Cash a player can spend on buys: cash minus short proceeds + margin locked, minus held-back cash and margin. */
+  private freeCash(a: Account): number {
+    const r = this.risk(a);
+    return a.cash - a.heldCash - a.heldMargin - r.shortValue * (1 + this.s.params.initialMargin);
+  }
+
+  /** How much a sell can do: free owned shares first, then short sales the margin allows. */
+  private sellCapacity(a: Account, m: Meme) {
+    const owned = Math.max(0, (a.shares[m.memeId] ?? 0) - (a.heldShares[m.memeId] ?? 0));
+    const r = this.risk(a);
+    const perShare = this.s.params.initialMargin * this.mark(m);
+    const short = perShare > 0 ? Math.max(0, Math.floor((r.equity - r.im) / perShare)) : 0;
+    return { long: owned, short, total: owned + short };
+  }
+
+  private canReset(a: Account) {
+    const r = this.risk(a);
+    return r.equity < this.s.params.resetBelow && Object.values(a.shares).every((q) => q === 0);
+  }
+
+  /** Short-sale borrow rate per hour (PRD §7.3): r₀ + r₁·U, U = short OI / (long OI + house virtual shares). */
+  private borrowRate(m: Meme) {
+    const x = m.curve.L / Math.sqrt(m.curve.price);
+    const u = m.shortOI / (m.longOI + x);
+    return this.s.params.borrowBasePerHour + this.s.params.borrowSlopePerHour * u;
   }
 
   // ---------- time ----------
@@ -250,20 +367,23 @@ export class Engine {
 
   private tickTo(time: number, out: Output) {
     if (time < this.s.time) throw new Error("time went backwards");
-    this.s.time = time;
     const P = this.s.params;
     const memes = Object.values(this.s.memes);
     for (let g = this.s.tick + P.tickMs; g <= time; g += P.tickMs) {
       this.s.tick = g;
+      this.s.time = g;
       const em = new Emitter(out, `t${g}`, this.s.seq, g);
       for (const m of memes) {
         this.expire(em, m, g);
         this.drift(m, g);
         this.noCross(em, m);
         this.triggerStops(em, m);
+        this.checkMargins(em, m);
         out.prices.push(this.quote(m, g));
       }
+      if (g % MINUTE === 0) this.chargeBorrow(em);
     }
+    this.s.time = time;
   }
 
   private drift(m: Meme, g: number) {
@@ -274,9 +394,8 @@ export class Engine {
     const [z, rng] = normal(m.rng);
     m.rng = rng;
     const pull = 1 - 2 ** (-dtH / P.driftHalfLifeHours);
-    const heat = clipHeat(m.heat ?? 1);
     let lnP = Math.log(m.curve.price);
-    lnP += pull * (Math.log(target) - lnP) + P.noisePerSqrtHour * heat * Math.sqrt(dtH) * z;
+    lnP += pull * (Math.log(target) - lnP) + P.noisePerSqrtHour * clipHeat(m.heat) * Math.sqrt(dtH) * z;
     m.curve.price = Math.max(PRICE_FLOOR, Math.exp(lnP));
     if (g % MINUTE === 0) {
       m.closes.push(m.curve.price);
@@ -296,6 +415,28 @@ export class Engine {
     let q = 0;
     for (const [, a, b] of m.vwap) (pq += a), (q += b);
     return q > 0 ? pq / q : m.fairValue;
+  }
+
+  /**
+   * Borrow fee, per started minute (spec call #6, amended): at each minute mark every open short pays
+   * |q|·M·r/60. Opening or adding to a short pays the minute it starts in, so a 20-second short pays too.
+   * Booked straight to the journal each minute (simpler than hourly batching, and exact).
+   */
+  private chargeBorrow(em: Emitter) {
+    for (const id of Object.keys(this.s.shorts)) {
+      const a = this.s.accounts[id];
+      for (const [memeId, q] of Object.entries(a.shares)) if (q < 0) this.borrowFee(em, a, this.s.memes[memeId], -q);
+    }
+  }
+
+  private borrowFee(em: Emitter, a: Account, m: Meme, qty: number) {
+    const fee = Math.ceil((qty * this.mark(m) * this.borrowRate(m)) / 60);
+    if (fee <= 0) return;
+    a.cash -= fee;
+    const p = a.pos[m.memeId];
+    if (p) p.flow -= fee;
+    em.post(`player:${a.accountId}`, "coin", -fee);
+    em.post("sink", "coin", fee);
   }
 
   // ---------- quotes ----------
@@ -324,6 +465,13 @@ export class Engine {
     this.s.seq = ev.seq;
     const em = new Emitter(out, `e${ev.seq}`, ev.seq, ev.time);
     const reject = (reason: string) => (out.rejects.push({ seq: ev.seq, reason }), out);
+    const settle = (m: Meme) => {
+      this.noCross(em, m);
+      this.triggerStops(em, m);
+      this.checkMargins(em, m);
+      out.prices.push(this.quote(m, ev.time));
+      return out;
+    };
 
     switch (ev.type) {
       case "meme.list": {
@@ -340,6 +488,10 @@ export class Engine {
           rng: seedFrom(ev.memeId),
           closes: [],
           vwap: [],
+          emaLast: null,
+          emaAt: ev.time,
+          longOI: 0,
+          shortOI: 0,
           bids: [],
           asks: [],
           stops: [],
@@ -348,12 +500,42 @@ export class Engine {
         out.prices.push(this.quote(m, ev.time));
         return out;
       }
+      case "meme.features": {
+        const m = this.s.memes[ev.memeId];
+        if (!m) return reject("unknown meme");
+        if (!(ev.fairValue > 0) || !(ev.heat >= 0)) return reject("fair value and heat must be positive");
+        m.fairValue = Math.max(1, ev.fairValue);
+        m.heat = ev.heat;
+        // Depth follows heat (PRD §6.2): Y = Y₀ · clip(H, 0.2, 5). Rescale L with the price held fixed; not a trade.
+        m.curve.L = depthToL(m.depth0 * clipHeat(ev.heat), m.curve.price);
+        return settle(m);
+      }
       case "account.open": {
         if (this.s.accounts[ev.accountId]) return reject("account exists");
         const cash = this.s.params.startingCash;
-        this.s.accounts[ev.accountId] = { accountId: ev.accountId, cash, heldCash: 0, shares: {}, heldShares: {} };
+        this.s.accounts[ev.accountId] = { accountId: ev.accountId, cash, heldCash: 0, heldMargin: 0, shares: {}, heldShares: {}, pos: {}, resets: 0 };
         em.post("mint", "coin", -cash);
         em.post(`player:${ev.accountId}`, "coin", cash);
+        return out;
+      }
+      case "account.reset": {
+        const a = this.s.accounts[ev.accountId];
+        if (!a) return reject("unknown account");
+        if (!this.canReset(a)) return reject("you can reset only when your equity is under 1,000 coins and you hold no positions");
+        for (const m of Object.values(this.s.memes)) {
+          for (const o of [...m.bids, ...m.asks]) if (o.accountId === a.accountId) this.removeOrder(em, o, "cancelled");
+          for (const st of [...m.stops])
+            if (st.accountId === a.accountId) {
+              m.stops.splice(m.stops.indexOf(st), 1);
+              delete this.s.orderIndex[st.orderId];
+            }
+        }
+        const topUp = this.s.params.startingCash - a.cash; // also writes off a negative balance
+        a.cash += topUp;
+        a.resets = (a.resets ?? 0) + 1;
+        em.post("mint", "coin", -topUp);
+        em.post(`player:${a.accountId}`, "coin", topUp);
+        out.notices.push({ accountId: a.accountId, time: ev.time, kind: "reset", text: `Fresh start: back to ${this.s.params.startingCash / COIN} coins (reset #${a.resets}).` });
         return out;
       }
       case "order.market":
@@ -372,24 +554,31 @@ export class Engine {
           if (ev.expiresAt != null && ev.expiresAt <= ev.time) return reject("expiry must be in the future");
           limit = px;
           hold = px + Math.ceil((px * this.s.params.takerFeeBps) / 10_000);
-          if (ev.side === "buy" && ev.qty * hold > a.cash - a.heldCash) return reject("not enough free cash for this order");
+          if (ev.side === "buy" && ev.qty * hold > this.freeCash(a) + this.coverRelease(a, m, ev.qty))
+            return reject("not enough free cash for this order");
         }
-        const freeShares = (a.shares[ev.memeId] ?? 0) - (a.heldShares[ev.memeId] ?? 0);
-        if (ev.side === "sell" && freeShares <= 0) return reject("you have no free shares to sell");
-        if (ev.side === "sell" && ev.type === "order.limit" && ev.qty > freeShares) return reject("not enough free shares for this order");
-
-        const qty = ev.side === "sell" ? Math.min(ev.qty, freeShares) : ev.qty;
+        let qty = ev.qty;
+        let marginPerShare = 0;
+        if (ev.side === "sell") {
+          const cap = this.sellCapacity(a, m);
+          if (cap.total <= 0) return reject(cap.long === 0 && (a.shares[m.memeId] ?? 0) <= 0 ? "not enough margin to short this" : "you have no free shares to sell");
+          if (ev.type === "order.limit") {
+            const shortPart = Math.max(0, ev.qty - cap.long);
+            marginPerShare = Math.ceil(this.s.params.initialMargin * Math.max(limit, this.mark(m)));
+            const r = this.risk(a);
+            if (shortPart > 0 && r.equity - r.im < shortPart * marginPerShare) return reject("not enough margin to short this many");
+          } else qty = Math.min(ev.qty, cap.total);
+        }
         const filled = this.take(em, a, m, ev.side, qty, limit, ev.seq);
         const left = qty - filled;
         if (ev.type === "order.limit" && left > 0) {
-          this.rest(m, a, { orderId: ev.seq, accountId: a.accountId, memeId: m.memeId, side: ev.side, px: limit, qty: left, holdPerShare: hold, expiresAt: ev.expiresAt ?? null });
+          const owned = Math.max(0, (a.shares[m.memeId] ?? 0) - (a.heldShares[m.memeId] ?? 0));
+          const heldLong = ev.side === "sell" ? Math.min(left, owned) : 0;
+          this.rest(m, a, { orderId: ev.seq, accountId: a.accountId, memeId: m.memeId, side: ev.side, px: limit, qty: left, holdPerShare: hold, heldLong, marginPerShare, expiresAt: ev.expiresAt ?? null });
           out.orders.push({ orderId: ev.seq, accountId: a.accountId, memeId: m.memeId, status: "open", remaining: left });
         } else if (ev.type === "order.limit") out.orders.push({ orderId: ev.seq, accountId: a.accountId, memeId: m.memeId, status: "filled", remaining: 0 });
         if (filled === 0 && ev.type === "order.market") return reject(ev.side === "buy" ? "not enough free cash for even one share" : "nobody is buying right now");
-        this.noCross(em, m);
-        this.triggerStops(em, m);
-        out.prices.push(this.quote(m, ev.time));
-        return out;
+        return settle(m);
       }
       case "order.stop": {
         const a = this.s.accounts[ev.accountId];
@@ -405,19 +594,6 @@ export class Engine {
         m.stops.push({ orderId: ev.seq, accountId: a.accountId, memeId: m.memeId, side: ev.side, stop: px / COIN, qty: ev.qty });
         this.s.orderIndex[ev.seq] = m.memeId;
         out.orders.push({ orderId: ev.seq, accountId: a.accountId, memeId: m.memeId, status: "open", remaining: ev.qty });
-        return out;
-      }
-      case "meme.features": {
-        const m = this.s.memes[ev.memeId];
-        if (!m) return reject("unknown meme");
-        if (!(ev.fairValue > 0) || !(ev.heat >= 0)) return reject("fair value and heat must be positive");
-        m.fairValue = Math.max(1, ev.fairValue);
-        m.heat = ev.heat;
-        // Depth follows heat (PRD §6.2): Y = Y₀ · clip(H, 0.2, 5). Rescale L with the price held fixed; not a trade.
-        m.curve.L = depthToL((m.depth0 ?? 500_000) * clipHeat(ev.heat), m.curve.price);
-        this.noCross(em, m);
-        this.triggerStops(em, m);
-        out.prices.push(this.quote(m, ev.time));
         return out;
       }
       case "order.cancel": {
@@ -452,11 +628,70 @@ export class Engine {
       delete this.s.orderIndex[hit.orderId];
       em.out.orders.push({ orderId: hit.orderId, accountId: hit.accountId, memeId: m.memeId, status: "triggered", remaining: hit.qty });
       const a = this.s.accounts[hit.accountId];
-      const free = (a.shares[m.memeId] ?? 0) - (a.heldShares[m.memeId] ?? 0);
-      const qty = hit.side === "sell" ? Math.min(hit.qty, free) : hit.qty;
+      const qty = hit.side === "sell" ? Math.min(hit.qty, this.sellCapacity(a, m).total) : hit.qty;
       if (qty > 0) this.take(em, a, m, hit.side, qty, INF, hit.orderId);
       this.noCross(em, m);
     }
+  }
+
+  // ---------- margin ----------
+
+  /**
+   * After the mark of `m` moves, every account holding a short and a position in `m` is re-checked
+   * (a falling long can liquidate a short elsewhere). Below maintenance, it is liquidated.
+   */
+  private checkMargins(em: Emitter, m: Meme) {
+    for (const id of Object.keys(this.s.shorts)) {
+      const a = this.s.accounts[id];
+      if (!a.shares[m.memeId]) continue;
+      const r = this.risk(a);
+      if (r.equity < r.mr) this.liquidate(em, a);
+    }
+  }
+
+  /**
+   * Liquidation (PRD §7.2): buy back shorts, worst unrealised loss first, through the router as
+   * market orders, until equity ≥ initial margin. 1% of the closed notional goes to the sink. Equity
+   * may end below zero; the player can then reset.
+   */
+  private liquidate(em: Emitter, a: Account) {
+    const shorts = Object.entries(a.shares)
+      .filter(([, q]) => q < 0)
+      .map(([memeId, q]) => {
+        const m = this.s.memes[memeId];
+        return { m, q, loss: -q * this.mark(m) - (a.pos[memeId]?.flow ?? 0) };
+      })
+      .sort((x, y) => y.loss - x.loss || (x.m.memeId < y.m.memeId ? -1 : 1));
+    for (const { m, q } of shorts) {
+      const before = em.out.fills.length;
+      this.take(em, a, m, "buy", -q, INF, em.seq, true);
+      const notional = em.out.fills.slice(before).filter((f) => f.accountId === a.accountId).reduce((s, f) => s + f.cost, 0);
+      const fee = Math.ceil((notional * this.s.params.liquidationFeeBps) / 10_000);
+      a.cash -= fee;
+      const p = a.pos[m.memeId];
+      if (p) p.flow -= fee;
+      em.post(`player:${a.accountId}`, "coin", -fee);
+      em.post("sink", "coin", fee);
+      const closed = -q + (a.shares[m.memeId] ?? 0);
+      em.out.notices.push({
+        accountId: a.accountId,
+        time: em.time,
+        kind: "liquidation",
+        memeId: m.memeId,
+        qty: closed,
+        fee,
+        text: `Liquidated: bought back ${closed} ${m.name} shares to cover your short (fee ${(fee / COIN).toFixed(2)} coins).`,
+      });
+      this.noCross(em, m);
+      const r = this.risk(a);
+      if (r.equity >= r.im) return;
+    }
+  }
+
+  /** Lock that a buy of up to `qty` shares would release by covering a short. */
+  private coverRelease(a: Account, m: Meme, qty: number) {
+    const short = Math.max(0, -(a.shares[m.memeId] ?? 0));
+    return Math.min(qty, short) * this.mark(m) * (1 + this.s.params.initialMargin);
   }
 
   // ---------- matching ----------
@@ -464,9 +699,10 @@ export class Engine {
   /**
    * The router (PRD §6.4): fills `qty` step by step from whichever of book and house is cheaper,
    * players winning ties, never past `limit` (µc; Infinity for market orders) and never past the
-   * taker's free cash. Returns shares filled.
+   * taker's free cash (covering a short frees cash as it goes). `forced` (liquidation) ignores cash.
+   * Returns shares filled.
    */
-  private take(em: Emitter, a: Account, m: Meme, side: Side, qty: number, limit: number, orderId: number): number {
+  private take(em: Emitter, a: Account, m: Meme, side: Side, qty: number, limit: number, orderId: number, forced = false): number {
     const feeRate = this.s.params.takerFeeBps / 10_000;
     let filled = 0;
     while (filled < qty) {
@@ -476,7 +712,7 @@ export class Engine {
         const bookPx = best ? best.px : INF;
         const houseAsk = this.houseAsk(m) * COIN;
         if (Math.min(bookPx, houseAsk) > limit) break;
-        const free = a.cash - a.heldCash;
+        const free = forced ? INF : Math.max(0, this.freeCash(a) + this.coverRelease(a, m, remaining));
         if (best && (bookPx <= houseAsk || this.oneHouseShareCost(m) > bookPx)) {
           const perShare = bookPx + Math.ceil(bookPx * feeRate);
           const q = Math.min(remaining, best.qty, Math.floor(free / perShare));
@@ -485,7 +721,7 @@ export class Engine {
           filled += q;
         } else {
           const stop = Math.min(bookPx, limit);
-          const affordable = maxBuyable(m.curve, free / COIN, m.spread / 2, feeRate);
+          const affordable = free === INF ? remaining : maxBuyable(m.curve, free / COIN, m.spread / 2, feeRate);
           let d = Math.min(remaining, affordable, stop === INF ? remaining : this.sharesToAsk(m, stop / COIN));
           if (d <= 0) {
             // A whole share would overshoot the stop on the margin; take it if its average still fits.
@@ -493,7 +729,7 @@ export class Engine {
             else break;
           }
           // maxBuyable is a float estimate; step down if rounding tips it over the cash.
-          while (d > 0 && !this.houseSells(em, m, a, d, true, null, orderId)) d--;
+          while (d > 0 && !this.houseSells(em, m, a, d, true, null, orderId, forced)) d--;
           if (d <= 0) break;
           filled += d;
         }
@@ -550,23 +786,20 @@ export class Engine {
   /**
    * The house sells `d` shares to `a` along its curve. A taker pays the fee; a resting buyer (maker,
    * filled by the no-cross rule) doesn't, and its held-back cash is released. Returns false, changing
-   * nothing, if the buyer can't pay.
+   * nothing, if the buyer can't pay (unless `forced`, for liquidations).
    */
-  private houseSells(em: Emitter, m: Meme, a: Account, d: number, taker: boolean, order: Order | null, orderId: number): boolean {
+  private houseSells(em: Emitter, m: Meme, a: Account, d: number, taker: boolean, order: Order | null, orderId: number, forced = false): boolean {
     const p1 = priceAfter(m.curve, d);
     const cost = Math.ceil(coinsBetween(m.curve.L, m.curve.price, p1) * (1 + m.spread / 2) * COIN);
     const fee = taker ? Math.ceil((cost * this.s.params.takerFeeBps) / 10_000) : 0;
     const release = order ? order.holdPerShare * d : 0;
-    if (cost + fee > a.cash - a.heldCash + release) return false;
+    if (!forced && !order && cost + fee > this.freeCash(a) + this.coverRelease(a, m, d)) return false;
+    if (order && cost + fee > release + Math.max(0, this.freeCash(a))) return false;
     a.heldCash -= release;
     m.curve.price = p1;
-    a.cash -= cost + fee;
-    a.shares[m.memeId] = (a.shares[m.memeId] ?? 0) + d;
-    const player = `player:${a.accountId}`;
-    em.post(player, "coin", -(cost + fee));
+    this.move(em, a, m, d, -(cost + fee));
     em.post("house", "coin", cost);
     em.post("sink", "coin", fee);
-    em.post(player, `share:${m.memeId}`, d);
     em.post("house", `share:${m.memeId}`, -d);
     this.record(em, m, a, "buy", d, cost, fee, taker ? "taker" : "maker", orderId, this.houseAsk(m));
     return true;
@@ -577,15 +810,11 @@ export class Engine {
     const p1 = priceAfter(m.curve, -d);
     const proceeds = Math.floor(coinsBetween(m.curve.L, p1, m.curve.price) * (1 - m.spread / 2) * COIN);
     const fee = taker ? Math.ceil((proceeds * this.s.params.takerFeeBps) / 10_000) : 0;
-    if (order) a.heldShares[m.memeId] -= d;
+    if (order) this.releaseSell(a, order, d);
     m.curve.price = p1;
-    a.cash += proceeds - fee;
-    a.shares[m.memeId] -= d;
-    const player = `player:${a.accountId}`;
-    em.post(player, "coin", proceeds - fee);
+    this.move(em, a, m, -d, proceeds - fee);
     em.post("house", "coin", -proceeds);
     em.post("sink", "coin", fee);
-    em.post(player, `share:${m.memeId}`, -d);
     em.post("house", `share:${m.memeId}`, d);
     this.record(em, m, a, "sell", d, proceeds, fee, taker ? "taker" : "maker", orderId, this.houseBid(m));
   }
@@ -598,20 +827,15 @@ export class Engine {
     const [buyer, seller] = takerSide === "buy" ? [taker, maker] : [maker, taker];
     const buyerPays = notional + (takerSide === "buy" ? fee : 0);
     const sellerGets = notional - (takerSide === "sell" ? fee : 0);
-    if (takerSide === "buy") maker.heldShares[m.memeId] -= q;
+    if (takerSide === "buy") this.releaseSell(maker, resting, q);
     else maker.heldCash -= resting.holdPerShare * q;
-    buyer.cash -= buyerPays;
-    seller.cash += sellerGets;
-    buyer.shares[m.memeId] = (buyer.shares[m.memeId] ?? 0) + q;
-    seller.shares[m.memeId] -= q;
-    em.post(`player:${buyer.accountId}`, "coin", -buyerPays);
-    em.post(`player:${seller.accountId}`, "coin", sellerGets);
+    this.move(em, buyer, m, q, -buyerPays);
+    this.move(em, seller, m, -q, sellerGets);
     em.post("sink", "coin", fee);
-    em.post(`player:${buyer.accountId}`, `share:${m.memeId}`, q);
-    em.post(`player:${seller.accountId}`, `share:${m.memeId}`, -q);
     const price = resting.px / COIN;
     em.out.trades.push({ memeId: m.memeId, time: em.time, qty: q, price });
     this.addVwap(m, em.time, price, q);
+    this.updateEma(m, em.time, price);
     const base = { seq: em.seq, time: em.time, memeId: m.memeId, qty: q, cost: notional, source: "book" as const };
     em.out.fills.push({ ...base, accountId: taker.accountId, orderId: em.seq, side: takerSide, fee, role: "taker" });
     em.out.fills.push({ ...base, accountId: maker.accountId, orderId: resting.orderId, side: resting.side, fee: 0, role: "maker" });
@@ -620,11 +844,63 @@ export class Engine {
     else em.out.orders.push({ orderId: resting.orderId, accountId: resting.accountId, memeId: m.memeId, status: "open", remaining: resting.qty });
   }
 
+  /**
+   * Every change to a player's shares goes through here: cash and share journal lines, open interest,
+   * the short index, and round-trip tracking (a position going flat, or flipping side, closes a trade).
+   */
+  private move(em: Emitter, a: Account, m: Meme, dq: number, cash: number) {
+    const before = a.shares[m.memeId] ?? 0;
+    const after = before + dq;
+    a.cash += cash;
+    a.shares[m.memeId] = after;
+    em.post(`player:${a.accountId}`, "coin", cash);
+    em.post(`player:${a.accountId}`, `share:${m.memeId}`, dq);
+    m.longOI += Math.max(after, 0) - Math.max(before, 0);
+    m.shortOI += Math.max(-after, 0) - Math.max(-before, 0);
+    if (Object.values(a.shares).some((q) => q < 0)) this.s.shorts[a.accountId] = true;
+    else delete this.s.shorts[a.accountId];
+
+    const crosses = before !== 0 && (after === 0 || Math.sign(after) !== Math.sign(before));
+    const closingShare = crosses ? Math.abs(before) / Math.abs(dq) : 0;
+    const p = a.pos[m.memeId];
+    if (p) {
+      p.flow += crosses ? Math.round(cash * closingShare) : cash;
+      if (crosses) {
+        em.out.closed.push({
+          accountId: a.accountId,
+          memeId: m.memeId,
+          side: before > 0 ? "long" : "short",
+          openedAt: p.openedAt,
+          closedAt: em.time,
+          peakQty: p.peak,
+          pnl: p.flow,
+          basis: p.basis,
+        });
+        delete a.pos[m.memeId];
+      } else {
+        p.peak = Math.max(p.peak, Math.abs(after));
+        if (Math.abs(after) > Math.abs(before)) p.basis += Math.abs(cash);
+      }
+    }
+    if (after !== 0 && (before === 0 || crosses)) {
+      const rest = crosses ? cash - Math.round(cash * closingShare) : cash;
+      a.pos[m.memeId] = { openedAt: em.time, flow: rest, peak: Math.abs(after), basis: Math.abs(rest) };
+      if (after < 0) this.borrowFee(em, a, m, -after); // the minute this short starts in
+    } else if (after < before && before <= 0) this.borrowFee(em, a, m, before - after); // adding to a short
+  }
+
   /** A house fill: the account's fill (average price) and the trade, whose price is the last share's (the LTP). */
   private record(em: Emitter, m: Meme, a: Account, side: Side, qty: number, cost: number, fee: number, role: "taker" | "maker", orderId: number, lastPrice: number) {
     em.out.fills.push({ seq: em.seq, time: em.time, memeId: m.memeId, accountId: a.accountId, orderId, side, qty, cost, fee, source: "house", role });
     em.out.trades.push({ memeId: m.memeId, time: em.time, qty, price: lastPrice });
     this.addVwap(m, em.time, cost / COIN / qty, qty);
+    this.updateEma(m, em.time, lastPrice);
+  }
+
+  private updateEma(m: Meme, time: number, price: number) {
+    if (m.emaLast === null) m.emaLast = price;
+    else m.emaLast += (1 - Math.exp(-(time - m.emaAt) / MARK_EMA_MS)) * (price - m.emaLast);
+    m.emaAt = time;
   }
 
   private addVwap(m: Meme, time: number, price: number, qty: number) {
@@ -641,11 +917,20 @@ export class Engine {
       const i = m.bids.findIndex((x) => x.px < o.px);
       m.bids.splice(i === -1 ? m.bids.length : i, 0, o);
     } else {
-      a.heldShares[o.memeId] = (a.heldShares[o.memeId] ?? 0) + o.qty;
+      a.heldShares[o.memeId] = (a.heldShares[o.memeId] ?? 0) + o.heldLong;
+      a.heldMargin += o.marginPerShare * (o.qty - o.heldLong);
       const i = m.asks.findIndex((x) => x.px > o.px);
       m.asks.splice(i === -1 ? m.asks.length : i, 0, o);
     }
     this.s.orderIndex[o.orderId] = m.memeId;
+  }
+
+  /** Releases what a resting sell held for `q` filled shares: owned shares first, then short margin. */
+  private releaseSell(a: Account, o: Order, q: number) {
+    const fromLong = Math.min(q, o.heldLong);
+    o.heldLong -= fromLong;
+    a.heldShares[o.memeId] -= fromLong;
+    a.heldMargin -= o.marginPerShare * (q - fromLong);
   }
 
   private removeOrder(em: Emitter, o: Order, status: "filled" | "cancelled" | "expired") {
@@ -654,7 +939,7 @@ export class Engine {
     const book = o.side === "buy" ? m.bids : m.asks;
     book.splice(book.indexOf(o), 1);
     if (o.side === "buy") a.heldCash -= o.holdPerShare * o.qty;
-    else a.heldShares[o.memeId] -= o.qty;
+    else this.releaseSell(a, o, o.qty);
     delete this.s.orderIndex[o.orderId];
     em.out.orders.push({ orderId: o.orderId, accountId: o.accountId, memeId: o.memeId, status, remaining: status === "filled" ? 0 : o.qty });
   }

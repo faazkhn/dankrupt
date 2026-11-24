@@ -8,6 +8,7 @@ import { CandleChart } from "@/components/CandleChart";
 import { OpenOrdersCard } from "@/components/OpenOrdersCard";
 import { OrderBookCard } from "@/components/OrderBookCard";
 import { OrderTicket } from "@/components/OrderTicket";
+import { PositionCard } from "@/components/PositionCard";
 import { TradeHeader } from "@/components/TradeHeader";
 import { fmt, fmtInt, fmtPct, useBook, useCandles, useMarkets, useMe, type Fill } from "@/lib/market";
 
@@ -35,7 +36,6 @@ export function MemeView({ memeId }: { memeId: string }) {
       </>
     );
 
-  const held = me?.shares[memeId] ?? 0;
   const up = (meme?.change24h ?? 0) >= 0;
   const Trend = up ? TrendUpIcon : TrendDownIcon;
 
@@ -87,14 +87,7 @@ export function MemeView({ memeId }: { memeId: string }) {
               />
             </div>
             {me && <OpenOrdersCard me={me} memeId={memeId} onChange={setMe} />}
-            {me && (
-              <div className="paper -rotate-[0.6deg] p-5">
-                <h2 className="font-display text-2xl">Your position</h2>
-                <p className="mt-1 text-3xl font-black tabular-nums">{fmtInt(held)} shares</p>
-                {meme && held > 0 && <p className="font-bold text-ink-soft">Worth about {fmt(held * meme.bid)} at the bid</p>}
-                {(me.heldShares[memeId] ?? 0) > 0 && <p className="text-sm font-bold text-ink-soft">{fmtInt(me.heldShares[memeId])} held by your sell orders</p>}
-              </div>
-            )}
+            {me && <PositionCard me={me} memeId={memeId} />}
             {fills.length > 0 && (
               <div className="paper p-5">
                 <h2 className="font-display text-2xl">Your fills this visit</h2>

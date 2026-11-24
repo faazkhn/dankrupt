@@ -4,7 +4,7 @@
 
 **Blocked by:** 06a
 
-**Status:** ready-for-agent
+**Status:** done (see commit "Shorting, margin, liquidation, borrow fees, resets, round trips").
 
 - [ ] Each started minute charges |q|·M·r/60, using that minute's U and M. A 20-second short pays one minute.
 - [ ] Accrued, unbooked fees count in equity and margin.
