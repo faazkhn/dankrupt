@@ -1,0 +1,11 @@
+{
+  "name": "dankrupt",
+  "private": true,
+  "packageManager": "pnpm@10.34.5",
+  "engines": { "node": "26.13.1" },
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "test": "pnpm -r --if-present test",
+    "typecheck": "pnpm -r --if-present typecheck"
+  }
+}

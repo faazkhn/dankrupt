@@ -1,0 +1,8 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+onlyBuiltDependencies:
+  - "@electric-sql/pglite"
+ignoredBuiltDependencies:
+  - sharp
+  - unrs-resolver

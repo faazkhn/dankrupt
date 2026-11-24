@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** in-progress: page, waitlist and privacy notice built and tested locally. Deploy waits on the VM, the domain and the Discord URL from Faaz.
 
 **Needs from Faaz:** the Discord invite URL, and a domain or temporary subdomain for HTTPS.
 
