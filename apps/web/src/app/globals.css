@@ -161,7 +161,7 @@ body {
 .ticker-track {
   animation: ticker 40s linear infinite;
 }
-.ticker-track[data-paused="true"] {
+.ticker:hover .ticker-track {
   animation-play-state: paused;
 }
 

@@ -18,7 +18,7 @@ const OVER = ragged(19, 22, 8);
 /** Patterned paper torn at top and bottom, with a darker torn layer peeking out underneath. */
 export function TornPaper({ children, className = "polka", underClass = "bg-[#5f9a1e]" }: { children: ReactNode; className?: string; underClass?: string }) {
   return (
-    <div className="relative drop-shadow-[0_6px_0_rgba(58,36,18,0.25)]">
+    <div className="relative [filter:drop-shadow(0_6px_0_rgba(58,36,18,0.25))_drop-shadow(0_-6px_0_rgba(58,36,18,0.25))]">
       <div aria-hidden="true" className={`absolute inset-0 ${underClass}`} style={{ clipPath: UNDER }} />
       <div className={`relative ${className}`} style={{ clipPath: OVER }}>
         {children}

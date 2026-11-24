@@ -1,7 +1,4 @@
-"use client";
-
-import { useState } from "react";
-import { PauseIcon, PlayIcon, TrendUpIcon, TrendDownIcon } from "@phosphor-icons/react";
+import { TrendDownIcon, TrendUpIcon } from "@phosphor-icons/react/ssr";
 
 // Sample prices for the landing page only; not market data.
 const SAMPLE = [
@@ -15,13 +12,14 @@ const SAMPLE = [
   { t: "$AURA", p: 233.15, d: 12.2 },
 ];
 
+/** Scrolling ticker tape. Pauses on hover; stands still under reduced motion. */
 export function Ticker() {
-  const [paused, setPaused] = useState(false);
   const items = [...SAMPLE, ...SAMPLE];
   return (
-    <div className="relative flex items-center gap-2 border-y-[3px] border-ink bg-paper">
+    <div className="ticker border-y-[3px] border-ink bg-paper">
+      <p className="sr-only">Sample meme prices, for illustration only.</p>
       <div className="overflow-hidden py-2" aria-hidden="true">
-        <div className="ticker-track flex w-max gap-8 pr-8" data-paused={paused}>
+        <div className="ticker-track flex w-max gap-8 pr-8">
           {items.map((s, i) => {
             const up = s.d >= 0;
             const Icon = up ? TrendUpIcon : TrendDownIcon;
@@ -30,7 +28,7 @@ export function Ticker() {
                 <span className="font-display text-lg">{s.t}</span>
                 <span>{s.p.toFixed(2)}</span>
                 <span className={`flex items-center gap-1 ${up ? "text-mint" : "text-berry"}`}>
-                  <Icon weight="bold" aria-hidden="true" />
+                  <Icon weight="bold" />
                   {up ? "+" : ""}
                   {s.d.toFixed(1)}%
                 </span>
@@ -39,15 +37,6 @@ export function Ticker() {
           })}
         </div>
       </div>
-      <p className="sr-only">Sample meme prices, for illustration only.</p>
-      <button
-        type="button"
-        onClick={() => setPaused((p) => !p)}
-        aria-label={paused ? "Play the ticker" : "Pause the ticker"}
-        className="absolute right-1 grid size-11 cursor-pointer place-items-center rounded-full border-[3px] border-ink bg-[var(--tape)] shadow-[0_3px_0_var(--ink)]"
-      >
-        {paused ? <PlayIcon weight="fill" aria-hidden="true" /> : <PauseIcon weight="fill" aria-hidden="true" />}
-      </button>
     </div>
   );
 }
