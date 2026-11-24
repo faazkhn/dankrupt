@@ -1,5 +1,6 @@
 import type { Db } from "@dankrupt/db";
 import { computeFeatures, DEFAULT_FEATURE_PARAMS, wikipediaHourly, type FeatureRow } from "@dankrupt/features";
+import type { InGame } from "./attention.ts";
 import type { Sequencer } from "./sequencer.ts";
 
 const HOUR = 3_600_000;
@@ -48,15 +49,26 @@ export class Signals {
   private seq: Sequencer;
   private fetchWiki: WikipediaFetch;
 
-  constructor(db: Db, seq: Sequencer, fetchWiki: WikipediaFetch) {
+  private ingame: InGame | undefined;
+
+  constructor(db: Db, seq: Sequencer, fetchWiki: WikipediaFetch, ingame?: InGame) {
     this.db = db;
     this.seq = seq;
     this.fetchWiki = fetchWiki;
+    this.ingame = ingame;
   }
 
-  async mapSources(memeId: string, wikipedia: string[]) {
+  async mapSources(memeId: string, wikipedia: string[], youtube: string[] = []) {
     for (const ref of wikipedia)
       await this.db.query("insert into meme_signal_map (meme_id, source, ref) values ($1, 'wikipedia', $2) on conflict do nothing", [memeId, ref]);
+    // YouTube ids are for official embeds only; no statistics are fetched until ticket 09b's approval.
+    for (const ref of youtube)
+      await this.db.query("insert into meme_signal_map (meme_id, source, ref) values ($1, 'youtube', $2) on conflict do nothing", [memeId, ref]);
+  }
+
+  async videos(memeId: string): Promise<string[]> {
+    const { rows } = await this.db.query<{ ref: string }>("select ref from meme_signal_map where meme_id = $1 and source = 'youtube'", [memeId]);
+    return rows.map((r) => r.ref);
   }
 
   /** Fetches whatever days are missing, then recomputes every meme's features. */
@@ -90,7 +102,7 @@ export class Signals {
           [memeId, d, v],
         );
     }
-    await this.recompute(now, [...byMeme.keys()]);
+    await this.recompute(now, this.ingame ? this.seq.engine.memes().map((m) => m.memeId) : [...byMeme.keys()]);
   }
 
   private async recompute(now: number, memeIds: string[]) {
@@ -105,7 +117,11 @@ export class Signals {
         [memeId],
       );
       const daily: DailyCounts = Object.fromEntries(rows.map((r) => [r.d, Number(r.count)]));
-      const features = computeFeatures({ start, ipoTime: meme.listedAt, sources: { wikipedia: wikipediaHourly(daily, start, end) } }, DEFAULT_FEATURE_PARAMS);
+      const sources = {
+        wikipedia: wikipediaHourly(daily, start, end),
+        ...(this.ingame ? { ingame: await this.ingame.hourly(memeId, start, end) } : {}),
+      };
+      const features = computeFeatures({ start, ipoTime: meme.listedAt, sources }, DEFAULT_FEATURE_PARAMS);
       this.latest.set(memeId, features);
       const f = features.at(-1);
       if (!f) continue;
@@ -127,7 +143,7 @@ export class Signals {
     return {
       wikipediaDaily: rows.reverse().map((r) => ({ day: r.d, views: Number(r.count) })),
       series: features.map((f) => ({ time: f.time, heat: round(f.heat, 3), fair: round(f.fair, 2) })),
-      delayed: last?.delayed ?? true,
+      delayed: last?.delayed ?? false, // nothing computed yet (just booted) isn't "delayed"
       heat: last?.heat ?? null,
       momentum: last?.v ?? null,
     };

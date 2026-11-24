@@ -136,6 +136,24 @@ const MIGRATIONS: string[] = [
      action text not null,
      detail jsonb not null default '{}'
    )`,
+  `create table watchlist (
+     account_id text not null,
+     meme_id text not null,
+     created_at timestamptz not null default now(),
+     primary key (account_id, meme_id)
+   )`,
+  `create table ingame_views (
+     meme_id text not null,
+     hour timestamptz not null,
+     views int not null default 0,
+     primary key (meme_id, hour)
+   )`,
+  `create table ingame_viewers (
+     account_id text not null,
+     hour timestamptz not null,
+     primary key (account_id, hour)
+   )`,
+  `alter table candidates add column youtube jsonb not null default '[]'`,
 ];
 
 /** Applies pending migrations in order; safe to call on every boot. */

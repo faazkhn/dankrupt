@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { createDb, migrate } from "@dankrupt/db";
 import { Admin, wikipediaResolver } from "./admin.ts";
+import { InGame } from "./attention.ts";
 import { Feed } from "./feed.ts";
 import { Projections } from "./projections.ts";
 import { createApi } from "./http.ts";
@@ -22,11 +23,12 @@ feed.statusOf = (id) => {
 };
 await seq.clock(); // catch the house up on the time the server was down
 seq.startClock(1_000);
-const signals = new Signals(db, seq, wikipediaClient());
-for (const m of seed) await signals.mapSources(m.memeId, m.wikipedia ?? []);
+const ingame = new InGame(db);
+const signals = new Signals(db, seq, wikipediaClient(), ingame);
+for (const m of seed) await signals.mapSources(m.memeId, m.wikipedia ?? [], m.youtube ?? []);
 signals.start();
 const admin = new Admin(db, seq, signals, wikipediaResolver());
-const server = createApi(seq, feed, signals, projections, db, admin);
+const server = createApi(seq, feed, signals, projections, db, admin, ingame);
 feed.attach(server);
 const port = Number(process.env.PORT ?? 4000);
 server.listen(port, () => console.log(`dankrupt engine on :${port}, replayed to seq ${seq.engine.seq}`));

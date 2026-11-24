@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowLeftIcon, TrendDownIcon, TrendUpIcon } from "@phosphor-icons/react";
+import { ArrowLeftIcon, StarIcon, TrendDownIcon, TrendUpIcon } from "@phosphor-icons/react";
 import { AttentionCard } from "@/components/AttentionCard";
 import { CandleChart } from "@/components/CandleChart";
 import { Countdown } from "@/components/Countdown";
@@ -11,7 +11,7 @@ import { OrderBookCard } from "@/components/OrderBookCard";
 import { OrderTicket } from "@/components/OrderTicket";
 import { PositionCard } from "@/components/PositionCard";
 import { TradeHeader } from "@/components/TradeHeader";
-import { fmt, fmtInt, fmtPct, getMemeMeta, useBook, useCandles, useMarkets, useMe, type Fill } from "@/lib/market";
+import { fmt, fmtInt, fmtPct, getMemeMeta, getWatchlist, pingView, setStar, useBook, useCandles, useMarkets, useMe, type Fill } from "@/lib/market";
 
 export function MemeView({ memeId }: { memeId: string }) {
   const { rows } = useMarkets();
@@ -20,9 +20,14 @@ export function MemeView({ memeId }: { memeId: string }) {
   const { me, setMe, status } = useMe();
   const [fills, setFills] = useState<(Fill & { at: number })[]>([]);
   const [picked, setPicked] = useState<number | null>(null);
-  const [meta, setMeta] = useState<{ description: string; links: string[] } | null>(null);
+  const [meta, setMeta] = useState<{ description: string; links: string[]; videos: string[] } | null>(null);
+  const [starred, setStarred] = useState<boolean | null>(null);
   useEffect(() => {
     getMemeMeta(memeId).then(setMeta).catch(() => {});
+    getWatchlist()
+      .then((w) => setStarred(w.includes(memeId)))
+      .catch(() => setStarred(null));
+    void pingView(memeId); // in-game attention: page views feed this meme's fair value
   }, [memeId]);
 
   const meme = rows?.get(memeId);
@@ -87,7 +92,20 @@ export function MemeView({ memeId }: { memeId: string }) {
         <div className="mx-auto grid max-w-5xl gap-6 px-4 pt-6 md:grid-cols-[1.45fr_1fr]">
           <section className="space-y-6">
             <div className="paper -rotate-[0.3deg] p-5 sm:p-6">
-              <h1 className="font-display text-4xl leading-tight sm:text-5xl">{meme?.name ?? "…"}</h1>
+              <div className="flex items-start justify-between gap-3">
+                <h1 className="font-display text-4xl leading-tight sm:text-5xl">{meme?.name ?? "…"}</h1>
+                {starred !== null && (
+                  <button
+                    type="button"
+                    aria-pressed={starred}
+                    aria-label={starred ? "Remove from your watchlist" : "Add to your watchlist"}
+                    onClick={() => setStar(memeId, !starred).then((w) => setStarred(w.includes(memeId))).catch(() => {})}
+                    className={`btn-candy is-small px-3 ${starred ? "" : "is-muted"}`}
+                  >
+                    <StarIcon weight={starred ? "fill" : "bold"} className="size-6" aria-hidden="true" />
+                  </button>
+                )}
+              </div>
               {meta?.description && <p className="mt-1 font-semibold text-ink-soft">{meta.description}</p>}
               {meta?.links.length ? (
                 <p className="mt-1 flex flex-wrap gap-3 text-sm font-bold">
@@ -113,6 +131,35 @@ export function MemeView({ memeId }: { memeId: string }) {
               <CandleChart candles={candles} fair={meme?.fair} className="mt-4 min-h-48" />
               <p className="mt-1 text-xs font-bold text-ink-soft">The chart follows the mid price between the best bid and ask, one candle per minute.</p>
             </div>
+            {meta?.videos.length ? (
+              <div className="paper p-5">
+                <h2 className="font-display text-2xl">Watch it</h2>
+                <div className="mt-3 grid gap-3">
+                  {meta.videos.slice(0, 2).map((v) => (
+                    <iframe
+                      key={v}
+                      className="aspect-video w-full rounded-xl border-[3px] border-ink"
+                      src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(v)}`}
+                      title={`${meme?.name ?? "Meme"} on YouTube`}
+                      loading="lazy"
+                      allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ))}
+                </div>
+                <p className="mt-2 text-xs font-bold text-ink-soft">
+                  Videos play from YouTube under the{" "}
+                  <a className="underline" href="https://www.youtube.com/t/terms" target="_blank" rel="noopener noreferrer">
+                    YouTube Terms of Service
+                  </a>{" "}
+                  and{" "}
+                  <a className="underline" href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">
+                    Google Privacy Policy
+                  </a>
+                  .
+                </p>
+              </div>
+            ) : null}
             <AttentionCard memeId={memeId} fair={meme?.fair} />
             <OrderBookCard book={book} onPick={setPicked} />
           </section>

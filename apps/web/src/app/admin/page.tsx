@@ -204,8 +204,12 @@ export default function AdminPage() {
   );
 }
 
-function AddCandidate({ onAdd }: { onAdd: (c: { memeId: string; name: string; description: string; links: string[]; wikipedia: string[] }) => void }) {
-  const [f, setF] = useState({ memeId: "", name: "", description: "", links: "", wikipedia: "" });
+function AddCandidate({
+  onAdd,
+}: {
+  onAdd: (c: { memeId: string; name: string; description: string; links: string[]; wikipedia: string[]; youtube: string[] }) => void;
+}) {
+  const [f, setF] = useState({ memeId: "", name: "", description: "", links: "", wikipedia: "", youtube: "" });
   const field = (k: keyof typeof f, label: string, hint?: string) => (
     <label className="block">
       <span className="text-sm font-extrabold">{label}</span>
@@ -225,13 +229,14 @@ function AddCandidate({ onAdd }: { onAdd: (c: { memeId: string; name: string; de
         onSubmit={(e) => {
           e.preventDefault();
           const split = (s: string) => s.split(/[\n,|]/).map((x) => x.trim()).filter(Boolean);
-          onAdd({ memeId: f.memeId, name: f.name, description: f.description, links: split(f.links), wikipedia: split(f.wikipedia) });
+          onAdd({ memeId: f.memeId, name: f.name, description: f.description, links: split(f.links), wikipedia: split(f.wikipedia), youtube: split(f.youtube) });
         }}
       >
         {field("name", "Name", "As players will see it")}
         {field("memeId", "Id", "lowercase-with-dashes, used in links")}
         {field("wikipedia", "Wikipedia article titles", "Separate several with | ; checked against Wikipedia")}
         {field("links", "Links", "https only, separate with |")}
+        {field("youtube", "YouTube video ids", "For embeds only (no stats are fetched); separate with |")}
         <label className="block sm:col-span-2">
           <span className="text-sm font-extrabold">Short description</span>
           <textarea

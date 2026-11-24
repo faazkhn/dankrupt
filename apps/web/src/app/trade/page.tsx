@@ -12,12 +12,16 @@ import {
 import { Countdown } from "@/components/Countdown";
 import { Sparkline } from "@/components/Sparkline";
 import { TradeHeader } from "@/components/TradeHeader";
-import { fmt, fmtInt, fmtPct, useMarkets, useMe } from "@/lib/market";
+import { fmt, fmtInt, fmtPct, getWatchlist, useMarkets, useMe } from "@/lib/market";
 
 export default function Markets() {
   const { list, error } = useMarkets();
   const { me, status } = useMe();
-  const [sort, setSort] = useState<"trending" | "movers" | "graveyard">("trending");
+  const [sort, setSort] = useState<"trending" | "movers" | "watchlist" | "graveyard">("trending");
+  const [watched, setWatched] = useState<string[]>([]);
+  useEffect(() => {
+    getWatchlist().then(setWatched).catch(() => {});
+  }, []);
   const [now, setNow] = useState(0);
   useEffect(() => {
     const t = setTimeout(() => setNow(Date.now()), 0);
@@ -25,7 +29,13 @@ export default function Markets() {
   }, []);
   const comeback = (m: { comebackAt: number | null }) => now > 0 && m.comebackAt !== null && now - m.comebackAt < 86_400_000;
   const rows = list
-    ?.filter((m) => (sort === "graveyard" ? m.status === "dormant" : m.status !== "dormant" && m.status !== "halted"))
+    ?.filter((m) =>
+      sort === "graveyard"
+        ? m.status === "dormant"
+        : sort === "watchlist"
+          ? watched.includes(m.memeId) && m.status !== "halted"
+          : m.status !== "dormant" && m.status !== "halted",
+    )
     .toSorted((a, b) =>
       sort === "movers"
         ? Math.abs(b.change24h) - Math.abs(a.change24h)
@@ -74,6 +84,7 @@ export default function Markets() {
               [
                 ["trending", "Trending"],
                 ["movers", "Top movers"],
+                ["watchlist", "Watchlist"],
                 ["graveyard", "Graveyard"],
               ] as const
             ).map(([k, label]) => (
@@ -110,7 +121,9 @@ export default function Markets() {
                 <li className="p-5 font-bold text-ink-soft">
                   {sort === "graveyard"
                     ? "The Graveyard is empty. Memes rest here after 7 cold days, still tradable, waiting for a comeback."
-                    : "No memes trading yet."}
+                    : sort === "watchlist"
+                      ? "Nothing starred yet. Tap the star on any meme to keep it here."
+                      : "No memes trading yet."}
                 </li>
               )}
               {rows?.map((m) => {

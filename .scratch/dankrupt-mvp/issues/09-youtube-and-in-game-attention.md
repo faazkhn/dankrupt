@@ -4,7 +4,7 @@
 
 **Blocked by:** 04
 
-**Status:** ready-for-agent
+**Status:** done: page views (once per player per 5 min) and watchlist stars per 1,000 active players join the blend at weight 0.1; watchlist star and tab; privacy-mode YouTube embeds with attribution and policy links (no statistics fetched). Operators can map YouTube ids.
 
 - [ ] Page views and stars are counted per meme per 5 minutes and normalised per 1,000 active players.
 - [ ] In-game attention goes stale after 2 missed 5-minute updates.

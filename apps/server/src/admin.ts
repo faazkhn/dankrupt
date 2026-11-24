@@ -31,7 +31,7 @@ export const wikipediaResolver =
 
 export class AdminError extends Error {}
 
-type CandidateInput = { memeId: string; name: string; description: string; links: string[]; wikipedia: string[] };
+type CandidateInput = { memeId: string; name: string; description: string; links: string[]; wikipedia: string[]; youtube: string[] };
 
 export class Admin {
   private db: Db;
@@ -61,8 +61,8 @@ export class Admin {
       resolved.push(canonical);
     }
     const { rows } = await this.db.query<{ id: number }>(
-      `insert into candidates (meme_id, name, description, links, wikipedia) values ($1, $2, $3, $4::jsonb, $5::jsonb) returning id::int as id`,
-      [c.memeId, c.name, c.description, JSON.stringify(c.links), JSON.stringify(resolved)],
+      `insert into candidates (meme_id, name, description, links, wikipedia, youtube) values ($1, $2, $3, $4::jsonb, $5::jsonb, $6::jsonb) returning id::int as id`,
+      [c.memeId, c.name, c.description, JSON.stringify(c.links), JSON.stringify(resolved), JSON.stringify(c.youtube)],
     );
     await this.log(operator, "candidate.add", { id: rows[0].id, ...c, wikipedia: resolved });
     return rows[0].id;
@@ -70,7 +70,7 @@ export class Admin {
 
   async candidates() {
     const { rows } = await this.db.query<Record<string, unknown>>(
-      "select id::int as id, meme_id, name, description, links, wikipedia, status, reason, source, created_at::text, decided_at::text, decided_by from candidates order by created_at desc limit 200",
+      "select id::int as id, meme_id, name, description, links, wikipedia, youtube, status, reason, source, created_at::text, decided_at::text, decided_by from candidates order by created_at desc limit 200",
     );
     return rows;
   }
@@ -95,7 +95,7 @@ export class Admin {
        on conflict (meme_id) do update set description = excluded.description, links = excluded.links`,
       [c.meme_id, c.description, JSON.stringify(c.links)],
     );
-    await this.signals?.mapSources(c.meme_id as string, wiki);
+    await this.signals?.mapSources(c.meme_id as string, wiki, (c.youtube as string[]) ?? []);
     await this.db.query("update candidates set status = 'approved', decided_at = now(), decided_by = $2 where id = $1", [id, operator]);
     await this.log(operator, "candidate.approve", { id, memeId: c.meme_id });
     void this.signals?.refresh().catch((e) => console.error("signals refresh after listing failed", e));
@@ -183,5 +183,6 @@ function parseCandidate(raw: unknown): CandidateInput {
     .filter((t): t is string => typeof t === "string" && t.trim().length > 0)
     .map((t) => t.trim())
     .slice(0, 5);
-  return { memeId, name, ...parseMeta(o), wikipedia };
+  const youtube = (Array.isArray(o.youtube) ? o.youtube : []).filter((v): v is string => typeof v === "string" && /^[A-Za-z0-9_-]{11}$/.test(v.trim())).map((v) => v.trim()).slice(0, 3);
+  return { memeId, name, ...parseMeta(o), wikipedia, youtube };
 }

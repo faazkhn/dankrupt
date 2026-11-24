@@ -3,6 +3,7 @@ import type { Db } from "@dankrupt/db";
 import { COIN } from "@dankrupt/engine";
 import { Admin, AdminError, isOperator } from "./admin.ts";
 import { leaderboard, type Style, type Window } from "./board.ts";
+import type { InGame } from "./attention.ts";
 import type { Feed } from "./feed.ts";
 import type { Projections } from "./projections.ts";
 import type { Sequencer } from "./sequencer.ts";
@@ -80,7 +81,7 @@ export function parseOrder(input: unknown): OrderRequest {
   return out;
 }
 
-export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projections?: Projections, boardDb?: Db, admin?: Admin) {
+export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projections?: Projections, boardDb?: Db, admin?: Admin, ingame?: InGame) {
   const e = seq.engine;
   const coins = (uc: number) => uc / COIN;
   const memeParam = (url: URL) => {
@@ -159,7 +160,9 @@ export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projec
       });
     }
     if (req.method === "GET" && url.pathname === "/api/meme-meta") {
-      return send(200, admin ? await admin.memeMeta(memeParam(url)) : { description: "", links: [] });
+      const memeId = memeParam(url);
+      const meta = admin ? await admin.memeMeta(memeId) : { description: "", links: [] };
+      return send(200, { ...meta, videos: signals ? await signals.videos(memeId) : [] });
     }
     if (req.method === "GET" && url.pathname === "/api/book") {
       const memeId = memeParam(url);
@@ -205,6 +208,18 @@ export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projec
         throw err;
       }
       throw new HttpError(404, "not found");
+    }
+    if (req.method === "POST" && url.pathname === "/api/view") {
+      const { memeId } = (await body(req)) as { memeId?: unknown };
+      if (typeof memeId !== "string" || !ID.test(memeId)) throw new HttpError(400, "memeId is required");
+      return send(200, { counted: ingame ? await ingame.view(me, memeId) : false });
+    }
+    if (req.method === "GET" && url.pathname === "/api/watchlist") return send(200, ingame ? await ingame.watchlist(me) : []);
+    if (req.method === "POST" && url.pathname === "/api/watchlist") {
+      const { memeId, on } = (await body(req)) as { memeId?: unknown; on?: unknown };
+      if (typeof memeId !== "string" || !ID.test(memeId) || typeof on !== "boolean") throw new HttpError(400, "memeId and on are required");
+      await ingame?.star(me, memeId, on);
+      return send(200, ingame ? await ingame.watchlist(me) : []);
     }
     if (req.method === "GET" && url.pathname === "/api/whoami") {
       return send(200, { accountId: me, operator: isOperator(me) });

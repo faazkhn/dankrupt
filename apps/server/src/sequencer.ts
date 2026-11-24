@@ -1,7 +1,7 @@
 import type { Db } from "@dankrupt/db";
 import { Engine, type EngineEvent, type EventBody, type JournalLine, type Output } from "@dankrupt/engine";
 
-export type SeedMeme = { memeId: string; name: string; price: number; depth: number; wikipedia?: string[] };
+export type SeedMeme = { memeId: string; name: string; price: number; depth: number; wikipedia?: string[]; youtube?: string[] };
 /** `ev` is null for clock ticks, which are implied by time and never stored. */
 export type Listener = (ev: EngineEvent | null, out: Output) => void;
 
@@ -38,7 +38,7 @@ export class Sequencer {
     s.lastTime = events.at(-1)?.time ?? 0;
     await s.writeJournal(missing);
     const listed = new Set(engine.memes().map((m) => m.memeId));
-    for (const { wikipedia: _w, ...m } of seed) if (!listed.has(m.memeId)) await s.submit({ type: "meme.list", ...m });
+    for (const { wikipedia: _w, youtube: _y, ...m } of seed) if (!listed.has(m.memeId)) await s.submit({ type: "meme.list", ...m });
     return s;
   }
 

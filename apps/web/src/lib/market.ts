@@ -162,7 +162,13 @@ export async function resetAccount() {
 
 export const getProfile = () => api<Profile>("profile");
 export const getWhoami = () => api<{ accountId: string; operator: boolean }>("whoami");
-export const getMemeMeta = (memeId: string) => api<{ description: string; links: string[] }>(`meme-meta?memeId=${encodeURIComponent(memeId)}`);
+export const getMemeMeta = (memeId: string) =>
+  api<{ description: string; links: string[]; videos: string[] }>(`meme-meta?memeId=${encodeURIComponent(memeId)}`);
+export const getWatchlist = () => api<string[]>("watchlist");
+export const setStar = (memeId: string, on: boolean) =>
+  api<string[]>("watchlist", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ memeId, on }) });
+export const pingView = (memeId: string) =>
+  api<{ counted: boolean }>("view", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ memeId }) }).catch(() => null);
 export async function adminCall<T>(path: string, body?: unknown): Promise<T> {
   const res = await fetch(`/api/engine/admin/${path}`, {
     method: body === undefined ? "GET" : "POST",
