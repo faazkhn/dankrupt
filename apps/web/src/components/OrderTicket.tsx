@@ -25,7 +25,7 @@ type Props = {
 /** Buy or sell at market, or at your own price (limit), with an exact live preview from the engine. */
 export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced }: Props) {
   const [side, setSide] = useState<"buy" | "sell">("buy");
-  const [type, setType] = useState<"market" | "limit">("market");
+  const [type, setType] = useState<"market" | "limit" | "stop">("market");
   const [qty, setQty] = useState(10);
   const [priceText, setPriceText] = useState("");
   const [expiry, setExpiry] = useState(0);
@@ -43,7 +43,14 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
 
   const price = Number(priceText);
   const priceValid = type === "market" || (Number.isFinite(price) && price >= 0.01 && Math.abs(Math.round(price * 100) - price * 100) < 1e-6);
-  const ticket: Ticket = { memeId, side, qty, type, ...(type === "limit" ? { price, expiresInMinutes: EXPIRY[expiry].minutes } : {}) };
+  const ticket: Ticket = {
+    memeId,
+    side,
+    qty,
+    type,
+    ...(type === "limit" ? { price, expiresInMinutes: EXPIRY[expiry].minutes } : type === "stop" ? { price } : {}),
+  };
+  const stopWrongSide = type === "stop" && meme && priceValid && (side === "sell" ? price >= meme.mid : price <= meme.mid);
   const preview = usePreview(ticket, !signedOut && !!me && qty >= 1 && priceValid);
   const held = me?.shares[memeId] ?? 0;
   const freeShares = held - (me?.heldShares[memeId] ?? 0);
@@ -74,6 +81,7 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
       const cost = out.fills.reduce((s, f) => s + f.cost, 0);
       const verb = side === "buy" ? "Bought" : "Sold";
       const resting = out.orders.find((o) => o.status === "open");
+      if (type === "stop") return setResult({ ok: true, text: `Stop set: ${side} ${fmtInt(qty)} at market when the price reaches ${fmt(price)}` });
       const parts: string[] = [];
       if (got > 0) parts.push(`${verb} ${fmtInt(got)}${got < qty ? ` of ${fmtInt(qty)}` : ""} at avg ${fmt(cost / got)}`);
       if (resting) parts.push(`${fmtInt(resting.remaining)} waiting on the book at ${fmt(price)}`);
@@ -100,7 +108,7 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
   return (
     <div className="mt-4 space-y-4">
       <Segmented label="Side" value={side} options={["buy", "sell"]} setter={(v) => (setSide(v), setResult(null))} colored />
-      <Segmented label="Order type" value={type} options={["market", "limit"]} setter={(v) => (setType(v), setResult(null))} />
+      <Segmented label="Order type" value={type} options={["market", "limit", "stop"]} setter={(v) => (setType(v), setResult(null))} />
 
       <div>
         <div className="flex items-end justify-between">
@@ -171,7 +179,33 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
         </div>
       )}
 
+      {type === "stop" && (
+        <div>
+          <label htmlFor="stop-price" className="text-lg font-extrabold">
+            {side === "sell" ? "Sell when the price falls to" : "Buy when the price rises to"}
+          </label>
+          <input
+            id="stop-price"
+            inputMode="decimal"
+            value={priceText}
+            placeholder={meme ? fmt(side === "sell" ? meme.mid * 0.95 : meme.mid * 1.05) : "0.00"}
+            onChange={(e) => (setPriceText(e.target.value.replace(/[^\d.]/g, "")), setResult(null))}
+            aria-invalid={!priceValid || !!stopWrongSide}
+            aria-describedby="stop-help"
+            className="mt-1 min-h-12 w-full rounded-[14px] border-[3px] border-ink bg-white px-3 text-center text-2xl font-black tabular-nums shadow-[inset_0_3px_0_var(--paper-shade)]"
+          />
+          <p id="stop-help" className={`mt-1 text-sm font-bold ${priceValid && !stopWrongSide ? "text-ink-soft" : "text-berry"}`}>
+            {!priceValid
+              ? "Use a price from 0.01, in steps of 0.01."
+              : stopWrongSide
+                ? `A ${side} stop has to be ${side === "sell" ? "below" : "above"} the current price (${meme ? fmt(meme.mid) : "…"}).`
+                : `Nothing happens until then. It then ${side}s at market, so the fill can differ a little.`}
+          </p>
+        </div>
+      )}
+
       <div className="rounded-2xl border-[3px] border-dashed border-ink/30 bg-paper-shade/60 p-3 text-sm font-bold" aria-live="polite">
+        {type === "stop" && <p className="mb-1 text-ink-soft">If it fired at today&apos;s prices:</p>}
         {!preview ? (
           <span className="text-ink-soft">Working out your price…</span>
         ) : preview.qty === 0 ? (
@@ -208,9 +242,11 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
         )}
       </div>
 
-      <button onClick={submit} disabled={busy || !meme || qty < 1 || !priceValid} className={`btn-candy is-${side} w-full`}>
+      <button onClick={submit} disabled={busy || !meme || qty < 1 || !priceValid || !!stopWrongSide} className={`btn-candy is-${side} w-full`}>
         {busy && <SpinnerGapIcon className="size-6 animate-spin" aria-hidden="true" />}
-        {side === "buy" ? "Buy" : "Sell"} {fmtInt(qty)} {type === "market" ? "at market" : `at ${priceValid && priceText ? fmt(price) : "…"}`}
+        {type === "stop" ? "Set stop: " : ""}
+        {side === "buy" ? "Buy" : "Sell"} {fmtInt(qty)}{" "}
+        {type === "market" ? "at market" : type === "stop" ? `at ${priceValid && priceText ? fmt(price) : "…"}` : `at ${priceValid && priceText ? fmt(price) : "…"}`}
       </button>
       <p role="status" className={`min-h-6 font-bold ${result?.ok ? "text-mint" : "text-berry"}`}>
         {result?.text}
@@ -221,7 +257,7 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
 
 function Segmented<T extends string>({ label, value, options, setter, colored }: { label: string; value: T; options: T[]; setter: (v: T) => void; colored?: boolean }) {
   return (
-    <div role="radiogroup" aria-label={label} className="grid grid-cols-2 gap-3">
+    <div role="radiogroup" aria-label={label} className={`grid gap-3 ${options.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
       {options.map((o) => (
         <button
           key={o}
@@ -229,7 +265,7 @@ function Segmented<T extends string>({ label, value, options, setter, colored }:
           role="radio"
           aria-checked={value === o}
           onClick={() => setter(o)}
-          className={`btn-candy is-small capitalize ${value === o ? (colored ? `is-${o}` : "") : "is-muted"}`}
+          className={`btn-candy is-small px-2 capitalize ${value === o ? (colored ? `is-${o}` : "") : "is-muted"}`}
         >
           {o}
         </button>

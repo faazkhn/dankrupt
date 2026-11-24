@@ -40,7 +40,8 @@ export type OrderRequest = {
   memeId: string;
   side: "buy" | "sell";
   qty: number;
-  type: "market" | "limit";
+  type: "market" | "limit" | "stop";
+  /** Limit price, or the trigger price for a stop. */
   price?: number;
   /** Minutes until a limit order expires; omit for good-till-cancelled. */
   expiresInMinutes?: number;
@@ -54,8 +55,13 @@ export function parseOrder(input: unknown): OrderRequest {
   if (!Number.isSafeInteger(o.qty) || (o.qty as number) <= 0 || (o.qty as number) > 10_000_000)
     throw new HttpError(400, "qty must be a whole number from 1 to 10,000,000");
   const type = o.type ?? "market";
-  if (type !== "market" && type !== "limit") throw new HttpError(400, "type must be market or limit");
+  if (type !== "market" && type !== "limit" && type !== "stop") throw new HttpError(400, "type must be market, limit or stop");
   const out: OrderRequest = { memeId: o.memeId, side: o.side, qty: o.qty as number, type };
+  if (type === "stop") {
+    if (typeof o.price !== "number" || !Number.isFinite(o.price) || o.price < 0.01 || o.price > 10_000_000)
+      throw new HttpError(400, "trigger price must be a number from 0.01");
+    out.price = o.price;
+  }
   if (type === "limit") {
     if (typeof o.price !== "number" || !Number.isFinite(o.price) || o.price < 0.01 || o.price > 10_000_000)
       throw new HttpError(400, "price must be a number from 0.01");
@@ -128,6 +134,7 @@ export function createApi(seq: Sequencer, feed?: Feed) {
         type: url.searchParams.get("type") ?? "market",
         price: url.searchParams.has("price") ? Number(url.searchParams.get("price")) : undefined,
       });
+      // A stop previews as the market order it becomes when it fires (at today's prices).
       const p = e.preview(me, o.memeId, o.side, o.qty, o.type === "limit" ? o.price : undefined);
       return send(200, { ...p, total: coins(p.total), fee: coins(p.fee) });
     }
@@ -135,7 +142,9 @@ export function createApi(seq: Sequencer, feed?: Feed) {
       const o = parseOrder(await body(req));
       await ensureAccount(me);
       const out = await seq.submit(
-        o.type === "limit"
+        o.type === "stop"
+          ? { type: "order.stop", accountId: me, memeId: o.memeId, side: o.side, qty: o.qty, stopPrice: o.price! }
+          : o.type === "limit"
           ? {
               type: "order.limit",
               accountId: me,

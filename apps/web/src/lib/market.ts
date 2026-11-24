@@ -13,7 +13,7 @@ export type MarketRow = {
   spark: number[];
 };
 export type Candle = { minute: number; open: number; high: number; low: number; close: number; volume: number };
-export type OpenOrder = { orderId: number; memeId: string; side: "buy" | "sell"; price: number; qty: number; expiresAt: number | null };
+export type OpenOrder = { orderId: number; kind: "limit" | "stop"; memeId: string; side: "buy" | "sell"; price: number; qty: number; expiresAt: number | null };
 export type Me = {
   accountId: string;
   cash: number;
@@ -27,7 +27,7 @@ export type Fill = { memeId: string; side: "buy" | "sell"; qty: number; cost: nu
 export type Preview = { qty: number; total: number; fee: number; avgPrice: number; lastPrice: number; limitedBy: "cash" | "shares" | "limit" | "liquidity" | null };
 export type BookLevel = { price: number; qty: number; orders: number };
 export type Book = { bids: BookLevel[]; asks: BookLevel[]; house: { bid: number; ask: number } };
-export type OrderTicket = { memeId: string; side: "buy" | "sell"; qty: number; type: "market" | "limit"; price?: number; expiresInMinutes?: number };
+export type OrderTicket = { memeId: string; side: "buy" | "sell"; qty: number; type: "market" | "limit" | "stop"; price?: number; expiresInMinutes?: number };
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api/engine/${path}`, { cache: "no-store", ...init });
@@ -138,11 +138,12 @@ export function usePreview(t: OrderTicket | null, enabled: boolean) {
   const [preview, setPreview] = useState<Preview | null>(null);
   const key = t ? JSON.stringify(t) : "";
   useEffect(() => {
-    if (!enabled || !t || t.qty < 1 || (t.type === "limit" && !(t.price && t.price >= 0.01))) {
+    if (!enabled || !t || t.qty < 1 || (t.type !== "market" && !(t.price && t.price >= 0.01))) {
       const clear = setTimeout(() => setPreview(null), 0);
       return () => clearTimeout(clear);
     }
-    const q = new URLSearchParams({ memeId: t.memeId, side: t.side, qty: String(t.qty), type: t.type });
+    // A stop previews as the market order it turns into.
+    const q = new URLSearchParams({ memeId: t.memeId, side: t.side, qty: String(t.qty), type: t.type === "stop" ? "market" : t.type });
     if (t.type === "limit") q.set("price", String(t.price));
     const load = () => api<Preview>(`preview?${q}`).then(setPreview).catch(() => setPreview(null));
     const first = setTimeout(load, 250);

@@ -20,6 +20,15 @@ export type EventBody =
       /** Epoch ms after which the order is cancelled, or null for good-till-cancelled. */
       expiresAt?: number | null;
     }
+  | {
+      type: "order.stop";
+      accountId: string;
+      memeId: string;
+      side: Side;
+      qty: number;
+      /** Fires a market order when the mid reaches this price (buy: at or above; sell: at or below). */
+      stopPrice: number;
+    }
   | { type: "order.cancel"; accountId: string; orderId: number };
 
 /** Every input carries a global sequence number and a sequencer-assigned timestamp (ms). */
@@ -57,7 +66,7 @@ export type Reject = { seq: number; reason: string };
 /** Quote after a tick or a fill: house centre `price`, best bid/ask across book and house, and their mid. */
 export type PriceUpdate = { memeId: string; time: number; price: number; bid: number; ask: number; mid: number };
 
-export type OrderUpdate = { orderId: number; accountId: string; memeId: string; status: "open" | "filled" | "cancelled" | "expired"; remaining: number };
+export type OrderUpdate = { orderId: number; accountId: string; memeId: string; status: "open" | "filled" | "cancelled" | "expired" | "triggered"; remaining: number };
 
 export type Output = {
   fills: Fill[];

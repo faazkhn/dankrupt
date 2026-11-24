@@ -169,6 +169,7 @@ const step = fc.oneof(
     ttl: fc.option(fc.integer({ min: 2, max: 3_600 }), { nil: null }),
   }),
   fc.record({ k: fc.constant("cancel" as const), who: fc.constantFrom(...ACCOUNTS), pick: fc.nat() }),
+  fc.record({ k: fc.constant("stop" as const), who: fc.constantFrom(...ACCOUNTS), side: fc.constantFrom("buy" as const, "sell" as const), qty: fc.integer({ min: 1, max: 300 }), cents: fc.integer({ min: 8_000, max: 12_500 }) }),
   fc.record({ k: fc.constant("wait" as const), secs: fc.integer({ min: 1, max: 7_200 }) }),
 );
 
@@ -211,6 +212,7 @@ function runSteps(steps: { k: string; [x: string]: unknown }[]) {
         price: (s.cents as number) / 100,
         expiresAt: s.ttl ? t + (s.ttl as number) * 1_000 : null,
       });
+    if (s.k === "stop") run({ type: "order.stop", accountId: s.who as string, memeId: "m", side: s.side as "buy", qty: s.qty as number, stopPrice: (s.cents as number) / 100 });
     if (s.k === "cancel") {
       const open = e.openOrders(s.who as string);
       if (open.length) run({ type: "order.cancel", accountId: s.who as string, orderId: open[(s.pick as number) % open.length].orderId });

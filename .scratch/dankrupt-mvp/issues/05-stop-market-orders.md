@@ -4,7 +4,7 @@
 
 **Blocked by:** 03b
 
-**Status:** ready-for-agent
+**Status:** done: stop-market orders fire on the mid (ticks or fills), cascade safely, cancel like any order; Stop option in the ticket with a fire-at-today's-prices preview.
 
 - [ ] A stop triggers on the first event or tick where the mid crosses it, then routes as a market order.
 - [ ] Stops are indexed by trigger price, so ticks stay cheap with many stops.

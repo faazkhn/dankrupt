@@ -43,6 +43,9 @@ type Order = {
   expiresAt: number | null;
 };
 
+/** A stop-market order waiting for the mid to reach its trigger. Holds nothing until it fires. */
+type Stop = { orderId: number; accountId: string; memeId: string; side: Side; stop: number; qty: number };
+
 type Meme = {
   memeId: string;
   name: string;
@@ -58,6 +61,7 @@ type Meme = {
   /** Best first: bids by price desc, asks by price asc; time priority (orderId) within a price. */
   bids: Order[];
   asks: Order[];
+  stops: Stop[];
 };
 
 type Account = {
@@ -177,10 +181,13 @@ export class Engine {
   }
 
   openOrders(accountId: string) {
-    const out: { orderId: number; memeId: string; side: Side; price: number; qty: number; expiresAt: number | null }[] = [];
-    for (const m of Object.values(this.s.memes))
+    const out: { orderId: number; kind: "limit" | "stop"; memeId: string; side: Side; price: number; qty: number; expiresAt: number | null }[] = [];
+    for (const m of Object.values(this.s.memes)) {
       for (const o of [...m.bids, ...m.asks])
-        if (o.accountId === accountId) out.push({ orderId: o.orderId, memeId: o.memeId, side: o.side, price: o.px / COIN, qty: o.qty, expiresAt: o.expiresAt });
+        if (o.accountId === accountId) out.push({ orderId: o.orderId, kind: "limit", memeId: o.memeId, side: o.side, price: o.px / COIN, qty: o.qty, expiresAt: o.expiresAt });
+      for (const o of m.stops ?? [])
+        if (o.accountId === accountId) out.push({ orderId: o.orderId, kind: "stop", memeId: o.memeId, side: o.side, price: o.stop, qty: o.qty, expiresAt: null });
+    }
     return out.sort((a, b) => b.orderId - a.orderId);
   }
 
@@ -247,6 +254,7 @@ export class Engine {
         this.expire(em, m, g);
         this.drift(m, g);
         this.noCross(em, m);
+        this.triggerStops(em, m);
         out.prices.push(this.quote(m, g));
       }
     }
@@ -325,6 +333,7 @@ export class Engine {
           vwap: [],
           bids: [],
           asks: [],
+          stops: [],
         };
         this.s.memes[ev.memeId] = m;
         out.prices.push(this.quote(m, ev.time));
@@ -369,18 +378,62 @@ export class Engine {
         } else if (ev.type === "order.limit") out.orders.push({ orderId: ev.seq, accountId: a.accountId, memeId: m.memeId, status: "filled", remaining: 0 });
         if (filled === 0 && ev.type === "order.market") return reject(ev.side === "buy" ? "not enough free cash for even one share" : "nobody is buying right now");
         this.noCross(em, m);
+        this.triggerStops(em, m);
         out.prices.push(this.quote(m, ev.time));
+        return out;
+      }
+      case "order.stop": {
+        const a = this.s.accounts[ev.accountId];
+        const m = this.s.memes[ev.memeId];
+        if (!a) return reject("unknown account");
+        if (!m) return reject("unknown meme");
+        if (!Number.isSafeInteger(ev.qty) || ev.qty <= 0) return reject("quantity must be a whole number above 0");
+        const px = Math.round(ev.stopPrice * COIN);
+        if (!(px >= PRICE_STEP) || px % PRICE_STEP !== 0) return reject("trigger price must be at least 0.01 and in steps of 0.01");
+        const mid = this.quote(m, ev.time).mid;
+        if (ev.side === "sell" && ev.stopPrice >= mid) return reject("a sell stop must be below the current price");
+        if (ev.side === "buy" && ev.stopPrice <= mid) return reject("a buy stop must be above the current price");
+        m.stops.push({ orderId: ev.seq, accountId: a.accountId, memeId: m.memeId, side: ev.side, stop: px / COIN, qty: ev.qty });
+        this.s.orderIndex[ev.seq] = m.memeId;
+        out.orders.push({ orderId: ev.seq, accountId: a.accountId, memeId: m.memeId, status: "open", remaining: ev.qty });
         return out;
       }
       case "order.cancel": {
         const memeId = this.s.orderIndex[ev.orderId];
         const m = memeId ? this.s.memes[memeId] : undefined;
+        const stop = m?.stops.find((x) => x.orderId === ev.orderId);
+        if (m && stop && stop.accountId === ev.accountId) {
+          m.stops.splice(m.stops.indexOf(stop), 1);
+          delete this.s.orderIndex[stop.orderId];
+          out.orders.push({ orderId: stop.orderId, accountId: stop.accountId, memeId: m.memeId, status: "cancelled", remaining: stop.qty });
+          return out;
+        }
         const o = m && [...m.bids, ...m.asks].find((x) => x.orderId === ev.orderId);
         if (!m || !o || o.accountId !== ev.accountId) return reject("no such open order");
         this.removeOrder(em, o, "cancelled");
         out.prices.push(this.quote(m, ev.time));
         return out;
       }
+    }
+  }
+
+  /**
+   * Fires every stop whose trigger the mid has reached (oldest first), as a market order. A fired
+   * stop moves the price, which can fire the next one, so this loops until nothing else triggers.
+   */
+  private triggerStops(em: Emitter, m: Meme) {
+    for (let guard = 0; guard < 1_000 && m.stops.length; guard++) {
+      const mid = this.quote(m, em.time).mid;
+      const hit = m.stops.find((o) => (o.side === "buy" ? mid >= o.stop : mid <= o.stop));
+      if (!hit) return;
+      m.stops.splice(m.stops.indexOf(hit), 1);
+      delete this.s.orderIndex[hit.orderId];
+      em.out.orders.push({ orderId: hit.orderId, accountId: hit.accountId, memeId: m.memeId, status: "triggered", remaining: hit.qty });
+      const a = this.s.accounts[hit.accountId];
+      const free = (a.shares[m.memeId] ?? 0) - (a.heldShares[m.memeId] ?? 0);
+      const qty = hit.side === "sell" ? Math.min(hit.qty, free) : hit.qty;
+      if (qty > 0) this.take(em, a, m, hit.side, qty, INF, hit.orderId);
+      this.noCross(em, m);
     }
   }
 
