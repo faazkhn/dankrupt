@@ -945,11 +945,30 @@ export class Engine {
         if (Math.abs(after) > Math.abs(before)) p.basis += Math.abs(cash);
       }
     }
+    if (after < before) this.reconcileHeld(a, m);
     if (after !== 0 && (before === 0 || crosses)) {
       const rest = crosses ? cash - Math.round(cash * closingShare) : cash;
       a.pos[m.memeId] = { openedAt: em.time, flow: rest, peak: Math.abs(after), basis: Math.abs(rest) };
       if (after < 0) this.borrowFee(em, a, m, -after); // the minute this short starts in
     } else if (after < before && before <= 0) this.borrowFee(em, a, m, before - after); // adding to a short
+  }
+
+  /**
+   * Resting sells hold owned shares. If the position later drops below what they hold (another sell
+   * went short past them), the excess becomes short sales: margin is held for it instead.
+   */
+  private reconcileHeld(a: Account, m: Meme) {
+    let excess = (a.heldShares[m.memeId] ?? 0) - Math.max(0, a.shares[m.memeId] ?? 0);
+    for (const o of m.asks) {
+      if (excess <= 0) return;
+      if (o.accountId !== a.accountId || o.heldLong === 0) continue;
+      const k = Math.min(o.heldLong, excess);
+      o.heldLong -= k;
+      a.heldShares[m.memeId] -= k;
+      if (!o.marginPerShare) o.marginPerShare = Math.ceil(this.s.params.initialMargin * Math.max(o.px, this.mark(m)));
+      a.heldMargin += o.marginPerShare * k;
+      excess -= k;
+    }
   }
 
   /** A house fill: the account's fill (average price) and the trade, whose price is the last share's (the LTP). */

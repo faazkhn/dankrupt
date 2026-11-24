@@ -252,3 +252,15 @@ test("random order flow replays to an identical snapshot", () => {
     { numRuns: 60 },
   );
 });
+
+test("regression: going short past shares held by your own resting sell turns them into margin-backed short sales", () => {
+  const { e } = runSteps([
+    { k: "mkt", who: "cy", side: "buy", qty: 1 },
+    { k: "lim", who: "cy", side: "sell", qty: 1, cents: 9989, ttl: null },
+    { k: "mkt", who: "cy", side: "sell", qty: 1 },
+  ] as never);
+  const a = e.account("cy");
+  expect(a.shares.m).toBe(0);
+  expect(a.heldShares.m ?? 0).toBe(0);
+  expect(a.heldMargin).toBeGreaterThan(0);
+});
