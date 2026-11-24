@@ -55,6 +55,20 @@ const MIGRATIONS: string[] = [
      volume bigint not null default 0,
      primary key (meme_id, minute)
    )`,
+  // Journal lines are keyed by their cause (an event or a tick) so replays write each line once.
+  `drop table journal`,
+  `create table journal (
+     cause text not null,
+     n int not null,
+     seq bigint not null,
+     time timestamptz not null,
+     account text not null,
+     commodity text not null,
+     amount bigint not null,
+     primary key (cause, n)
+   )`,
+  `create index journal_time on journal (time)`,
+  `create index journal_account2 on journal (account, commodity)`,
 ];
 
 /** Applies pending migrations in order; safe to call on every boot. */

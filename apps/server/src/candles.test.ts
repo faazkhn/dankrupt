@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { CandleBook } from "./candles.ts";
 
 const M = 60_000;
-const q = (time: number, price: number) => ({ memeId: "m", time, price, bid: price, ask: price });
+const q = (time: number, mid: number) => ({ memeId: "m", time, price: mid, bid: mid, ask: mid, mid });
 
 test("prices within a minute make one OHLC candle; fills add volume; the next minute closes it", () => {
   const book = new CandleBook();

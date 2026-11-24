@@ -49,9 +49,9 @@ export class Feed {
 
   readonly onApplied = (ev: EngineEvent | null, out: Output) => {
     if (ev?.type === "meme.list") this.names.set(ev.memeId, ev.name);
-    for (const f of out.fills) {
-      this.ltp.set(f.memeId, f.cost / 1_000_000 / f.qty);
-      this.book.fill(f.memeId, ev?.time ?? 0, f.qty);
+    for (const t of out.trades) {
+      this.ltp.set(t.memeId, t.price);
+      this.book.fill(t.memeId, t.time, t.qty);
     }
     for (const p of out.prices) {
       this.latest.set(p.memeId, p);
@@ -84,16 +84,16 @@ export class Feed {
   markets(): MarketRow[] {
     return [...this.latest.values()].map((p) => {
       const h = this.history.get(p.memeId) ?? [];
-      const ref = h[0]?.open ?? this.book.current(p.memeId)?.open ?? p.price;
-      const spark = [...h.slice(-59).map((c) => c.close), p.price];
+      const ref = h[0]?.open ?? this.book.current(p.memeId)?.open ?? p.mid;
+      const spark = [...h.slice(-59).map((c) => c.close), p.mid];
       return {
         memeId: p.memeId,
         name: this.names.get(p.memeId) ?? p.memeId,
         ltp: this.ltp.get(p.memeId) ?? null,
-        mid: p.price,
+        mid: p.mid,
         bid: p.bid,
         ask: p.ask,
-        change24h: ((p.price - ref) / ref) * 100,
+        change24h: ((p.mid - ref) / ref) * 100,
         spark,
       };
     });

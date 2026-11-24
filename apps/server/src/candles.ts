@@ -4,7 +4,7 @@ export type Candle = { memeId: string; minute: number; open: number; high: numbe
 
 const MINUTE = 60_000;
 
-/** Builds 1-minute candles from house mid prices (the chart follows mid, not last), with volume from fills. */
+/** Builds 1-minute candles from the mid quote across book and house (the chart follows mid, not last), with volume from fills. */
 export class CandleBook {
   private open = new Map<string, Candle>();
 
@@ -13,12 +13,12 @@ export class CandleBook {
     const minute = p.time - (p.time % MINUTE);
     const c = this.open.get(p.memeId);
     if (c && c.minute === minute) {
-      c.high = Math.max(c.high, p.price);
-      c.low = Math.min(c.low, p.price);
-      c.close = p.price;
+      c.high = Math.max(c.high, p.mid);
+      c.low = Math.min(c.low, p.mid);
+      c.close = p.mid;
       return [];
     }
-    this.open.set(p.memeId, { memeId: p.memeId, minute, open: p.price, high: p.price, low: p.price, close: p.price, volume: 0 });
+    this.open.set(p.memeId, { memeId: p.memeId, minute, open: p.mid, high: p.mid, low: p.mid, close: p.mid, volume: 0 });
     return c ? [c] : [];
   }
 

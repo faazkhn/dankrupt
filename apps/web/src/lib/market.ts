@@ -13,8 +13,21 @@ export type MarketRow = {
   spark: number[];
 };
 export type Candle = { minute: number; open: number; high: number; low: number; close: number; volume: number };
-export type Me = { accountId: string; cash: number; shares: Record<string, number> };
-export type Fill = { memeId: string; side: "buy" | "sell"; qty: number; cost: number; fee: number; price: number };
+export type OpenOrder = { orderId: number; memeId: string; side: "buy" | "sell"; price: number; qty: number; expiresAt: number | null };
+export type Me = {
+  accountId: string;
+  cash: number;
+  freeCash: number;
+  heldCash: number;
+  shares: Record<string, number>;
+  heldShares: Record<string, number>;
+  orders: OpenOrder[];
+};
+export type Fill = { memeId: string; side: "buy" | "sell"; qty: number; cost: number; fee: number; source: "house" | "book"; role: "taker" | "maker" };
+export type Preview = { qty: number; total: number; fee: number; avgPrice: number; lastPrice: number; limitedBy: "cash" | "shares" | "limit" | "liquidity" | null };
+export type BookLevel = { price: number; qty: number; orders: number };
+export type Book = { bids: BookLevel[]; asks: BookLevel[]; house: { bid: number; ask: number } };
+export type OrderTicket = { memeId: string; side: "buy" | "sell"; qty: number; type: "market" | "limit"; price?: number; expiresInMinutes?: number };
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api/engine/${path}`, { cache: "no-store", ...init });
@@ -104,12 +117,51 @@ export function useMe() {
   return { me, setMe, status, refresh };
 }
 
-export async function placeOrder(memeId: string, side: "buy" | "sell", qty: number) {
-  return api<{ fills: Fill[]; rejects: { reason: string }[]; account: Omit<Me, "accountId"> }>("orders", {
+export async function placeOrder(t: OrderTicket) {
+  return api<{ fills: Fill[]; orders: { orderId: number; status: string; remaining: number }[]; rejects: { reason: string }[]; account: Me }>("orders", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ memeId, side, qty }),
+    body: JSON.stringify(t),
   });
+}
+
+export async function cancelOrder(orderId: number) {
+  return api<{ rejects: { reason: string }[]; account: Me }>("orders/cancel", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ orderId }),
+  });
+}
+
+/** Debounced engine preview of what the ticket would do right now; refreshes as prices move. */
+export function usePreview(t: OrderTicket | null, enabled: boolean) {
+  const [preview, setPreview] = useState<Preview | null>(null);
+  const key = t ? JSON.stringify(t) : "";
+  useEffect(() => {
+    if (!enabled || !t || t.qty < 1 || (t.type === "limit" && !(t.price && t.price >= 0.01))) {
+      const clear = setTimeout(() => setPreview(null), 0);
+      return () => clearTimeout(clear);
+    }
+    const q = new URLSearchParams({ memeId: t.memeId, side: t.side, qty: String(t.qty), type: t.type });
+    if (t.type === "limit") q.set("price", String(t.price));
+    const load = () => api<Preview>(`preview?${q}`).then(setPreview).catch(() => setPreview(null));
+    const first = setTimeout(load, 250);
+    const id = setInterval(load, 3_000);
+    return () => (clearTimeout(first), clearInterval(id));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `key` is the ticket's identity
+  }, [key, enabled]);
+  return preview;
+}
+
+export function useBook(memeId: string, refreshMs = 2_000) {
+  const [book, setBook] = useState<Book | null>(null);
+  useEffect(() => {
+    const load = () => api<Book>(`book?memeId=${encodeURIComponent(memeId)}`).then(setBook).catch(() => {});
+    const first = setTimeout(load, 0);
+    const id = setInterval(load, refreshMs);
+    return () => (clearTimeout(first), clearInterval(id));
+  }, [memeId, refreshMs]);
+  return book;
 }
 
 export const fmt = (n: number, digits = 2) =>

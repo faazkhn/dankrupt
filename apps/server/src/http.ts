@@ -36,22 +36,63 @@ class HttpError extends Error {
   }
 }
 
+export type OrderRequest = {
+  memeId: string;
+  side: "buy" | "sell";
+  qty: number;
+  type: "market" | "limit";
+  price?: number;
+  /** Minutes until a limit order expires; omit for good-till-cancelled. */
+  expiresInMinutes?: number;
+};
+
 /** Validates an order request at the trust boundary. */
-export function parseOrder(input: unknown): { memeId: string; side: "buy" | "sell"; qty: number } {
+export function parseOrder(input: unknown): OrderRequest {
   const o = (input ?? {}) as Record<string, unknown>;
   if (typeof o.memeId !== "string" || !ID.test(o.memeId)) throw new HttpError(400, "memeId is required");
   if (o.side !== "buy" && o.side !== "sell") throw new HttpError(400, "side must be buy or sell");
   if (!Number.isSafeInteger(o.qty) || (o.qty as number) <= 0 || (o.qty as number) > 10_000_000)
     throw new HttpError(400, "qty must be a whole number from 1 to 10,000,000");
-  return { memeId: o.memeId, side: o.side, qty: o.qty as number };
+  const type = o.type ?? "market";
+  if (type !== "market" && type !== "limit") throw new HttpError(400, "type must be market or limit");
+  const out: OrderRequest = { memeId: o.memeId, side: o.side, qty: o.qty as number, type };
+  if (type === "limit") {
+    if (typeof o.price !== "number" || !Number.isFinite(o.price) || o.price < 0.01 || o.price > 10_000_000)
+      throw new HttpError(400, "price must be a number from 0.01");
+    out.price = o.price;
+    if (o.expiresInMinutes !== undefined && o.expiresInMinutes !== null) {
+      if (!Number.isSafeInteger(o.expiresInMinutes) || (o.expiresInMinutes as number) < 1 || (o.expiresInMinutes as number) > 60 * 24 * 90)
+        throw new HttpError(400, "expiry must be 1 minute to 90 days");
+      out.expiresInMinutes = o.expiresInMinutes as number;
+    }
+  }
+  return out;
 }
 
 export function createApi(seq: Sequencer, feed?: Feed) {
   const e = seq.engine;
   const coins = (uc: number) => uc / COIN;
+  const memeParam = (url: URL) => {
+    const memeId = url.searchParams.get("memeId") ?? "";
+    if (!ID.test(memeId)) throw new HttpError(400, "memeId is required");
+    return memeId;
+  };
 
   async function ensureAccount(id: string) {
     if (!e.hasAccount(id)) await seq.submit({ type: "account.open", accountId: id });
+  }
+
+  function accountView(id: string) {
+    const a = e.account(id);
+    return {
+      accountId: id,
+      cash: coins(a.cash),
+      freeCash: coins(a.freeCash),
+      heldCash: coins(a.heldCash),
+      shares: a.shares,
+      heldShares: a.heldShares,
+      orders: e.openOrders(id),
+    };
   }
 
   async function route(req: IncomingMessage, res: ServerResponse) {
@@ -64,10 +105,11 @@ export function createApi(seq: Sequencer, feed?: Feed) {
     if (req.method === "GET" && url.pathname === "/api/health") return send(200, { ok: true, seq: e.seq });
     if (req.method === "GET" && url.pathname === "/api/memes") return send(200, e.memes());
     if (req.method === "GET" && url.pathname === "/api/markets") return send(200, feed?.markets() ?? []);
-    if (req.method === "GET" && url.pathname === "/api/candles") {
-      const memeId = url.searchParams.get("memeId") ?? "";
-      if (!ID.test(memeId)) throw new HttpError(400, "memeId is required");
-      return send(200, feed?.candles(memeId) ?? []);
+    if (req.method === "GET" && url.pathname === "/api/candles") return send(200, feed?.candles(memeParam(url)) ?? []);
+    if (req.method === "GET" && url.pathname === "/api/book") {
+      const memeId = memeParam(url);
+      if (!e.memes().some((m) => m.memeId === memeId)) throw new HttpError(404, "no such meme");
+      return send(200, e.book(memeId, 8));
     }
 
     const me = playerId(req);
@@ -75,19 +117,48 @@ export function createApi(seq: Sequencer, feed?: Feed) {
 
     if (req.method === "GET" && url.pathname === "/api/me") {
       await ensureAccount(me);
-      const a = e.account(me);
-      return send(200, { accountId: me, cash: coins(a.cash), shares: a.shares });
+      return send(200, accountView(me));
+    }
+    if (req.method === "GET" && url.pathname === "/api/preview") {
+      await ensureAccount(me);
+      const o = parseOrder({
+        memeId: url.searchParams.get("memeId"),
+        side: url.searchParams.get("side"),
+        qty: Number(url.searchParams.get("qty")),
+        type: url.searchParams.get("type") ?? "market",
+        price: url.searchParams.has("price") ? Number(url.searchParams.get("price")) : undefined,
+      });
+      const p = e.preview(me, o.memeId, o.side, o.qty, o.type === "limit" ? o.price : undefined);
+      return send(200, { ...p, total: coins(p.total), fee: coins(p.fee) });
     }
     if (req.method === "POST" && url.pathname === "/api/orders") {
       const o = parseOrder(await body(req));
       await ensureAccount(me);
-      const out = await seq.submit({ type: "order.market", accountId: me, ...o });
-      const a = e.account(me);
+      const out = await seq.submit(
+        o.type === "limit"
+          ? {
+              type: "order.limit",
+              accountId: me,
+              memeId: o.memeId,
+              side: o.side,
+              qty: o.qty,
+              price: o.price!,
+              expiresAt: o.expiresInMinutes ? Date.now() + o.expiresInMinutes * 60_000 : null,
+            }
+          : { type: "order.market", accountId: me, memeId: o.memeId, side: o.side, qty: o.qty },
+      );
       return send(out.rejects.length ? 422 : 200, {
-        fills: out.fills.map((f) => ({ ...f, cost: coins(f.cost), fee: coins(f.fee) })),
+        fills: out.fills.filter((f) => f.accountId === me).map((f) => ({ ...f, cost: coins(f.cost), fee: coins(f.fee) })),
+        orders: out.orders.filter((x) => x.accountId === me),
         rejects: out.rejects,
-        account: { cash: coins(a.cash), shares: a.shares },
+        account: accountView(me),
       });
+    }
+    if (req.method === "POST" && url.pathname === "/api/orders/cancel") {
+      const { orderId } = (await body(req)) as { orderId?: unknown };
+      if (!Number.isSafeInteger(orderId)) throw new HttpError(400, "orderId is required");
+      const out = await seq.submit({ type: "order.cancel", accountId: me, orderId: orderId as number });
+      return send(out.rejects.length ? 422 : 200, { rejects: out.rejects, account: accountView(me) });
     }
     throw new HttpError(404, "not found");
   }

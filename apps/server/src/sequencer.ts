@@ -24,13 +24,14 @@ export class Sequencer {
   static async boot(db: Db, seed: SeedMeme[] = [], listeners: Listener[] = []): Promise<Sequencer> {
     const engine = new Engine();
     const events = (await db.query<{ body: EngineEvent }>("select body from events order by seq")).rows.map((r) => r.body);
-    const { rows: j } = await db.query<{ seq: number | null }>("select max(seq)::float8 as seq from journal");
-    const journalled = j[0]?.seq ?? 0;
+    const { rows: j } = await db.query<{ t: number | null }>("select extract(epoch from max(time)) * 1000 as t from journal");
+    const journalledTo = Number(j[0]?.t ?? -1);
     const missing: JournalLine[] = [];
     for (const ev of events) {
       const out = engine.apply(ev);
       for (const fn of listeners) fn(ev, out); // projections catch up from the replay
-      if (ev.seq > journalled) missing.push(...out.journal); // catch up a projection cut short by a crash
+      // Catch up a journal cut short by a crash; lines are keyed, so the overlapping instant is skipped on conflict.
+      for (const l of out.journal) if (l.time >= journalledTo) missing.push(l);
     }
     const s = new Sequencer(db, engine);
     s.listeners = [...listeners];
@@ -51,6 +52,7 @@ export class Sequencer {
     return this.enqueue(async () => {
       this.lastTime = Math.max(now, this.lastTime);
       const out = this.engine.advance(this.lastTime);
+      await this.writeJournal(out.journal); // ticks can fill resting orders (no-cross) and expire them
       for (const fn of this.listeners) fn(null, out);
       return out;
     });
@@ -87,13 +89,18 @@ export class Sequencer {
   }
 
   private async writeJournal(lines: JournalLine[]) {
-    if (!lines.length) return;
-    const values: unknown[] = [];
-    const tuples = lines.map((l, i) => {
-      values.push(l.seq, l.account, l.commodity, l.amount);
-      const n = i * 4;
-      return `($${n + 1}, $${n + 2}, $${n + 3}, $${n + 4})`;
-    });
-    await this.db.query(`insert into journal (seq, account, commodity, amount) values ${tuples.join(", ")}`, values);
+    for (let start = 0; start < lines.length; start += 1_000) {
+      const chunk = lines.slice(start, start + 1_000);
+      const values: unknown[] = [];
+      const tuples = chunk.map((l, i) => {
+        values.push(l.cause, l.n, l.seq, l.time, l.account, l.commodity, l.amount);
+        const k = i * 7;
+        return `($${k + 1}, $${k + 2}, $${k + 3}, to_timestamp($${k + 4} / 1000.0), $${k + 5}, $${k + 6}, $${k + 7})`;
+      });
+      await this.db.query(
+        `insert into journal (cause, n, seq, time, account, commodity, amount) values ${tuples.join(", ")} on conflict (cause, n) do nothing`,
+        values,
+      );
+    }
   }
 }

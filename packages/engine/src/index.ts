@@ -1,2 +1,16 @@
-export { Engine, DEFAULT_PARAMS, type Params } from "./engine.ts";
-export { COIN, type EngineEvent, type EventBody, type Fill, type JournalLine, type Output, type PriceUpdate, type Reject, type Side } from "./types.ts";
+export { Engine, DEFAULT_PARAMS, type Params, type Preview } from "./engine.ts";
+export {
+  COIN,
+  PRICE_STEP,
+  emptyOutput,
+  type EngineEvent,
+  type EventBody,
+  type Fill,
+  type JournalLine,
+  type OrderUpdate,
+  type Output,
+  type PriceUpdate,
+  type Reject,
+  type Side,
+  type Trade,
+} from "./types.ts";

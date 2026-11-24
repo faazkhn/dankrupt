@@ -55,7 +55,7 @@ describe("selling and limits", () => {
   test("you can't sell shares you don't hold (shorting comes later)", () => {
     const e = setup();
     const out = e.apply({ seq: 3, time: t0, type: "order.market", accountId: "ana", memeId: "stonks", side: "sell", qty: 1 });
-    expect(out.rejects[0].reason).toMatch(/no shares/);
+    expect(out.rejects[0].reason).toMatch(/no free shares/);
   });
 
   test("events must arrive in sequence", () => {

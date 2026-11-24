@@ -4,7 +4,7 @@
 
 **Blocked by:** 03a
 
-**Status:** ready-for-agent
+**Status:** done: held cash and shares, cancel, expiry on ticks, order book card (tap a price to use it), open orders with cancel, exact engine preview of fills, average price, fee and why an order would stop short.
 
 - [ ] A resting buy holds back its limit cost plus the taker fee. A resting sell holds back its shares. Orders that can't be covered are rejected at entry.
 - [ ] Free cash, shown in the UI, excludes held-back funds. A fill can never leave a player overdrawn: there's a property test for this.

@@ -39,3 +39,24 @@ test("no identity, no trading", async () => {
   const res = await fetch(`${base}/api/orders`, { method: "POST", body: "{}" });
   expect(res.status).toBe(401);
 });
+
+test("limit orders rest, show up on the account and the book, and can be cancelled", async () => {
+  const post = (path: string, data: unknown) => fetch(`${base}${path}`, as("bo", { method: "POST", body: JSON.stringify(data) }));
+  const placed = await (await post("/api/orders", { memeId: "stonks", side: "buy", qty: 5, type: "limit", price: 90, expiresInMinutes: 60 })).json();
+  expect(placed.account.orders).toHaveLength(1);
+  expect(placed.account.heldCash).toBeCloseTo(5 * 90.09, 2);
+  const book = await (await fetch(`${base}/api/book?memeId=stonks`)).json();
+  expect(book.bids[0]).toMatchObject({ price: 90, qty: 5 });
+  const cancelled = await (await post("/api/orders/cancel", { orderId: placed.account.orders[0].orderId })).json();
+  expect(cancelled.account.orders).toHaveLength(0);
+  expect(cancelled.account.heldCash).toBe(0);
+});
+
+test("preview tells you how much a market buy will fill and what it costs", async () => {
+  const p = await (await fetch(`${base}/api/preview?memeId=stonks&side=buy&qty=980`, as("cy"))).json();
+  expect(p.limitedBy).toBe("cash");
+  expect(p.qty).toBeGreaterThan(700);
+  expect(p.total).toBeLessThanOrEqual(100_000);
+  const res = await (await fetch(`${base}/api/orders`, as("cy", { method: "POST", body: JSON.stringify({ memeId: "stonks", side: "buy", qty: 980 }) }))).json();
+  expect(res.fills.reduce((s: number, f: { qty: number }) => s + f.qty, 0)).toBe(p.qty);
+});

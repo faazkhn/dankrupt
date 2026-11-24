@@ -4,7 +4,7 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** done: price-time book, limit orders, router (players win ties, PRD §6.7 golden test), no-cross rule on every price move, cause-keyed journal so tick fills replay idempotently.
 
 - [ ] Limit prices sit on the 0.01 price step. Quantities are whole shares, and the router rounds each house chunk down.
 - [ ] The router matches PRD §6.4. A golden test reproduces the corrected §6.7 example: 21 / 100 / 179 shares, total 30,964.6 coins, average 103.22, fee 31.
