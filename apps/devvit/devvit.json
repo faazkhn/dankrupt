@@ -62,5 +62,9 @@
   },
   "triggers": {
     "onAppInstall": "/internal/triggers/on-app-install"
+  },
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build"
   }
 }
