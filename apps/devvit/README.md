@@ -4,6 +4,13 @@
 
 Prices aren't random. Each meme has a fair value that follows real internet attention: Wikipedia pageviews for its article plus what players on Reddit are looking at and starring. A meme the internet is talking about drifts up. One the internet has forgotten drifts down. You're trading on your read of the culture.
 
+<p>
+  <img src="https://raw.githubusercontent.com/faazkhn/dankrupt/devvit/apps/devvit/docs/feed-card.jpg" alt="The Market Day card in the feed" width="200">
+  <img src="https://raw.githubusercontent.com/faazkhn/dankrupt/devvit/apps/devvit/docs/meme.jpg" alt="A meme's live price and candle chart" width="200">
+  <img src="https://raw.githubusercontent.com/faazkhn/dankrupt/devvit/apps/devvit/docs/ticket.jpg" alt="The order ticket with a live fill preview" width="200">
+  <img src="https://raw.githubusercontent.com/faazkhn/dankrupt/devvit/apps/devvit/docs/standings.jpg" alt="Today's standings and your streak" width="200">
+</p>
+
 Play coins have no money value. They can never be bought, sold or cashed out.
 
 ## How to play
@@ -23,6 +30,7 @@ There's no trade limit. Trade as much or as little as you like.
 - **A result card.** The next time you open the game after a round closes, you see your rank, your return and your streak, with a shortcut to the day's thread.
 - **Streaks.** Trade on consecutive days to build your streak.
 - **Flair.** The top three traders of each round get user flair in the subreddit (🥇 Day 12 top trader) until the next round crowns new ones.
+- **Share your calls.** Every closed trade has a Share button. It asks first, then posts the trade to the subreddit as you: long or short, the meme, the % return (a "LESSON LEARNED" stamp on a loss), in and out prices and how long you held. It never shows your balance, and anyone can tap **Trade it yourself** to jump in.
 - **One thread per day.** The app posts a new Market Day thread at every open, so each day's trades and arguments have their own home.
 
 ## For moderators
@@ -38,6 +46,14 @@ The app requests this domain:
 - `wikimedia.org`: daily per-article pageview counts from the [Wikimedia REST API](https://wikimedia.org/api/rest_v1/), one input to each meme's fair value. The app fetches each listed meme once a day.
 
 It's a public, documented API. Only aggregate view counts are stored.
+
+## About this port
+
+Dankrupt Exchange started on November 24, 2026 as a web app: the matching engine, the attention-driven fair value and the cardboard interface. For Reddit it was rebuilt to run entirely on Devvit Web, with no outside server:
+
+- **The engine runs serverless.** Each request loads the market from Redis, advances it to the current moment, applies the order and saves it back in one transaction.
+- **The daily round is new for Reddit.** It adds the fresh daily wallet, the midnight settlement, results, streaks, flair, the daily listing, Market Day threads and posting trades as the player.
+- **The web interface is reused** through a thin compatibility layer, so both versions share one set of screens.
 
 ## How it works
 
