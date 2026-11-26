@@ -85,5 +85,8 @@
   },
   "marketingAssets": {
     "icon": "assets/icon.png"
+  },
+  "dev": {
+    "subreddit": "dankrupt"
   }
 }
