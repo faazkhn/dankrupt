@@ -19,6 +19,8 @@ export type EventBody =
   | { type: "account.open"; accountId: string }
   /** Free top-up back to the starting cash; allowed when equity < 1,000 coins (even negative) and no positions. */
   | { type: "account.reset"; accountId: string }
+  /** Ends a daily-round account: orders cancelled, positions settled at the mark, account removed. */
+  | { type: "account.close"; accountId: string }
   | { type: "order.market"; accountId: string; memeId: string; side: Side; qty: number }
   | {
       type: "order.limit";

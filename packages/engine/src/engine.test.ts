@@ -67,3 +67,20 @@ describe("selling and limits", () => {
     expect(() => e.apply({ seq: 9, time: t0, type: "account.open", accountId: "bo" })).toThrow(/seq/);
   });
 });
+
+describe("closing a daily-round account", () => {
+  test("cancels its orders, settles its position at the mark, records the round trip and removes it", () => {
+    const e = setup();
+    e.apply({ seq: 3, time: t0, type: "order.market", accountId: "ana", memeId: "stonks", side: "buy", qty: 50 });
+    e.apply({ seq: 4, time: t0, type: "order.limit", accountId: "ana", memeId: "stonks", side: "buy", qty: 5, price: 50, expiresAt: null });
+    const equity = e.account("ana").equity;
+    const out = e.apply({ seq: 5, time: t0, type: "account.close", accountId: "ana" });
+    expect(out.rejects).toEqual([]);
+    expect(out.closed).toHaveLength(1);
+    expect(out.orders.some((o) => o.status === "cancelled")).toBe(true);
+    expect(out.notices[0].text).toContain(`${(equity / COIN).toFixed(0).slice(0, 3)}`);
+    expect(e.hasAccount("ana")).toBe(false);
+    expect(e.openOrders("ana")).toEqual([]);
+    expect(e.apply({ seq: 6, time: t0, type: "account.close", accountId: "ana" }).rejects[0].reason).toBe("unknown account");
+  });
+});

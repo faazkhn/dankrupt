@@ -821,6 +821,33 @@ export class Engine {
         em.post(`player:${ev.accountId}`, "coin", cash);
         return out;
       }
+      case "account.close": {
+        // A daily round ends: cancel everything, settle each position at the mark against the house (as a halt does), burn the cash.
+        const a = this.s.accounts[ev.accountId];
+        if (!a) return reject("unknown account");
+        for (const m of Object.values(this.s.memes)) {
+          for (const o of [...m.bids, ...m.asks]) if (o.accountId === a.accountId) this.removeOrder(em, o, "cancelled");
+          for (const st of [...m.stops])
+            if (st.accountId === a.accountId) {
+              m.stops.splice(m.stops.indexOf(st), 1);
+              delete this.s.orderIndex[st.orderId];
+            }
+          const q = a.shares[m.memeId] ?? 0;
+          if (!q) continue;
+          const mark = this.mark(m);
+          const cash = q > 0 ? Math.floor(q * mark) : -Math.ceil(-q * mark);
+          this.move(em, a, m, -q, cash);
+          em.post("house", "coin", -cash);
+          m.houseCash = (m.houseCash ?? 0) - cash;
+          em.post("house", `share:${m.memeId}`, q);
+        }
+        em.post(`player:${a.accountId}`, "coin", -a.cash);
+        em.post("mint", "coin", a.cash);
+        out.notices.push({ accountId: a.accountId, time: ev.time, kind: "reset", text: `Round closed with ${(a.cash / COIN).toFixed(2)} coins.` });
+        delete this.s.accounts[a.accountId];
+        delete this.s.shorts[a.accountId];
+        return out;
+      }
       case "account.reset": {
         const a = this.s.accounts[ev.accountId];
         if (!a) return reject("unknown account");
