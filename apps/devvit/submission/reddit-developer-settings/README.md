@@ -22,7 +22,18 @@ Values and files for the app's page in Reddit's developer settings: developers.r
 | Tile image | `tile-560x256.png` |
 | Featuring description (≤35) | `Trade memes. Beat the daily bell.` |
 | Tile tagline (≤20) | `Daily meme stocks` |
-| App category | Games |
+| App category | Game |
+| Subcategories | Strategy (or the closest: Simulation / Casual) |
+
+## Featured post configuration
+
+| Field | Value |
+| --- | --- |
+| Featured subreddit | `dankrupt` |
+| Post sort order | New |
+| Post flair name | `Market Day` |
+
+The app flairs every Market Day thread "Market Day", so New plus that flair always features today's round.
 
 ## Subreddit (r/dankrupt → Mod Tools → Community appearance)
 
