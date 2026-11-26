@@ -42,19 +42,11 @@ The app requests this domain:
 
 It's a public, documented API. Only aggregate view counts are stored.
 
-## About this port
-
-Dankrupt Exchange started on November 24, 2026 as a web app: the matching engine, the attention-driven fair value and the cardboard interface. For Reddit it was rebuilt to run entirely on Devvit Web, with no outside server:
-
-- **The engine runs serverless.** Each request loads the market from Redis, advances it to the current moment, applies the order and saves it back in one transaction.
-- **The daily round is new for Reddit.** It adds the fresh daily wallet, the midnight settlement, results, streaks, flair, the daily listing, Market Day threads and posting trades as the player.
-- **The web interface is reused** through a thin compatibility layer, so both versions share one set of screens.
-
 ## How it works
 
-The game is a port of the Dankrupt Exchange web app, rebuilt to run entirely on Reddit's Developer Platform:
+Dankrupt Exchange runs entirely on Reddit's Developer Platform, with no outside server. The engine and interface were first prototyped as a web app in November 2026, and the code is shared with that prototype:
 
-- **Engine.** The deterministic matching engine is shared with the web app: price-time order book, house market maker, shorting with margin and liquidation, borrow fees, opening auctions and volatility halts. Its state lives in Redis and changes only inside an optimistic transaction, so two requests can never spend the same coins.
+- **Engine.** A deterministic matching engine: price-time order book, house market maker, shorting with margin and liquidation, borrow fees, opening auctions and volatility halts. Its state lives in Redis and changes only inside an optimistic transaction, so two requests can never spend the same coins.
 - **Clock.** A minute cron advances the house prices, quotes the dealer desks, ingests attention and runs the midnight rollover. Between cron runs, any viewer's poll advances the clock, and Devvit Realtime pushes quotes to every open post.
 - **Client.** The interface is built in React, Tailwind and Vite. The interactive post opens as a feed card, and tapping it opens the full trading floor.
 

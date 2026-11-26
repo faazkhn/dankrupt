@@ -33,14 +33,14 @@ Coins have no money value. They can never be bought, sold or cashed out.
 
 ## How I built it
 
-Dankrupt Exchange started on November 24, 2026 as a web game: a matching engine, an attention model and a cardboard-and-tape interface I'm still a little in love with. It ran on one always-on server that ticked every 100 milliseconds.
+I started on November 24 with a prototype: a matching engine, an attention model and a cardboard-and-tape interface I'm still a little in love with. It assumed one always-on server ticking every 100 milliseconds.
 
-Devvit doesn't have an always-on server. That's the whole story of the port.
+Devvit doesn't have an always-on server. Making the market live inside Reddit anyway is most of this project.
 
 - **The market lives in Redis.** Every request loads the market, catches the clock up to the current moment, applies your order, and saves everything back in one optimistic transaction. If two players trade at the same instant, one commit wins and the other quietly retries from scratch, so nobody can ever spend the same coins twice.
 - **Time moves lazily.** A scheduler job runs every minute to keep the market moving, quote two dealer desks per meme, fetch Wikipedia pageviews and run the midnight rollover. Between runs, any viewer's request catches the market up. An hour of missed ticks replays in about 116 ms.
 - **Realtime keeps it alive.** Every commit pushes quotes to every open post. The last few 100 ms ticks ride along and are replayed on the phone, so the Dank Index line moves smoothly instead of jumping once a second.
-- **One engine, two homes.** The deterministic engine is shared, unchanged, with the web version, and so is the interface: Vite aliases swap in Devvit-shaped pieces under the same screens. Ending a daily round needed exactly one new engine event: settle an account at the mark and close it.
+- **The daily round was built for Reddit.** A fresh wallet per player per day, the midnight settlement, results, streaks, flair, the daily listing, Market Day threads and trade cards posted as the player. On the engine side, ending a round needed exactly one new event: settle an account at the mark and close it.
 - **Built on:** Devvit Web, React, Tailwind, Vite, Hono, Devvit Redis, Scheduler and Realtime, plus Wikipedia's pageview API. 61 engine tests, plus end-to-end tests that run the real API against an in-memory fake of Devvit.
 
 The settlement price is the one number I fussed over most. A single big order shouldn't be able to swing everyone's result at the bell, so positions settle at a **mark** that is the median of three prices:
@@ -54,7 +54,7 @@ To move the mark you'd have to move two of the three, and one of them is Wikiped
 - **No long-running process.** My engine assumed a clock ticking ten times a second. On Devvit nothing runs between requests, so I turned time inside out: the market doesn't tick, it *catches up*, a minute at a time, whenever anyone looks.
 - **"The string did not match the expected pattern."** My first sell order on Reddit failed with a Safari JSON error. The order had actually gone through; the reply just never made it back in one piece. Now the app tells you plainly when Reddit couldn't confirm in time, and every slow or failed request lands in the log.
 - **I clicked "Stage demo trade" and got "Halt a meme".** Devvit matches menu items by position. I'd inserted a new item in the middle, so every stale menu fired the wrong action. The new item goes at the end now, always.
-- **A chart that only drew dots.** The live index chart I reused from the web asked for its history at the web app's address, which doesn't exist on Reddit. Every request 404'd, so the line broke into pieces. The fix was one route on the server.
+- **A chart that only drew dots.** The live index chart I'd written for the prototype asked for its history at an address that doesn't exist on Reddit. Every request 404'd, so the line broke into pieces. The fix was one route on the server.
 - **Waiting on a domain approval.** Wikipedia's pageview API lives on a domain that was still pending review. A different domain, `en.wikipedia.org`, was already approved, and it turns out Wikipedia's own API serves the same 60 days of daily views, so the app switched to it instead of waiting.
 - **A blank box in the feed.** The first version of the feed card loaded the whole game just to show three movers. It now shows the logo before any script runs, makes one read-only request, and ships a little over half the code.
 
@@ -109,7 +109,7 @@ Nominate a most helpful user:
 (leave blank)
 
 Is this submission a ported game?
-Yes
+No
 
 If this app is a port, please link your original game:
-https://github.com/faazkhn/dankrupt — the original Dankrupt Exchange web game (apps/web and the shared engine in packages/engine), which I built starting November 24, 2026. The Reddit version shares its engine and interface and adds the daily round, which was built for Devvit.
+N/A
