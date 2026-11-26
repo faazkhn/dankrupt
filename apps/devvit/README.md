@@ -43,7 +43,7 @@ There's no trade limit. Trade as much or as little as you like.
 
 The app requests this domain:
 
-- `wikimedia.org`: daily per-article pageview counts from the [Wikimedia REST API](https://wikimedia.org/api/rest_v1/), one input to each meme's fair value. The app fetches each listed meme once a day.
+- `en.wikipedia.org`: daily per-article pageview counts from Wikipedia's API (`action=query&prop=pageviews`), one input to each meme's fair value. The app asks once a day per listed meme.
 
 It's a public, documented API. Only aggregate view counts are stored.
 

@@ -10,7 +10,7 @@ Last updated November 26, 2026.
 
 **What the app doesn't do:** collect your email address or any other contact details, show ads, track you outside the app, or sell, share or license your data. It reads nothing from your Reddit account beyond your username.
 
-**Public data:** each meme's fair value uses daily Wikipedia pageview counts from Wikimedia's public API. These are aggregate numbers about articles, not about you.
+**Public data:** each meme's fair value uses daily Wikipedia pageview counts from Wikipedia's public API. These are aggregate numbers about articles, not about you.
 
 **What other players see:** your username, rank, return and streak on the standings, plus top-three flair in the subreddit. Balances and positions are never shown to anyone else.
 

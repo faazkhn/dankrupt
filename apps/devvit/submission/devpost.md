@@ -77,7 +77,7 @@ How far Devvit's Redis transactions, scheduler and realtime can stretch: far eno
 
 ## Built with
 
-devvit, devvit-web, react, typescript, tailwindcss, vite, hono, redis, wikimedia-api
+devvit, devvit-web, react, typescript, tailwindcss, vite, hono, redis, wikipedia-api
 
 ---
 

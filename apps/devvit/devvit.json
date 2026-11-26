@@ -34,7 +34,7 @@
     "http": {
       "enable": true,
       "domains": [
-        "wikimedia.org"
+        "en.wikipedia.org"
       ]
     }
   },

@@ -1,7 +1,7 @@
 import { redis, settings } from "@devvit/web/server";
 import type { EventBody } from "@dankrupt/engine";
 import { computeFeatures, DEFAULT_FEATURE_PARAMS, wikipediaHourly, type FeatureRow } from "@dankrupt/features";
-import { wikipediaClient } from "../../../server/src/signals.ts";
+import type { WikipediaFetch } from "../../../server/src/signals.ts";
 import { K } from "./store.ts";
 import type { World } from "./world.ts";
 
@@ -16,7 +16,21 @@ export async function userAgent() {
   const contact = await settings.get<string>("wikiContact").catch(() => undefined);
   return `DankruptExchange/0.2 (Reddit Devvit app${contact ? `; ${contact}` : ""})`;
 }
-const wiki = async () => wikipediaClient(await userAgent());
+/**
+ * Daily pageviews through Wikipedia's own API (the PageViewInfo extension on en.wikipedia.org, the
+ * domain Reddit approved for this app). It returns the last 60 days; a null day isn't loaded yet.
+ */
+const wiki = async (): Promise<WikipediaFetch> => {
+  const ua = await userAgent();
+  return async (title, fromDay, toDay) => {
+    const url = `https://en.wikipedia.org/w/api.php?action=query&prop=pageviews&pvipdays=60&format=json&formatversion=2&titles=${encodeURIComponent(title)}`;
+    const res = await fetch(url, { headers: { "user-agent": ua, accept: "application/json" } });
+    if (!res.ok) throw new Error(`wikipedia ${res.status} for ${title}`);
+    const data = (await res.json()) as { query?: { pages?: { pageviews?: Record<string, number | null> }[] } };
+    const views = data.query?.pages?.[0]?.pageviews ?? {};
+    return Object.fromEntries(Object.entries(views).filter((e): e is [string, number] => e[1] !== null && e[0] >= fromDay && e[0] <= toDay));
+  };
+};
 
 type Sources = { wikipedia: string[]; youtube: string[] };
 

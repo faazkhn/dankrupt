@@ -20,8 +20,8 @@ beforeEach(() => {
   vi.setSystemTime(T0);
   // Wikimedia: ten views a day for everything.
   vi.stubGlobal("fetch", async (url: string) => {
-    const items = Array.from({ length: 5 }, (_, i) => ({ timestamp: `202611${String(20 + i).padStart(2, "0")}00`, views: 10 }));
-    return new Response(JSON.stringify(String(url).includes("pageviews") ? { items } : {}), { status: 200 });
+    const pageviews = Object.fromEntries(Array.from({ length: 5 }, (_, i) => [`2026-11-${20 + i}`, 10]));
+    return new Response(JSON.stringify(String(url).includes("pageviews") ? { query: { pages: [{ pageviews }] } } : {}), { status: 200 });
   });
 });
 afterEach(() => {
