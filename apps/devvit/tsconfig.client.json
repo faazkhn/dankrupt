@@ -1,0 +1,48 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "ES2023"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "customConditions": [
+      "browser"
+    ],
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "types": [
+      "vite/client"
+    ],
+    "paths": {
+      "@/lib/market": [
+        "./src/client/market.ts"
+      ],
+      "@/components/ShareButton": [
+        "./src/client/shims/share.tsx"
+      ],
+      "@/*": [
+        "../web/src/*"
+      ],
+      "next/link": [
+        "./src/client/shims/link.tsx"
+      ],
+      "next/image": [
+        "./src/client/shims/image.tsx"
+      ],
+      "@phosphor-icons/react/ssr": [
+        "./node_modules/@phosphor-icons/react"
+      ]
+    }
+  },
+  "include": [
+    "src/client"
+  ]
+}

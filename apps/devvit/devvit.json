@@ -1,0 +1,66 @@
+{
+  "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
+  "name": "dankrupt",
+  "post": {
+    "dir": "dist/client",
+    "entrypoints": {
+      "default": {
+        "entry": "splash.html",
+        "height": "tall"
+      },
+      "game": {
+        "entry": "game.html"
+      }
+    }
+  },
+  "server": {
+    "dir": "dist/server",
+    "entry": "index.cjs"
+  },
+  "permissions": {
+    "reddit": {
+      "enable": true,
+      "scope": "user"
+    },
+    "redis": true,
+    "realtime": true,
+    "http": {
+      "enable": true,
+      "domains": [
+        "wikimedia.org",
+        "en.wikipedia.org"
+      ]
+    }
+  },
+  "settings": {
+    "global": {
+      "wikiContact": {
+        "type": "string",
+        "label": "Contact for the Wikimedia User-Agent (email or URL)",
+        "isSecret": true
+      }
+    }
+  },
+  "scheduler": {
+    "tasks": {
+      "tick": {
+        "endpoint": "/internal/scheduler/tick",
+        "cron": "* * * * *"
+      }
+    }
+  },
+  "menu": {
+    "items": [
+      {
+        "label": "Post today's Market Day",
+        "description": "Dankrupt",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/post-create"
+      }
+    ]
+  },
+  "triggers": {
+    "onAppInstall": "/internal/triggers/on-app-install"
+  }
+}

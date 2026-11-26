@@ -168,7 +168,7 @@ export class Admin {
   }
 }
 
-function parseMeta(raw: unknown) {
+export function parseMeta(raw: unknown) {
   const o = (raw ?? {}) as Record<string, unknown>;
   const description = typeof o.description === "string" ? o.description.trim().slice(0, 600) : "";
   const links = (Array.isArray(o.links) ? o.links : [])
@@ -179,7 +179,7 @@ function parseMeta(raw: unknown) {
   return { description, links };
 }
 
-function parseCandidate(raw: unknown): CandidateInput {
+export function parseCandidate(raw: unknown): CandidateInput {
   const o = (raw ?? {}) as Record<string, unknown>;
   const memeId = typeof o.memeId === "string" ? o.memeId.trim().toLowerCase() : "";
   if (!SLUG.test(memeId)) throw new AdminError("id must be 2–41 lowercase letters, numbers or dashes");

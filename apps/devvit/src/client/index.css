@@ -1,0 +1,13 @@
+@import "@fontsource/lilita-one/latin-400.css";
+@import "@fontsource/nunito/latin-400.css";
+@import "@fontsource/nunito/latin-700.css";
+@import "@fontsource/nunito/latin-900.css";
+@import "../../../web/src/app/globals.css";
+@source "../../../web/src";
+@source "./";
+
+/* next/font sets these on <html> in the web app; here the fonts are bundled (the webview CSP blocks Google Fonts). */
+:root {
+  --font-lilita: "Lilita One";
+  --font-nunito: "Nunito";
+}

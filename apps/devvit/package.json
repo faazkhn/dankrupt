@@ -1,0 +1,40 @@
+{
+  "private": true,
+  "name": "devvit-app",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "devvit playtest",
+    "login": "devvit login",
+    "deploy": "pnpm typecheck && pnpm test && devvit upload",
+    "launch": "pnpm deploy && devvit publish",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.client.json"
+  },
+  "dependencies": {
+    "@dankrupt/engine": "workspace:*",
+    "@dankrupt/features": "workspace:*",
+    "@devvit/start": "0.15.6",
+    "@devvit/web": "0.15.6",
+    "@fontsource/lilita-one": "^5.2.8",
+    "@fontsource/nunito": "^5.2.7",
+    "@hono/node-server": "2.1.6",
+    "@phosphor-icons/react": "^2.1.10",
+    "devvit": "0.15.6",
+    "hono": "4.13.17",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.3.3",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "6.3.0",
+    "tailwindcss": "4.3.3",
+    "typescript": "6.0.3",
+    "vite": "8.3.7",
+    "vitest": "^5.1.1"
+  }
+}
