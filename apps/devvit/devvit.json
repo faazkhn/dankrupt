@@ -57,6 +57,13 @@
         "location": "subreddit",
         "forUserType": "moderator",
         "endpoint": "/internal/menu/post-create"
+      },
+      {
+        "label": "Stage demo trade (temporary)",
+        "description": "Dankrupt",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/stage-demo"
       }
     ]
   },
