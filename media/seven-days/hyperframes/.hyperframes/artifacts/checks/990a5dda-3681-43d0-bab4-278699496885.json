@@ -1,0 +1,267 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"mark\"> is a timeline element that contains nested <div id=\"lockup\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#mark",
+        "dataAttributes": {},
+        "sourceFile": "/Users/faazkhn/Documents/Dankrupt/media/seven-days/hyperframes/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"mark\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      }
+    ],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 0,
+    "findings": [
+      {
+        "selector": "#lockup > p:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 283.02,
+          "y": 1125.47,
+          "width": 513.95,
+          "height": 57
+        },
+        "time": 0.233,
+        "rect": {
+          "left": 283.02,
+          "top": 1125.47,
+          "right": 796.97,
+          "bottom": 1182.47,
+          "width": 513.95,
+          "height": 57
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "Free. No real money, ever.",
+        "message": "<p> \"Free. No real money, ever.\" is outside the safe area: TikTok (right edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 0.233,
+        "lastSeen": 1.322,
+        "occurrences": 8,
+        "heldMs": 1089,
+        "times": [
+          0.233,
+          0.389,
+          0.544,
+          0.7,
+          0.856,
+          1.011,
+          1.167,
+          1.322
+        ]
+      }
+    ],
+    "duration": 1.4,
+    "samples": [
+      0.078,
+      0.233,
+      0.389,
+      0.544,
+      0.7,
+      0.856,
+      1.011,
+      1.167,
+      1.322
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 1,
+    "truncated": false,
+    "faceCheck": {
+      "ran": true,
+      "candidates": 0,
+      "faces": 0
+    }
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      0.078,
+      0.389,
+      0.7,
+      1.011,
+      1.322
+    ],
+    "checked": 4,
+    "passed": 4
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 2,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "first_frame_empty",
+        "severity": "warning",
+        "message": "Frame 0 shows only the background, and the first frame is the thumbnail on social players: have the title or key image already on screen at 0 s instead of entering from nothing; see references/review.md.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"Free. No real money, ever.\" (5 words) is on screen 1.16 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "Free. No real money, ever.",
+        "selector": "#lockup > p:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 283.02,
+          "y": 1103.94,
+          "width": 513.95,
+          "height": 57
+        },
+        "time": 0.24,
+        "words": 5,
+        "seconds": 1.163,
+        "floorSeconds": 2,
+        "measured": [
+          {
+            "time": 0,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 0.117,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 0.233,
+            "opacity": 0.22,
+            "heightPx": 57
+          },
+          {
+            "time": 0.35,
+            "opacity": 0.99,
+            "heightPx": 57
+          },
+          {
+            "time": 0.467,
+            "opacity": 1,
+            "heightPx": 57
+          },
+          {
+            "time": 0.583,
+            "opacity": 1,
+            "heightPx": 57
+          },
+          {
+            "time": 0.7,
+            "opacity": 1,
+            "heightPx": 57
+          },
+          {
+            "time": 0.933,
+            "opacity": 1,
+            "heightPx": 57
+          },
+          {
+            "time": 1.05,
+            "opacity": 1,
+            "heightPx": 57
+          },
+          {
+            "time": 1.167,
+            "opacity": 1,
+            "heightPx": 57
+          },
+          {
+            "time": 1.283,
+            "opacity": 1,
+            "heightPx": 57
+          }
+        ]
+      }
+    ],
+    "enabled": true,
+    "step": 0.11699999999999999,
+    "samples": 12
+  },
+  "audio": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 1,
+    "findings": [
+      {
+        "code": "audio_none",
+        "severity": "info",
+        "message": "The film has no sound: no clip in it plays audio.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0
+      }
+    ]
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}

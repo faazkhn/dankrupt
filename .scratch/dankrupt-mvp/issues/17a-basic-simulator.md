@@ -4,7 +4,7 @@
 
 **Blocked by:** 04
 
-**Status:** in-progress: simulator core, CLI report against §11.3 and synthetic tests done; draft meme list in apps/sim/memes.json awaits approval; history fetch (pnpm --filter sim fetch-history) then `pnpm --filter sim sim` to produce the first report.
+**Status:** in-progress: meme list approved (30, see apps/sim/memes.json), history fetched, first report in apps/sim/reports/17a-2026-11-25.md. Liveliness and attention tracking pass; flat stretches (7 h) and trend-vs-random (0% of runs, random bots at +500% TWR) fail. The random-bot TWR looks like a bug, so investigate it before tuning.
 
 **Needs from Faaz:** approve the list of 30+ past memes, which the agent drafts first. They must be post-July 2015 and pass the content screen.
 

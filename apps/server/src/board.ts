@@ -57,7 +57,7 @@ export async function leaderboard(db: Db, engine: Engine, w: Window, style: Styl
   );
   const holds = new Map<string, number[]>();
   for (const t of trades) holds.set(t.account_id, [...(holds.get(t.account_id) ?? []), Number(t.held)]);
-  const eligible = [...holds].filter(([, h]) => h.length >= MIN_TRADES);
+  const eligible = [...holds].filter(([id, h]) => !id.startsWith("@desk") && h.length >= MIN_TRADES);
   if (!eligible.length) return [];
 
   const ids = eligible.map(([id]) => id);

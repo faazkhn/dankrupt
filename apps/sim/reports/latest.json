@@ -1,0 +1,205 @@
+{
+  "params": {},
+  "results": [
+    {
+      "seed": 1,
+      "medianDailyMovePct": 4.513180549695408,
+      "longestFlatHours": 5,
+      "medianPriceAttentionCorr": 0.9137849900153707,
+      "trendMedianTwr": -0.374964314322224,
+      "randomMedianTwr": 5.627722554648656,
+      "trendBeatsRandom": false,
+      "memes": 30
+    },
+    {
+      "seed": 2,
+      "medianDailyMovePct": 4.3828695147662176,
+      "longestFlatHours": 5,
+      "medianPriceAttentionCorr": 0.8881560571741084,
+      "trendMedianTwr": -0.411258946989843,
+      "randomMedianTwr": 4.9447725876351525,
+      "trendBeatsRandom": false,
+      "memes": 30
+    },
+    {
+      "seed": 3,
+      "medianDailyMovePct": 4.390235136666759,
+      "longestFlatHours": 5,
+      "medianPriceAttentionCorr": 0.8841944435696517,
+      "trendMedianTwr": -0.31275014867071016,
+      "randomMedianTwr": 5.830322939433911,
+      "trendBeatsRandom": false,
+      "memes": 30
+    },
+    {
+      "seed": 4,
+      "medianDailyMovePct": 4.331906714406565,
+      "longestFlatHours": 5,
+      "medianPriceAttentionCorr": 0.881748166697051,
+      "trendMedianTwr": -0.3642881795668924,
+      "randomMedianTwr": 5.050174051754955,
+      "trendBeatsRandom": false,
+      "memes": 30
+    },
+    {
+      "seed": 5,
+      "medianDailyMovePct": 4.316786608857409,
+      "longestFlatHours": 7,
+      "medianPriceAttentionCorr": 0.8819434957184903,
+      "trendMedianTwr": -0.29638448600035583,
+      "randomMedianTwr": 6.298849505332728,
+      "trendBeatsRandom": false,
+      "memes": 30
+    },
+    {
+      "seed": 6,
+      "medianDailyMovePct": 4.491802650021676,
+      "longestFlatHours": 5,
+      "medianPriceAttentionCorr": 0.8952052325872856,
+      "trendMedianTwr": -0.3849761012315617,
+      "randomMedianTwr": 6.304965824785109,
+      "trendBeatsRandom": false,
+      "memes": 30
+    },
+    {
+      "seed": 7,
+      "medianDailyMovePct": 4.559814827848771,
+      "longestFlatHours": 3,
+      "medianPriceAttentionCorr": 0.8955489499175199,
+      "trendMedianTwr": -0.3201887186243312,
+      "randomMedianTwr": 5.698875225476833,
+      "trendBeatsRandom": false,
+      "memes": 30
+    },
+    {
+      "seed": 8,
+      "medianDailyMovePct": 4.567617332544398,
+      "longestFlatHours": 5,
+      "medianPriceAttentionCorr": 0.8915541834967378,
+      "trendMedianTwr": -0.38525867686317505,
+      "randomMedianTwr": 5.337495425776272,
+      "trendBeatsRandom": false,
+      "memes": 30
+    },
+    {
+      "seed": 9,
+      "medianDailyMovePct": 4.105807767411034,
+      "longestFlatHours": 3,
+      "medianPriceAttentionCorr": 0.8979529542955427,
+      "trendMedianTwr": -0.3052658988514314,
+      "randomMedianTwr": 6.636113259336954,
+      "trendBeatsRandom": false,
+      "memes": 30
+    },
+    {
+      "seed": 10,
+      "medianDailyMovePct": 4.154473162536533,
+      "longestFlatHours": 7,
+      "medianPriceAttentionCorr": 0.8823292636636754,
+      "trendMedianTwr": -0.35984317095054386,
+      "randomMedianTwr": 7.33716970674258,
+      "trendBeatsRandom": false,
+      "memes": 30
+    },
+    {
+      "seed": 11,
+      "medianDailyMovePct": 4.332154404671665,
+      "longestFlatHours": 6,
+      "medianPriceAttentionCorr": 0.881085564773371,
+      "trendMedianTwr": -0.3697954563031297,
+      "randomMedianTwr": 5.81163436243175,
+      "trendBeatsRandom": false,
+      "memes": 30
+    },
+    {
+      "seed": 12,
+      "medianDailyMovePct": 4.299669831803834,
+      "longestFlatHours": 6,
+      "medianPriceAttentionCorr": 0.8888807338586493,
+      "trendMedianTwr": -0.4721270369290371,
+      "randomMedianTwr": 5.630351637827326,
+      "trendBeatsRandom": false,
+      "memes": 30
+    },
+    {
+      "seed": 13,
+      "medianDailyMovePct": 4.36972835760311,
+      "longestFlatHours": 5,
+      "medianPriceAttentionCorr": 0.886154337399,
+      "trendMedianTwr": -0.4188227512917493,
+      "randomMedianTwr": 7.282171233995616,
+      "trendBeatsRandom": false,
+      "memes": 30
+    },
+    {
+      "seed": 14,
+      "medianDailyMovePct": 4.563663123369638,
+      "longestFlatHours": 4,
+      "medianPriceAttentionCorr": 0.8898923611076278,
+      "trendMedianTwr": -0.42739674432062713,
+      "randomMedianTwr": 5.712441220590522,
+      "trendBeatsRandom": false,
+      "memes": 30
+    },
+    {
+      "seed": 15,
+      "medianDailyMovePct": 4.821222738215082,
+      "longestFlatHours": 4,
+      "medianPriceAttentionCorr": 0.8871388295488094,
+      "trendMedianTwr": -0.47679716822988094,
+      "randomMedianTwr": 6.451550814204136,
+      "trendBeatsRandom": false,
+      "memes": 30
+    },
+    {
+      "seed": 16,
+      "medianDailyMovePct": 4.408415890691593,
+      "longestFlatHours": 5,
+      "medianPriceAttentionCorr": 0.8899414671465287,
+      "trendMedianTwr": -0.4178357606107366,
+      "randomMedianTwr": 5.415974793340659,
+      "trendBeatsRandom": false,
+      "memes": 30
+    },
+    {
+      "seed": 17,
+      "medianDailyMovePct": 4.2328008684900285,
+      "longestFlatHours": 5,
+      "medianPriceAttentionCorr": 0.8740870474873229,
+      "trendMedianTwr": -0.49846016369042134,
+      "randomMedianTwr": 5.190561049320957,
+      "trendBeatsRandom": false,
+      "memes": 30
+    },
+    {
+      "seed": 18,
+      "medianDailyMovePct": 4.2727868448401525,
+      "longestFlatHours": 6,
+      "medianPriceAttentionCorr": 0.8804159506237671,
+      "trendMedianTwr": -0.2898261705658939,
+      "randomMedianTwr": 5.479266302682632,
+      "trendBeatsRandom": false,
+      "memes": 30
+    },
+    {
+      "seed": 19,
+      "medianDailyMovePct": 4.247067819025231,
+      "longestFlatHours": 3,
+      "medianPriceAttentionCorr": 0.8974931114878313,
+      "trendMedianTwr": -0.3696610104148157,
+      "randomMedianTwr": 5.317976037536035,
+      "trendBeatsRandom": false,
+      "memes": 30
+    },
+    {
+      "seed": 20,
+      "medianDailyMovePct": 4.234493963643492,
+      "longestFlatHours": 5,
+      "medianPriceAttentionCorr": 0.8911570293882138,
+      "trendMedianTwr": -0.38656369466924434,
+      "randomMedianTwr": 5.395634781549642,
+      "trendBeatsRandom": false,
+      "memes": 30
+    }
+  ]
+}

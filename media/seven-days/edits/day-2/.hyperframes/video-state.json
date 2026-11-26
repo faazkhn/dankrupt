@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "historyId": "5d030671-fb5d-444d-bf9c-f98d7c73b7b1",
+  "currentRevision": "698b4425-ac5b-4ddf-a996-b06771c7c68b",
+  "pendingChanges": false,
+  "files": {
+    "assets/gsap.min.js": {
+      "hash": "96c01b81f44a3290e2b4532f55e2c9534b2adc43273a19f3756b2cb41f0fd0b6",
+      "content": "/Users/faazkhn/.cache/hyperframes/history/5d030671-fb5d-444d-bf9c-f98d7c73b7b1/blobs/96/96c01b81f44a3290e2b4532f55e2c9534b2adc43273a19f3756b2cb41f0fd0b6"
+    },
+    "assets/logo.webp": {
+      "hash": "4d4e8e0b6ee5ba6f7c79624ee36115519078a897800c8f23055bbd54eec4ba66",
+      "content": "/Users/faazkhn/.cache/hyperframes/history/5d030671-fb5d-444d-bf9c-f98d7c73b7b1/blobs/4d/4d4e8e0b6ee5ba6f7c79624ee36115519078a897800c8f23055bbd54eec4ba66"
+    },
+    "assets/mix.m4a": {
+      "hash": "65d62dbdf20980bcafc54db3e5533345adc7113bf8fc200a8e00641f1c195c1e",
+      "content": "/Users/faazkhn/.cache/hyperframes/history/5d030671-fb5d-444d-bf9c-f98d7c73b7b1/blobs/65/65d62dbdf20980bcafc54db3e5533345adc7113bf8fc200a8e00641f1c195c1e"
+    },
+    "assets/screen.jpg": {
+      "hash": "42b7ab3e4ac48e5682e72fa017e11d31597f85f1aa1f33f182de9ea9eb04fc8a",
+      "content": "/Users/faazkhn/.cache/hyperframes/history/5d030671-fb5d-444d-bf9c-f98d7c73b7b1/blobs/42/42b7ab3e4ac48e5682e72fa017e11d31597f85f1aa1f33f182de9ea9eb04fc8a"
+    },
+    "assets/screen.mp4": {
+      "hash": "22e289f635deb198fe252aa617f85f8dde5971674854abed15b37cec0cf62c05",
+      "content": "/Users/faazkhn/.cache/hyperframes/history/5d030671-fb5d-444d-bf9c-f98d7c73b7b1/blobs/22/22e289f635deb198fe252aa617f85f8dde5971674854abed15b37cec0cf62c05"
+    },
+    "assets/text.woff2": {
+      "hash": "20fc9b6fc618e7c3c68d3ac750a2a5dfbceb8521675458d2cea580b5693e4798",
+      "content": "/Users/faazkhn/.cache/hyperframes/history/5d030671-fb5d-444d-bf9c-f98d7c73b7b1/blobs/20/20fc9b6fc618e7c3c68d3ac750a2a5dfbceb8521675458d2cea580b5693e4798"
+    },
+    "index.html": {
+      "hash": "fc550209abe4333c2d6c93945b077e69c53c525a2b156c2d09a24521f4f381bf",
+      "content": "/Users/faazkhn/.cache/hyperframes/history/5d030671-fb5d-444d-bf9c-f98d7c73b7b1/blobs/fc/fc550209abe4333c2d6c93945b077e69c53c525a2b156c2d09a24521f4f381bf"
+    },
+    "assets/game.mp4": {
+      "hash": "317dbbfb26456d7c5d5729f39f0961df7bb0db8f40fd8e42bcdb360567a4466c",
+      "content": "/Users/faazkhn/.cache/hyperframes/history/5d030671-fb5d-444d-bf9c-f98d7c73b7b1/blobs/31/317dbbfb26456d7c5d5729f39f0961df7bb0db8f40fd8e42bcdb360567a4466c"
+    }
+  },
+  "revisions": {
+    "698b4425-ac5b-4ddf-a996-b06771c7c68b": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1795584725330,
+      "endedAt": 1795584725334,
+      "files": {
+        "assets/game.mp4": {
+          "before": null,
+          "after": "/Users/faazkhn/.cache/hyperframes/history/5d030671-fb5d-444d-bf9c-f98d7c73b7b1/blobs/31/317dbbfb26456d7c5d5729f39f0961df7bb0db8f40fd8e42bcdb360567a4466c"
+        },
+        "assets/mix.m4a": {
+          "before": "/Users/faazkhn/.cache/hyperframes/history/5d030671-fb5d-444d-bf9c-f98d7c73b7b1/blobs/ef/ef22f469259fbad3d75fcc0ec39d47fea658a3e3f17b6dae5430d1b5644ab5b3",
+          "after": "/Users/faazkhn/.cache/hyperframes/history/5d030671-fb5d-444d-bf9c-f98d7c73b7b1/blobs/65/65d62dbdf20980bcafc54db3e5533345adc7113bf8fc200a8e00641f1c195c1e"
+        },
+        "index.html": {
+          "before": "/Users/faazkhn/.cache/hyperframes/history/5d030671-fb5d-444d-bf9c-f98d7c73b7b1/blobs/8e/8e0e6e09a12360d914b2817be81bc6f15a5fe48f8c0d17cebefabff23cf93c47",
+          "after": "/Users/faazkhn/.cache/hyperframes/history/5d030671-fb5d-444d-bf9c-f98d7c73b7b1/blobs/fc/fc550209abe4333c2d6c93945b077e69c53c525a2b156c2d09a24521f4f381bf"
+        }
+      }
+    }
+  },
+  "checks": {
+    "latest": {
+      "revision": "698b4425-ac5b-4ddf-a996-b06771c7c68b",
+      "id": "50af1808-3997-4d35-8b55-13fca8445061"
+    },
+    "revisions": {
+      "698b4425-ac5b-4ddf-a996-b06771c7c68b": [
+        {
+          "id": "50af1808-3997-4d35-8b55-13fca8445061",
+          "scope": "project",
+          "report": "/Users/faazkhn/Documents/Dankrupt/media/seven-days/edits/day-2/.hyperframes/artifacts/checks/50af1808-3997-4d35-8b55-13fca8445061.json",
+          "metadata": {
+            "ok": true,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 45000,
+              "cache": true,
+              "contrast": true,
+              "craft": true,
+              "strict": false,
+              "snapshots": false,
+              "safeZones": [
+                "tiktok",
+                "reels",
+                "shorts"
+              ],
+              "browserGpuMode": "auto",
+              "includeUnmounted": false
+            }
+          },
+          "createdAt": 1795584730303,
+          "contentHash": "0d32a6cc26af0a0c64306bab0bdb5afdde7ce94d399649b18d4d1ff3ef4cdbe1",
+          "revision": "698b4425-ac5b-4ddf-a996-b06771c7c68b",
+          "inputFingerprint": "92132876e78e5f041223d63078edfaa7a2ae94beba756f14e1f4fe4052ff79c9",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
+    "unversioned": [
+      {
+        "id": "b88f3aa3-2579-4f20-83fb-343d2eef26c2",
+        "scope": "project",
+        "report": "/Users/faazkhn/Documents/Dankrupt/media/seven-days/edits/day-2/.hyperframes/artifacts/checks/b88f3aa3-2579-4f20-83fb-343d2eef26c2.json",
+        "metadata": {
+          "ok": true,
+          "browserSkipped": false,
+          "options": {
+            "samples": 9,
+            "atTransitions": false,
+            "maxIssues": 80,
+            "collapseStatic": true,
+            "tolerance": 2,
+            "timeout": 45000,
+            "cache": true,
+            "contrast": true,
+            "craft": true,
+            "strict": false,
+            "snapshots": false,
+            "safeZones": [
+              "tiktok",
+              "reels",
+              "shorts"
+            ],
+            "browserGpuMode": "auto",
+            "includeUnmounted": false
+          }
+        },
+        "createdAt": 1795584241909,
+        "contentHash": "03ea1991a7e39141902d4c1d7632dc24e58a9bf6067ae1548d795beda12bb54d",
+        "revision": null,
+        "inputFingerprint": "81abbb672929cbfd3dd1cb6caeb059be58327c8047d702c93a01ce17dd3224c3",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "snapshots": {
+    "latest": null,
+    "revisions": {},
+    "unversioned": []
+  },
+  "renders": {
+    "latest": {
+      "id": "fe0dd416-278d-40bf-99a0-db69f0444e34",
+      "completedAt": 1795584750285,
+      "output": "/tmp/dank-livecut/master-2.mp4",
+      "status": "completed",
+      "revision": "698b4425-ac5b-4ddf-a996-b06771c7c68b"
+    },
+    "retainedRevisions": [
+      "698b4425-ac5b-4ddf-a996-b06771c7c68b"
+    ]
+  },
+  "pendingArtifactCleanup": []
+}

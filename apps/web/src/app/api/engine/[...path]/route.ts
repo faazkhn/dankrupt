@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 
 const ENGINE = process.env.ENGINE_URL ?? "http://localhost:4000";
-const ALLOWED = new Set(["health", "memes", "markets", "candles", "book", "attention", "leaderboard", "preview", "me", "orders", "orders/cancel", "reset", "notices", "notices/read", "profile", "whoami", "meme-meta", "view", "watchlist"]);
+const ALLOWED = new Set(["health", "dank", "memes", "markets", "candles", "book", "attention", "leaderboard", "preview", "me", "orders", "orders/cancel", "reset", "notices", "notices/read", "profile", "whoami", "meme-meta", "view", "watchlist"]);
 
 /** Forwards a fixed set of engine API calls, attaching the player's identity from their cookie. */
 async function proxy(req: Request, { params }: { params: Promise<{ path: string[] }> }) {

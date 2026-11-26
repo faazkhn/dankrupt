@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { InfoIcon, MinusIcon, PlusIcon, SpinnerGapIcon, WarningIcon } from "@phosphor-icons/react";
-import { fmt, fmtInt, placeOrder, usePreview, type Fill, type MarketRow, type Me, type OrderTicket as Ticket } from "@/lib/market";
+import { fmt, fmtInt, maxBuy, placeOrder, usePreview, type Fill, type MarketRow, type Me, type OrderTicket as Ticket } from "@/lib/market";
 
 const EXPIRY = [
   { label: "Until cancelled", minutes: undefined },
+  { label: "Immediate or cancel", minutes: undefined },
   { label: "1 hour", minutes: 60 },
   { label: "1 day", minutes: 1_440 },
   { label: "1 week", minutes: 10_080 },
@@ -18,7 +19,7 @@ type Props = {
   me: Me | null;
   signedOut: boolean;
   /** A price picked from the order book, to pre-fill a limit order. */
-  pickedPrice: number | null;
+  pickedPrice: { price: number } | null;
   onPlaced: (account: Me, fills: Fill[]) => void;
 };
 
@@ -31,13 +32,15 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
   const [expiry, setExpiry] = useState(0);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; text: string } | null>(null);
-  const [lastPick, setLastPick] = useState<number | null>(null);
+  const [lastPick, setLastPick] = useState<Props["pickedPrice"]>(null);
+
+  useEffect(() => { if (pickedPrice) document.getElementById("limit-price")?.focus(); }, [pickedPrice]);
 
   // A price tapped in the order book switches the ticket to a limit order at that price.
   if (pickedPrice !== null && pickedPrice !== lastPick) {
     setLastPick(pickedPrice);
     setType("limit");
-    setPriceText(pickedPrice.toFixed(2));
+    setPriceText(pickedPrice.price.toFixed(2));
     setResult(null);
   }
 
@@ -50,7 +53,7 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
     side,
     qty,
     type,
-    ...(type === "limit" ? { price, expiresInMinutes: EXPIRY[expiry].minutes } : type === "stop" ? { price } : {}),
+    ...(type === "limit" ? { price, expiresInMinutes: EXPIRY[expiry].minutes, immediateOrCancel: EXPIRY[expiry].label === "Immediate or cancel" } : type === "stop" ? { price } : {}),
   };
   const stopWrongSide = type === "stop" && meme && priceValid && (side === "sell" ? price >= meme.mid : price <= meme.mid);
   const preview = usePreview(ticket, !signedOut && !!me && qty >= 1 && priceValid);
@@ -62,17 +65,18 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
     setResult(null);
   };
 
-  function setMax() {
-    if (side === "sell" && meme && me) {
-      // Owned shares, plus whatever short sale the margin allows (50% of the mark per share).
-      const shortRoom = Math.max(0, Math.floor((me.equity - me.initialMargin) / (0.5 * meme.mid)));
-      setQty(Math.max(1, Math.max(0, freeShares) + shortRoom));
-    }
-    else if (meme && me) {
-      const per = (type === "limit" && priceValid ? price : meme.ask) * 1.001;
-      setQty(Math.max(1, Math.floor(me.freeCash / per)));
-    }
+  async function setMax() {
+    if (!me || !meme) return;
     setResult(null);
+    if (side === "sell") return setQty(Math.max(0, freeShares));
+    setBusy(true);
+    try {
+      setQty((await maxBuy(memeId, type === "limit" ? price : undefined)).qty);
+    } catch {
+      setResult({ ok: false, text: "Couldn’t calculate Max. Try again." });
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function submit() {
@@ -91,6 +95,7 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
       const parts: string[] = [];
       if (got > 0) parts.push(`${verb} ${fmtInt(got)}${got < qty ? ` of ${fmtInt(qty)}` : ""} at avg ${fmt(cost / got)}`);
       if (resting) parts.push(`${fmtInt(resting.remaining)} waiting on the book at ${fmt(price)}`);
+      else if (ticket.immediateOrCancel && got < qty) parts.push(`${qty-got} cancelled immediately`);
       else if (got < qty && type === "market") parts.push(side === "buy" ? "(ran out of free cash)" : "(no more buyers)");
       setResult({ ok: true, text: parts.join(" · ") || "Order placed" });
     } catch (e) {
@@ -113,11 +118,11 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
 
   const short = preview && preview.qty < qty;
   return (
-    <div className="mt-4 space-y-4">
+    <fieldset disabled={busy} className="mt-4 space-y-4">
       <Segmented label="Side" value={side} options={["buy", "sell"]} setter={(v) => (setSide(v), setResult(null))} colored />
       {preopen ? (
         <p className="rounded-xl border-2 border-ink/20 bg-paper-shade/60 p-3 text-sm font-bold">
-          Pre-open: limit orders only, matched with other players. The house opens at 100 when the countdown ends.
+          Limit orders accumulate for a single clearing price when the auction ends.
         </p>
       ) : (
         <Segmented label="Order type" value={type} options={["market", "limit", "stop"]} setter={(v) => (setType(v), setResult(null))} />
@@ -128,7 +133,7 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
           <label htmlFor="qty" className="text-lg font-extrabold">
             Shares
           </label>
-          <button type="button" onClick={setMax} className="min-h-11 cursor-pointer px-2 font-black text-sky-800 underline decoration-2 underline-offset-2">
+          <button type="button" disabled={!me || (type === "limit" && !priceValid)} onClick={setMax} className="min-h-11 cursor-pointer px-2 font-black text-sky-800 underline decoration-2 underline-offset-2">
             Max
           </button>
         </div>
@@ -146,6 +151,9 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
           <button type="button" aria-label="More shares" onClick={reset(() => setQty((q) => q + 1))} className="btn-candy is-small is-secondary">
             <PlusIcon weight="bold" aria-hidden="true" />
           </button>
+        </div>
+        <div className="mt-2 flex gap-2" aria-label="Preview order size">
+          {[10, 50, 100].map(size => <button key={size} type="button" className="btn-candy is-small is-muted" onClick={reset(() => setQty(size))}>{size} shares</button>)}
         </div>
         <p className="mt-1 text-sm font-bold text-ink-soft">
           {side === "buy"
@@ -233,7 +241,7 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
           <span className="flex gap-2">
             <InfoIcon weight="fill" className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             {type === "limit"
-              ? `Nothing fills right now. All ${fmtInt(qty)} would wait on the book at ${fmt(price)}.`
+              ? ticket.immediateOrCancel ? "No immediate fill. The full quantity would cancel." : `Nothing fills right now. All ${fmtInt(qty)} would wait on the book at ${fmt(price)}.`
               : side === "sell"
                 ? "Not enough margin to short even one share."
                 : "Not enough free cash for one share."}
@@ -260,7 +268,7 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
               <p className="flex gap-1.5 text-berry">
                 <WarningIcon weight="fill" className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
                 {type === "limit"
-                  ? `${fmtInt(qty - preview.qty)} more would wait on the book at ${fmt(price)}.`
+                  ? ticket.immediateOrCancel ? `${fmtInt(qty-preview.qty)} would cancel immediately.` : `${fmtInt(qty - preview.qty)} more would wait on the book at ${fmt(price)}.`
                   : preview.limitedBy === "cash"
                     ? `Only ${fmtInt(preview.qty)} of ${fmtInt(qty)}: big orders push the price up as they fill, so your cash runs out first.`
                     : preview.limitedBy === "margin"
@@ -281,7 +289,7 @@ export function OrderTicket({ memeId, meme, me, signedOut, pickedPrice, onPlaced
       <p role="status" className={`min-h-6 font-bold ${result?.ok ? "text-mint" : "text-berry"}`}>
         {result?.text}
       </p>
-    </div>
+    </fieldset>
   );
 }
 

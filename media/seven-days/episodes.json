@@ -1,0 +1,30 @@
+[
+  [
+    "Order receipts",
+    "I bought ten shares of Doge, and the order vanished from my screen. This is Day One. The book showed zero open orders. My screen still said ten. I refreshed the account, then wired the fills into a receipt. There it is. Ten out of ten, with the price I actually paid."
+  ],
+  [
+    "The Dank Index",
+    "Doge is up. This is Day Two. Did I pick a winner, or did the whole market move? The old index couldn't tell me. I took each active meme's price change, gave them equal weight, then replayed the basket. Now Doge has a benchmark to beat."
+  ],
+  [
+    "Order book depth",
+    "Ten shares and a hundred shares have different prices. This is Day Three. I priced a hundred at the first ask. Wrong. There weren't a hundred shares there. I added up the book level by level, then ran the order through the preview. Watch the last share cost more than the first."
+  ],
+  [
+    "Executable quotes",
+    "That green line is the midpoint. This is Day Four. I thought my buy should fill when the line hit my limit. Wrong line. I added the seller's ask, then drew my resting order beside it. Now I can see the gap my buy still needs to cross."
+  ],
+  [
+    "Amending an order",
+    "I left a limit order in the book. This is Day Five. I tried to replace it with more shares than I could afford. Rejected. Losing the original bid here would be brutal. I saved its reservation, then restored it when the edit failed. Same bid. Same queue position."
+  ],
+  [
+    "Replaying the market",
+    "The exchange runs on a clock, but I can replay it. This is Day Six. A late clock update left a hole in the chart. I collected every tick in the batch, then checked the timestamps. Five seconds at ten ticks a second. Fifty samples, right where they belong."
+  ],
+  [
+    "The waitlist",
+    "Seven days ago I was trying to figure out where my Doge order went. This is Day Seven. Today I'm checking the signup form. A typo gets caught. Sending the same address twice should still give me one signup. I checked the email validation, then the duplicate guard. The local form is ready for launch."
+  ]
+]

@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { createDb, migrate } from "@dankrupt/db";
 import { Admin, wikipediaResolver } from "./admin.ts";
 import { InGame } from "./attention.ts";
+import { startDealers } from "./dealers.ts";
 import { Feed } from "./feed.ts";
 import { Projections } from "./projections.ts";
 import { createApi } from "./http.ts";
@@ -21,8 +22,14 @@ feed.statusOf = (id) => {
   const m = seq.engine.meme(id);
   return { status: m.status, opensAt: m.opensAt, comebackAt: m.comebackAt, fair: m.fairValue };
 };
+while (seq.engine.dank && Date.now() - seq.engine.time > 60_000) await seq.clock(seq.engine.time + 60_000);
 await seq.clock(); // catch the house up on the time the server was down
-seq.startClock(1_000);
+if (!seq.engine.dank) await seq.submit({ type: "dank.open" });
+if (!seq.engine.basketOpen) await seq.submit({ type: "basket.open" });
+if (!seq.engine.liquidityOpen) await seq.submit({ type: "liquidity.open" });
+startDealers(seq);
+feed.dank = () => seq.engine.dank;
+seq.startClock(100);
 const ingame = new InGame(db);
 const signals = new Signals(db, seq, wikipediaClient(), ingame);
 for (const m of seed) await signals.mapSources(m.memeId, m.wikipedia ?? [], m.youtube ?? []);

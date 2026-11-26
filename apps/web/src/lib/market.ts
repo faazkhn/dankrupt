@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export type MarketRow = {
   memeId: string;
@@ -41,6 +41,8 @@ export type Me = {
   positions: Position[];
   resets: number;
   canReset: boolean;
+  receipts?: { id: number; memeId: string; qty: number; time: number; side: string; status: string;
+    fills: { time: number; qty: number; cost: number; fee: number }[] }[];
   orders: OpenOrder[];
 };
 export type Notice = { time: number; kind: "liquidation" | "reset" | "halt"; memeId: string | null; text: string; read: boolean };
@@ -57,8 +59,8 @@ export type Preview = {
   limitedBy: "cash" | "shares" | "margin" | "limit" | "liquidity" | null;
 };
 export type BookLevel = { price: number; qty: number; orders: number };
-export type Book = { bids: BookLevel[]; asks: BookLevel[]; house: { bid: number; ask: number } | null };
-export type OrderTicket = { memeId: string; side: "buy" | "sell"; qty: number; type: "market" | "limit" | "stop"; price?: number; expiresInMinutes?: number };
+export type Book = { float?: number; borrowAvailable?: number; auction?: string | null; bids: BookLevel[]; asks: BookLevel[]; house: { bid: number; ask: number } | null };
+export type OrderTicket = { memeId: string; side: "buy" | "sell"; qty: number; type: "market" | "limit" | "stop"; price?: number; expiresInMinutes?: number; immediateOrCancel?: boolean; replaceOrderId?: number };
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api/engine/${path}`, { cache: "no-store", ...init });
@@ -71,6 +73,7 @@ const wsUrl = () => process.env.NEXT_PUBLIC_WS_URL ?? `ws://${window.location.ho
 
 /** Live market rows over the websocket; falls back to polling if the socket can't connect. */
 export function useMarkets() {
+  const [dank, setDank] = useState<{ level: number; time: number } | null>(null);
   const [rows, setRows] = useState<Map<string, MarketRow> | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -89,23 +92,27 @@ export function useMarkets() {
     const startPolling = () => {
       if (poll) return;
       const tick = () =>
-        api<MarketRow[]>("markets")
-          .then((r) => (merge(r), setError(null)))
+        Promise.all([api<MarketRow[]>("markets"), api<typeof dank>("dank")])
+          .then(([r, index]) => { if (!closed && poll) { merge(r); setDank(index); setError(null); } })
           .catch((e: Error) => setError(e.message));
       tick();
       poll = setInterval(tick, 2_000);
     };
     const connect = () => {
+      if (closed) return;
       ws = new WebSocket(wsUrl());
       ws.onmessage = (m) => {
         const msg = JSON.parse(m.data);
         if (msg.type !== "markets") return;
+        if (poll) clearInterval(poll);
+        poll = null;
+        setDank(msg.dank);
         merge(msg.rows);
         setError(null);
       };
       ws.onerror = () => startPolling();
       ws.onclose = () => {
-        if (!closed) setTimeout(connect, 3_000);
+        if (!closed) { startPolling(); setTimeout(connect, 3_000); }
       };
     };
     connect();
@@ -116,7 +123,7 @@ export function useMarkets() {
     };
   }, [merge]);
 
-  return { rows, list: rows ? [...rows.values()] : null, error };
+  return { dank, rows, list: rows ? [...rows.values()] : null, error };
 }
 
 export function useCandles(memeId: string, refreshMs = 15_000) {
@@ -131,22 +138,41 @@ export function useCandles(memeId: string, refreshMs = 15_000) {
 }
 
 export function useMe() {
-  const [me, setMe] = useState<Me | null>(null);
+  const [me, updateMe] = useState<Me | null>(null);
   const [status, setStatus] = useState<"loading" | "ok" | "signed-out" | "error">("loading");
-  const refresh = useCallback(async () => {
-    try {
-      setMe(await api<Me>("me"));
-      setStatus("ok");
-    } catch (e) {
-      setStatus((e as { status?: number }).status === 401 ? "signed-out" : "error");
-    }
+  const revision = useRef(0);
+  const setMe = useCallback((account: Me) => {
+    revision.current++;
+    updateMe(account);
+    setStatus("ok");
   }, []);
+  const refresh = useCallback(async () => {
+    const request = ++revision.current;
+    try {
+      const account = await api<Me>("me");
+      if (revision.current === request) setMe(account);
+    } catch (e) {
+      if (revision.current !== request) return;
+      if ((e as { status?: number }).status === 401) {
+        updateMe(null);
+        setStatus("signed-out");
+      } else setStatus("error");
+    }
+  }, [setMe]);
   useEffect(() => {
-    const t = setTimeout(refresh, 0);
-    return () => clearTimeout(t);
+    let active = true;
+    let timer: ReturnType<typeof setTimeout>;
+    const poll = async () => {
+      await refresh();
+      if (active) timer = setTimeout(poll, 2000);
+    };
+    timer = setTimeout(poll, 0);
+    return () => { active = false; revision.current++; clearTimeout(timer); };
   }, [refresh]);
   return { me, setMe, status, refresh };
 }
+
+export const maxBuy = (memeId: string, limit?: number) => api<{ qty: number }>(`preview?memeId=${encodeURIComponent(memeId)}&side=buy&max=1&qty=10000000&type=${limit === undefined ? "market" : `limit&price=${limit}`}`);
 
 export async function placeOrder(t: OrderTicket) {
   return api<{ fills: Fill[]; orders: { orderId: number; status: string; remaining: number }[]; rejects: { reason: string }[]; account: Me }>("orders", {
@@ -196,7 +222,7 @@ export async function cancelOrder(orderId: number) {
 
 /** Debounced engine preview of what the ticket would do right now; refreshes as prices move. */
 export function usePreview(t: OrderTicket | null, enabled: boolean) {
-  const [preview, setPreview] = useState<Preview | null>(null);
+  const [preview, setPreview] = useState<{ key: string; value: Preview } | null>(null);
   const key = t ? JSON.stringify(t) : "";
   useEffect(() => {
     if (!enabled || !t || t.qty < 1 || (t.type !== "market" && !(t.price && t.price >= 0.01))) {
@@ -206,13 +232,16 @@ export function usePreview(t: OrderTicket | null, enabled: boolean) {
     // A stop previews as the market order it turns into.
     const q = new URLSearchParams({ memeId: t.memeId, side: t.side, qty: String(t.qty), type: t.type === "stop" ? "market" : t.type });
     if (t.type === "limit") q.set("price", String(t.price));
-    const load = () => api<Preview>(`preview?${q}`).then(setPreview).catch(() => setPreview(null));
+    const controller = new AbortController();
+    const load = () => api<Preview>(`preview?${q}`, { signal: controller.signal })
+      .then((value) => setPreview({ key, value }))
+      .catch(() => { if (!controller.signal.aborted) setPreview(null); });
     const first = setTimeout(load, 250);
     const id = setInterval(load, 3_000);
-    return () => (clearTimeout(first), clearInterval(id));
+    return () => { controller.abort(); clearTimeout(first); clearInterval(id); };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `key` is the ticket's identity
   }, [key, enabled]);
-  return preview;
+  return enabled && preview?.key === key ? preview.value : null;
 }
 
 export function useAttention(memeId: string) {

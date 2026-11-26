@@ -1,5 +1,6 @@
 "use client";
 
+import { LiveQuoteChart } from "@/components/LiveQuoteChart";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowLeftIcon, StarIcon, TrendDownIcon, TrendUpIcon } from "@phosphor-icons/react";
@@ -11,15 +12,15 @@ import { OrderBookCard } from "@/components/OrderBookCard";
 import { OrderTicket } from "@/components/OrderTicket";
 import { PositionCard } from "@/components/PositionCard";
 import { TradeHeader } from "@/components/TradeHeader";
-import { fmt, fmtInt, fmtPct, getMemeMeta, getWatchlist, pingView, setStar, useBook, useCandles, useMarkets, useMe, type Fill } from "@/lib/market";
+import { fmt, fmtPct, getMemeMeta, getWatchlist, pingView, setStar, useBook, useCandles, useMarkets, useMe } from "@/lib/market";
 
 export function MemeView({ memeId }: { memeId: string }) {
-  const { rows } = useMarkets();
+  const { rows, dank } = useMarkets();
   const candles = useCandles(memeId);
   const book = useBook(memeId);
   const { me, setMe, status } = useMe();
-  const [fills, setFills] = useState<(Fill & { at: number })[]>([]);
-  const [picked, setPicked] = useState<number | null>(null);
+  const [showOrders, setShowOrders] = useState(false);
+  const [picked, setPicked] = useState<{ price: number } | null>(null);
   const [meta, setMeta] = useState<{ description: string; links: string[]; videos: string[] } | null>(null);
   const [starred, setStarred] = useState<boolean | null>(null);
   useEffect(() => {
@@ -84,8 +85,7 @@ export function MemeView({ memeId }: { memeId: string }) {
           <div className="mx-auto mt-5 max-w-5xl px-4">
             <p className="sticker rounded-2xl px-4 py-2 font-bold">
               <span className="font-display mr-2 text-lg">PRE-OPEN</span>
-              The house opens at 100 in <Countdown to={meme.opensAt} />. Until then, trade with other players using limit orders: the opening
-              price comes from your bids.
+              The auction clears in <Countdown to={meme.opensAt} />. Submit a limit to participate. The price matches the most shares across eligible bids and asks.
             </p>
           </div>
         )}
@@ -117,7 +117,7 @@ export function MemeView({ memeId }: { memeId: string }) {
                 </p>
               ) : null}
               <div className="mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-                <p className="text-5xl font-black tabular-nums">{meme ? fmt(meme.ltp ?? meme.mid) : "--"}</p>
+                <p className="text-5xl font-black tabular-nums">{meme ? fmt(meme.mid) : "--"}</p>
                 <p className={`flex items-center gap-1 text-xl font-black ${up ? "text-mint" : "text-berry"}`}>
                   <Trend weight="bold" aria-hidden="true" />
                   {fmtPct(meme?.change24h ?? 0)}
@@ -125,9 +125,16 @@ export function MemeView({ memeId }: { memeId: string }) {
                 </p>
               </div>
               <p className="text-sm font-bold text-ink-soft">
-                {meme?.ltp == null ? "No trades yet: showing the mid price" : "Last traded price"}
+                Live midpoint
                 {meme && ` · Bid ${fmt(meme.bid)} · Ask ${fmt(meme.ask)}`}
               </p>
+              {dank && meme && <>
+                <LiveQuoteChart key={memeId} time={dank.time} price={meme.mid}
+                  levels={showOrders ? [{ label: "Bid", price: meme.bid }, { label: "Ask", price: meme.ask },
+                    ...(me?.orders ?? []).filter(o => o.memeId === memeId && o.kind === "limit").map(o => ({label: "My limit", price: o.price}))].filter(l => l.price > 0) : []}
+                  fills={showOrders ? (me?.receipts ?? []).filter(r => r.memeId === memeId).flatMap(r => r.fills.filter(f => f.time > dank.time - 60000).map(f => ({ time: f.time, price: f.cost / f.qty }))) : []}/>
+                <label className="text-sm font-bold"><input type="checkbox" checked={showOrders} onChange={e => setShowOrders(e.target.checked)} /> Show bid, ask and my orders</label>
+              </>}
               <CandleChart candles={candles} fair={meme?.fair} className="mt-4 min-h-48" />
               <p className="mt-1 text-xs font-bold text-ink-soft">The chart follows the mid price between the best bid and ask, one candle per minute.</p>
             </div>
@@ -161,7 +168,7 @@ export function MemeView({ memeId }: { memeId: string }) {
               </div>
             ) : null}
             <AttentionCard memeId={memeId} fair={meme?.fair} />
-            <OrderBookCard book={book} onPick={setPicked} />
+            <OrderBookCard book={book} onPick={(price) => setPicked({ price })} />
           </section>
 
           <aside className="space-y-6">
@@ -173,30 +180,24 @@ export function MemeView({ memeId }: { memeId: string }) {
                 me={me}
                 signedOut={status === "signed-out"}
                 pickedPrice={picked}
-                onPlaced={(account, newFills) => {
-                  setMe(account);
-                  setFills((xs) => [...newFills.map((f) => ({ ...f, at: Date.now() })), ...xs].slice(0, 10));
-                }}
+                onPlaced={setMe}
               />
             </div>
             {me && <OpenOrdersCard me={me} memeId={memeId} onChange={setMe} />}
             {me && <PositionCard me={me} memeId={memeId} />}
-            {fills.length > 0 && (
-              <div className="paper p-5">
-                <h2 className="font-display text-2xl">Your fills this visit</h2>
-                <ul className="mt-2 divide-y-2 divide-dashed divide-ink/20">
-                  {fills.map((f, i) => (
-                    <li key={i} className="flex justify-between gap-2 py-2 font-bold">
-                      <span className={f.side === "buy" ? "text-mint" : "text-berry"}>
-                        {f.side === "buy" ? "Bought" : "Sold"} {fmtInt(f.qty)}
-                        <span className="block text-xs text-ink-soft">{f.source === "book" ? "from a player" : "from the house"}</span>
-                      </span>
-                      <span className="text-right tabular-nums">avg {fmt(f.cost / f.qty)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            {me && <section className="paper p-5">
+              <h2 className="font-display text-2xl">Order receipts</h2>
+              {(me.receipts ?? []).filter(r => r.memeId === memeId).map(r => {
+                const qty = r.fills.reduce((n, f) => n + f.qty, 0);
+                const cost = r.fills.reduce((n, f) => n + f.cost, 0);
+                const fee = r.fills.reduce((n, f) => n + f.fee, 0);
+                return <details key={r.id} className="border-b border-ink/15 py-2 text-sm">
+                  <summary className="cursor-pointer font-bold">{r.side} {qty}/{r.qty} · {qty === r.qty ? "filled" : r.status === "open" && qty ? "partially filled" : r.status} · #{r.id}</summary>
+                  <p>{qty ? `Average ${fmt(cost / qty)} · Fee ${fmt(fee)} · Total ${fmt(cost + (r.side === "buy" ? fee : -fee))}` : "No executions"}</p>
+                  {r.fills.map((f,i) => <p key={i}>{new Date(f.time).toLocaleTimeString()} · {f.qty} at {fmt(f.cost / f.qty)}</p>)}
+                </details>;
+              })}
+            </section>}
           </aside>
         </div>
       </main>

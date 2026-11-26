@@ -13,6 +13,7 @@ const PAD = { l: 8, r: 56, t: 12, b: 22 };
  * Up candles are green-striped, down candles red-striped; the readout states it in words too.
  */
 export function CandleChart({ candles, fair, className = "" }: { candles: Candle[]; fair?: number; className?: string }) {
+  const [minutes, setMinutes] = useState(30);
   const [pick, setPick] = useState<number | null>(null);
   if (candles.length < 2)
     return (
@@ -21,23 +22,29 @@ export function CandleChart({ candles, fair, className = "" }: { candles: Candle
       </div>
     );
 
-  const data = candles.slice(-90);
-  // Keep fair value in view when it's near the action, but don't let a far-off one squash the candles.
-  const lows = data.map((c) => c.low);
-  const highs = data.map((c) => c.high);
-  const near = fair !== undefined && fair > Math.min(...lows) * 0.8 && fair < Math.max(...highs) * 1.25;
-  const lo = Math.min(...lows, ...(near ? [fair] : []));
-  const hi = Math.max(...highs, ...(near ? [fair] : []));
-  const span = hi - lo || hi * 0.01 || 1;
+  const data = candles.slice(-minutes);
+  const low = Math.min(...data.map((c) => c.low));
+  const high = Math.max(...data.map((c) => c.high));
+  const padding = Math.max((high - low) * 0.05, 0.01);
+  const lo = Math.max(0, low - padding);
+  const hi = high + padding;
+  const span = hi - lo;
+  const near = fair !== undefined && fair >= lo && fair <= hi;
   const y = (v: number) => PAD.t + (1 - (v - lo) / span) * (H - PAD.t - PAD.b);
   const step = (W - PAD.l - PAD.r) / data.length;
   const bodyW = Math.max(2, step * 0.62);
   const ticks = [lo, lo + span / 2, hi];
-  const shown = data[pick ?? data.length - 1];
+  const shown = data[Math.min(pick ?? data.length - 1, data.length - 1)];
   const up = shown.close >= shown.open;
 
   return (
     <figure className={className}>
+      <div className="mb-2 flex items-center gap-2 text-sm font-bold">
+        <span>Candle range</span>
+        {[30, 90].map((n) => <button key={n} type="button" aria-pressed={minutes === n}
+          className="min-h-9 rounded-lg border-2 border-ink px-3 aria-pressed:bg-paper-shade"
+          onClick={() => { setMinutes(n); setPick(null); }}>{n} min</button>)}
+      </div>
       <figcaption className="mb-1 flex flex-wrap gap-x-3 text-sm font-bold text-ink-soft" aria-live="polite">
         <span>{new Date(shown.minute).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</span>
         <span>O {fmt(shown.open)}</span>
@@ -45,6 +52,7 @@ export function CandleChart({ candles, fair, className = "" }: { candles: Candle
         <span>L {fmt(shown.low)}</span>
         <span>C {fmt(shown.close)}</span>
         <span className={up ? "text-mint" : "text-berry"}>{up ? "up" : "down"}</span>
+        {!near && fair !== undefined && <span className="text-ink-soft">Fair value {fmt(fair)}</span>}
         {shown.volume > 0 && <span>Vol {fmtInt(shown.volume)}</span>}
       </figcaption>
       <svg

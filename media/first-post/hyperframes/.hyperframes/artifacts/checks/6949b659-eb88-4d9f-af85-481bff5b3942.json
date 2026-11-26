@@ -1,0 +1,2518 @@
+{
+  "ok": false,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "timeline_track_too_dense",
+        "severity": "warning",
+        "message": "This HTML file has 10 timed elements. Smaller sub-compositions keep timelines easier to read, iterate on, and diff.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/Users/faazkhn/Documents/Dankrupt/media/first-post/hyperframes/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move coherent scene groups into separate .html files under compositions/ and mount them from the parent with data-composition-src so the timeline stays easier to inspect, revise, and validate."
+      }
+    ],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": false,
+    "errorCount": 7,
+    "warningCount": 28,
+    "infoCount": 8,
+    "findings": [
+      {
+        "code": "text_occluded",
+        "severity": "error",
+        "time": 3.105,
+        "selector": "#hook > div:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 90,
+          "top": 195,
+          "right": 572.2,
+          "bottom": 241,
+          "width": 482.2,
+          "height": 46
+        },
+        "containerSelector": "#chat",
+        "text": "DANKRUPT EXCHANGE",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0,
+          "end": 18.63
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90,
+          "y": 195,
+          "width": 482.2,
+          "height": 46
+        },
+        "firstSeen": 3.105,
+        "lastSeen": 17.595,
+        "occurrences": 8,
+        "heldMs": 0,
+        "times": [
+          3.105,
+          5.175,
+          7.245,
+          9.315,
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "error",
+        "time": 3.105,
+        "selector": "#hook > div:nth-of-type(2)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 90,
+          "top": 267,
+          "right": 734.39,
+          "bottom": 583.13,
+          "width": 644.39,
+          "height": 316.13
+        },
+        "containerSelector": "#chat",
+        "text": "DOGE HASA",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0,
+          "end": 18.63
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90,
+          "y": 267,
+          "width": 644.39,
+          "height": 316.13
+        },
+        "firstSeen": 3.105,
+        "lastSeen": 17.595,
+        "occurrences": 8,
+        "heldMs": 0,
+        "times": [
+          3.105,
+          5.175,
+          7.245,
+          9.315,
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "error",
+        "time": 3.105,
+        "selector": "#hook > div:nth-of-type(2) > span:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 209.83,
+          "top": 407.13,
+          "right": 669.7,
+          "bottom": 583.13,
+          "width": 459.88,
+          "height": 176
+        },
+        "containerSelector": "#chat",
+        "text": "CHART.",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0,
+          "end": 18.63
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 209.83,
+          "y": 407.13,
+          "width": 459.88,
+          "height": 176
+        },
+        "firstSeen": 3.105,
+        "lastSeen": 17.595,
+        "occurrences": 8,
+        "heldMs": 0,
+        "times": [
+          3.105,
+          5.175,
+          7.245,
+          9.315,
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "error",
+        "time": 3.105,
+        "selector": "#hook > div:nth-of-type(4)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 123.32,
+          "top": 1244.63,
+          "right": 433.28,
+          "bottom": 1324.87,
+          "width": 309.96,
+          "height": 80.24
+        },
+        "containerSelector": "#chat",
+        "text": "DOGE • 132.52",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "lifetime": {
+          "start": 0,
+          "end": 18.63
+        },
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 123.32,
+          "y": 1244.63,
+          "width": 309.96,
+          "height": 80.24
+        },
+        "firstSeen": 3.105,
+        "lastSeen": 17.595,
+        "occurrences": 8,
+        "heldMs": 0,
+        "times": [
+          3.105,
+          5.175,
+          7.245,
+          9.315,
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 3.105,
+        "selector": "#hook > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 90,
+          "top": 195,
+          "right": 572.2,
+          "bottom": 241,
+          "width": 482.2,
+          "height": 46
+        },
+        "containerSelector": "#chat > div:nth-of-type(1)",
+        "text": "DANKRUPT EXCHANGE",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90,
+          "y": 195,
+          "width": 482.2,
+          "height": 46
+        },
+        "firstSeen": 2.111,
+        "lastSeen": 18.63,
+        "occurrences": 139,
+        "heldMs": 16519,
+        "times": [
+          2.111,
+          2.236,
+          2.36,
+          2.484,
+          2.608,
+          2.732,
+          2.857,
+          2.981,
+          3.105,
+          3.229,
+          3.353,
+          3.478,
+          3.602,
+          3.726,
+          3.85,
+          3.974,
+          4.099,
+          4.223,
+          4.347,
+          4.471,
+          4.595,
+          4.72,
+          4.844,
+          4.968,
+          5.092,
+          5.175,
+          5.216,
+          5.341,
+          5.465,
+          5.589,
+          5.713,
+          5.837,
+          5.962,
+          6.086,
+          6.21,
+          6.334,
+          6.458,
+          6.583,
+          6.707,
+          6.831,
+          6.955,
+          7.079,
+          7.204,
+          7.245,
+          7.328,
+          7.452,
+          7.576,
+          7.7,
+          7.825,
+          7.949,
+          8.073,
+          8.197,
+          8.321,
+          8.446,
+          8.57,
+          8.694,
+          8.818,
+          8.942,
+          9.067,
+          9.191,
+          9.315,
+          9.439,
+          9.563,
+          9.688,
+          9.812,
+          9.936,
+          10.06,
+          10.184,
+          10.309,
+          10.433,
+          10.557,
+          10.681,
+          10.805,
+          10.93,
+          11.054,
+          11.178,
+          11.302,
+          11.385,
+          11.426,
+          11.551,
+          11.675,
+          11.799,
+          11.923,
+          12.047,
+          12.172,
+          12.296,
+          12.42,
+          12.544,
+          12.668,
+          12.793,
+          12.917,
+          13.041,
+          13.165,
+          13.289,
+          13.414,
+          13.455,
+          13.538,
+          13.662,
+          13.786,
+          13.91,
+          14.035,
+          14.159,
+          14.283,
+          14.407,
+          14.531,
+          14.656,
+          14.78,
+          14.904,
+          15.028,
+          15.152,
+          15.277,
+          15.401,
+          15.525,
+          15.649,
+          15.773,
+          15.898,
+          16.022,
+          16.146,
+          16.27,
+          16.394,
+          16.519,
+          16.643,
+          16.767,
+          16.891,
+          17.015,
+          17.14,
+          17.264,
+          17.388,
+          17.512,
+          17.595,
+          17.636,
+          17.761,
+          17.885,
+          18.009,
+          18.133,
+          18.257,
+          18.382,
+          18.506,
+          18.63
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 3.105,
+        "selector": "#hook > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 90,
+          "top": 267,
+          "right": 734.39,
+          "bottom": 583.13,
+          "width": 644.39,
+          "height": 316.13
+        },
+        "containerSelector": "#chat > div:nth-of-type(2)",
+        "text": "DOGE HAS A CHART.",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90,
+          "y": 267,
+          "width": 644.39,
+          "height": 316.13
+        },
+        "firstSeen": 2.111,
+        "lastSeen": 18.63,
+        "occurrences": 89,
+        "heldMs": 6706.999999999999,
+        "times": [
+          2.111,
+          2.236,
+          2.36,
+          2.484,
+          2.608,
+          2.732,
+          2.857,
+          2.981,
+          3.105,
+          3.229,
+          3.353,
+          3.478,
+          3.602,
+          3.726,
+          3.85,
+          3.974,
+          4.099,
+          4.223,
+          4.347,
+          4.471,
+          4.595,
+          4.72,
+          4.844,
+          4.968,
+          5.092,
+          5.175,
+          5.216,
+          5.341,
+          5.465,
+          5.589,
+          5.713,
+          5.837,
+          11.923,
+          12.047,
+          12.172,
+          12.296,
+          12.42,
+          12.544,
+          12.668,
+          12.793,
+          12.917,
+          13.041,
+          13.165,
+          13.289,
+          13.414,
+          13.455,
+          13.538,
+          13.662,
+          13.786,
+          13.91,
+          14.035,
+          14.159,
+          14.283,
+          14.407,
+          14.531,
+          14.656,
+          14.78,
+          14.904,
+          15.028,
+          15.152,
+          15.277,
+          15.401,
+          15.525,
+          15.649,
+          15.773,
+          15.898,
+          16.022,
+          16.146,
+          16.27,
+          16.394,
+          16.519,
+          16.643,
+          16.767,
+          16.891,
+          17.015,
+          17.14,
+          17.264,
+          17.388,
+          17.512,
+          17.595,
+          17.636,
+          17.761,
+          17.885,
+          18.009,
+          18.133,
+          18.257,
+          18.382,
+          18.506,
+          18.63
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "error",
+        "time": 3.105,
+        "selector": "#hook > div:nth-of-type(2) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 209.83,
+          "top": 407.13,
+          "right": 669.7,
+          "bottom": 583.13,
+          "width": 459.87,
+          "height": 176
+        },
+        "containerSelector": "#chat > div:nth-of-type(2)",
+        "text": "CHART.",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 209.83,
+          "y": 407.13,
+          "width": 459.87,
+          "height": 176
+        },
+        "firstSeen": 2.111,
+        "lastSeen": 18.63,
+        "occurrences": 89,
+        "heldMs": 6706.999999999999,
+        "times": [
+          2.111,
+          2.236,
+          2.36,
+          2.484,
+          2.608,
+          2.732,
+          2.857,
+          2.981,
+          3.105,
+          3.229,
+          3.353,
+          3.478,
+          3.602,
+          3.726,
+          3.85,
+          3.974,
+          4.099,
+          4.223,
+          4.347,
+          4.471,
+          4.595,
+          4.72,
+          4.844,
+          4.968,
+          5.092,
+          5.175,
+          5.216,
+          5.341,
+          5.465,
+          5.589,
+          5.713,
+          5.837,
+          11.923,
+          12.047,
+          12.172,
+          12.296,
+          12.42,
+          12.544,
+          12.668,
+          12.793,
+          12.917,
+          13.041,
+          13.165,
+          13.289,
+          13.414,
+          13.455,
+          13.538,
+          13.662,
+          13.786,
+          13.91,
+          14.035,
+          14.159,
+          14.283,
+          14.407,
+          14.531,
+          14.656,
+          14.78,
+          14.904,
+          15.028,
+          15.152,
+          15.277,
+          15.401,
+          15.525,
+          15.649,
+          15.773,
+          15.898,
+          16.022,
+          16.146,
+          16.27,
+          16.394,
+          16.519,
+          16.643,
+          16.767,
+          16.891,
+          17.015,
+          17.14,
+          17.264,
+          17.388,
+          17.512,
+          17.595,
+          17.636,
+          17.761,
+          17.885,
+          18.009,
+          18.133,
+          18.257,
+          18.382,
+          18.506,
+          18.63
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "warning",
+        "time": 1.035,
+        "selector": "div.panel.chart > img:nth-of-type(1)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 97,
+          "top": 267.25,
+          "right": 983,
+          "bottom": 2079.52,
+          "width": 886,
+          "height": 1812.27
+        },
+        "containerSelector": "div.panel.chart",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 90,
+          "top": 615.25,
+          "right": 990,
+          "bottom": 1205.25,
+          "width": 900,
+          "height": 590
+        },
+        "overflow": {
+          "top": 348,
+          "bottom": 874.27
+        },
+        "dataAttributes": {
+          "data-hf-render-id": "hf-media-0",
+          "data-hf-authored-opacity": ""
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 97,
+          "y": 267.25,
+          "width": 886,
+          "height": 1812.27
+        },
+        "firstSeen": 1.035,
+        "lastSeen": 17.595,
+        "occurrences": 9,
+        "heldMs": 0,
+        "times": [
+          1.035,
+          3.105,
+          5.175,
+          7.245,
+          9.315,
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "selector": "#hook > div:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90,
+          "y": 195,
+          "width": 482.2,
+          "height": 46
+        },
+        "time": 1.035,
+        "rect": {
+          "left": 90,
+          "top": 195,
+          "right": 572.2,
+          "bottom": 241,
+          "width": 482.2,
+          "height": 46
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "DANKRUPT EXCHANGE",
+        "message": "<div> \"DANKRUPT EXCHANGE\" is outside the safe area: TikTok (left and top edges), Instagram Reels (top edge), YouTube Shorts (top edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 1.035,
+        "lastSeen": 17.595,
+        "occurrences": 9,
+        "heldMs": 0,
+        "times": [
+          1.035,
+          3.105,
+          5.175,
+          7.245,
+          9.315,
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "selector": "#hook > div:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90,
+          "y": 267,
+          "width": 644.39,
+          "height": 316.13
+        },
+        "time": 1.035,
+        "rect": {
+          "left": 90,
+          "top": 267,
+          "right": 734.39,
+          "bottom": 583.13,
+          "width": 644.39,
+          "height": 316.13
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "DOGE HASA CHART.",
+        "message": "<div> \"DOGE HASA CHART.\" is outside the safe area: TikTok (left edge), Instagram Reels (top edge), YouTube Shorts (top edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 1.035,
+        "lastSeen": 17.595,
+        "occurrences": 9,
+        "heldMs": 0,
+        "times": [
+          1.035,
+          3.105,
+          5.175,
+          7.245,
+          9.315,
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "selector": "#hook",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 123.32,
+          "y": 1244.63,
+          "width": 309.96,
+          "height": 80.24
+        },
+        "time": 1.035,
+        "rect": {
+          "left": 123.32,
+          "top": 1244.63,
+          "right": 433.28,
+          "bottom": 1324.87,
+          "width": 309.96,
+          "height": 80.24
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "DOGE • 132.52",
+        "message": "<section> \"DOGE • 132.52\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 1.035,
+        "lastSeen": 17.595,
+        "occurrences": 9,
+        "heldMs": 0,
+        "times": [
+          1.035,
+          3.105,
+          5.175,
+          7.245,
+          9.315,
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "selector": "#chat > div:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 150,
+          "y": 195,
+          "width": 379.36,
+          "height": 46
+        },
+        "time": 1.035,
+        "rect": {
+          "left": 150,
+          "top": 195,
+          "right": 529.36,
+          "bottom": 241,
+          "width": 379.36,
+          "height": 46
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "THE GROUP CHAT",
+        "message": "<div> \"THE GROUP CHAT\" is outside the safe area: TikTok (top edge), Instagram Reels (top edge), YouTube Shorts (top edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 1.035,
+        "lastSeen": 17.595,
+        "occurrences": 9,
+        "heldMs": 0,
+        "times": [
+          1.035,
+          3.105,
+          5.175,
+          7.245,
+          9.315,
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "selector": "#chat > div:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 150,
+          "y": 267,
+          "width": 778.06,
+          "height": 316.13
+        },
+        "time": 1.035,
+        "rect": {
+          "left": 150,
+          "top": 267,
+          "right": 928.06,
+          "bottom": 583.13,
+          "width": 778.06,
+          "height": 316.13
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "EVERY CHATHAS ONE.",
+        "message": "<div> \"EVERY CHATHAS ONE.\" is outside the safe area: Instagram Reels (top edge), YouTube Shorts (top and right edges).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 1.035,
+        "lastSeen": 17.595,
+        "occurrences": 9,
+        "heldMs": 0,
+        "times": [
+          1.035,
+          3.105,
+          5.175,
+          7.245,
+          9.315,
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "selector": "#build > div:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 150,
+          "y": 195,
+          "width": 514.17,
+          "height": 46
+        },
+        "time": 1.035,
+        "rect": {
+          "left": 150,
+          "top": 195,
+          "right": 664.17,
+          "bottom": 241,
+          "width": 514.17,
+          "height": 46
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "A MEME TRADING GAME",
+        "message": "<div> \"A MEME TRADING GAME\" is outside the safe area: TikTok (top edge), Instagram Reels (top edge), YouTube Shorts (top edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 1.035,
+        "lastSeen": 17.595,
+        "occurrences": 9,
+        "heldMs": 0,
+        "times": [
+          1.035,
+          3.105,
+          5.175,
+          7.245,
+          9.315,
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "selector": "#ticket > div:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 150,
+          "y": 195,
+          "width": 360.94,
+          "height": 46
+        },
+        "time": 1.035,
+        "rect": {
+          "left": 150,
+          "top": 195,
+          "right": 510.94,
+          "bottom": 241,
+          "width": 360.94,
+          "height": 46
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "ORDER PREVIEW",
+        "message": "<div> \"ORDER PREVIEW\" is outside the safe area: TikTok (top edge), Instagram Reels (top edge), YouTube Shorts (top edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 1.035,
+        "lastSeen": 17.595,
+        "occurrences": 9,
+        "heldMs": 0,
+        "times": [
+          1.035,
+          3.105,
+          5.175,
+          7.245,
+          9.315,
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "selector": "#ticket > div:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 150,
+          "y": 267,
+          "width": 762.36,
+          "height": 316.13
+        },
+        "time": 1.035,
+        "rect": {
+          "left": 150,
+          "top": 267,
+          "right": 912.36,
+          "bottom": 583.13,
+          "width": 762.36,
+          "height": 316.13
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "TEN SHARESOF DOGE.",
+        "message": "<div> \"TEN SHARESOF DOGE.\" is outside the safe area: Instagram Reels (top edge), YouTube Shorts (top and right edges).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 1.035,
+        "lastSeen": 17.595,
+        "occurrences": 9,
+        "heldMs": 0,
+        "times": [
+          1.035,
+          3.105,
+          5.175,
+          7.245,
+          9.315,
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "selector": "div.panel.receipt > div:nth-of-type(2) > b:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 957.55,
+          "y": 1082.55,
+          "width": 62.47,
+          "height": 69.26
+        },
+        "time": 1.035,
+        "rect": {
+          "left": 957.55,
+          "top": 1082.55,
+          "right": 1020.02,
+          "bottom": 1151.81,
+          "width": 62.47,
+          "height": 69.26
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "10",
+        "message": "<b> \"10\" is outside the safe area: TikTok (right edge), Instagram Reels (right edge), YouTube Shorts (right edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 1.035,
+        "lastSeen": 17.595,
+        "occurrences": 9,
+        "heldMs": 0,
+        "times": [
+          1.035,
+          3.105,
+          5.175,
+          7.245,
+          9.315,
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "selector": "div.panel.receipt > div:nth-of-type(3) > b:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 903.37,
+          "y": 1194.79,
+          "width": 102.27,
+          "height": 74.14
+        },
+        "time": 1.035,
+        "rect": {
+          "left": 903.37,
+          "top": 1194.79,
+          "right": 1005.64,
+          "bottom": 1268.93,
+          "width": 102.27,
+          "height": 74.14
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "1.30",
+        "message": "<b> \"1.30\" is outside the safe area: TikTok (right and bottom edges), Instagram Reels (bottom edge), YouTube Shorts (right and bottom edges).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 1.035,
+        "lastSeen": 17.595,
+        "occurrences": 9,
+        "heldMs": 0,
+        "times": [
+          1.035,
+          3.105,
+          5.175,
+          7.245,
+          9.315,
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "selector": "div.panel.receipt > div:nth-of-type(4)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 193.88,
+          "y": 1245.37,
+          "width": 398.82,
+          "height": 89.05
+        },
+        "time": 1.035,
+        "rect": {
+          "left": 193.88,
+          "top": 1245.37,
+          "right": 592.7,
+          "bottom": 1334.42,
+          "width": 398.82,
+          "height": 89.05
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "TOTAL INCLUDING FEE",
+        "message": "<div> \"TOTAL INCLUDING FEE\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 1.035,
+        "lastSeen": 11.385,
+        "occurrences": 6,
+        "heldMs": 0,
+        "times": [
+          1.035,
+          3.105,
+          5.175,
+          7.245,
+          9.315,
+          11.385
+        ]
+      },
+      {
+        "selector": "div.panel.receipt > div:nth-of-type(6)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 171.82,
+          "y": 1425.02,
+          "width": 215.6,
+          "height": 66.56
+        },
+        "time": 1.035,
+        "rect": {
+          "left": 171.82,
+          "top": 1425.02,
+          "right": 387.42,
+          "bottom": 1491.58,
+          "width": 215.6,
+          "height": 66.56
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "PLAY COINS",
+        "message": "<div> \"PLAY COINS\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 1.035,
+        "lastSeen": 11.385,
+        "occurrences": 6,
+        "heldMs": 0,
+        "times": [
+          1.035,
+          3.105,
+          5.175,
+          7.245,
+          9.315,
+          11.385
+        ]
+      },
+      {
+        "selector": "#end > div:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 150,
+          "y": 195,
+          "width": 482.2,
+          "height": 46
+        },
+        "time": 1.035,
+        "rect": {
+          "left": 150,
+          "top": 195,
+          "right": 632.2,
+          "bottom": 241,
+          "width": 482.2,
+          "height": 46
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "DANKRUPT EXCHANGE",
+        "message": "<div> \"DANKRUPT EXCHANGE\" is outside the safe area: TikTok (top edge), Instagram Reels (top edge), YouTube Shorts (top edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 1.035,
+        "lastSeen": 17.595,
+        "occurrences": 9,
+        "heldMs": 0,
+        "times": [
+          1.035,
+          3.105,
+          5.175,
+          7.245,
+          9.315,
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "selector": "#end > div:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 150,
+          "y": 267,
+          "width": 619.36,
+          "height": 316.13
+        },
+        "time": 1.035,
+        "rect": {
+          "left": 150,
+          "top": 267,
+          "right": 769.36,
+          "bottom": 583.13,
+          "width": 619.36,
+          "height": 316.13
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "CALLED IT EARLY?",
+        "message": "<div> \"CALLED IT EARLY?\" is outside the safe area: Instagram Reels (top edge), YouTube Shorts (top edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 1.035,
+        "lastSeen": 17.595,
+        "occurrences": 9,
+        "heldMs": 0,
+        "times": [
+          1.035,
+          3.105,
+          5.175,
+          7.245,
+          9.315,
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "selector": "#sub0",
+        "dataAttributes": {
+          "data-start": "0.14",
+          "data-duration": "1.751",
+          "data-track-index": "5"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 192.11,
+          "y": 1470,
+          "width": 695.77,
+          "height": 77
+        },
+        "time": 1.035,
+        "rect": {
+          "left": 192.11,
+          "top": 1470,
+          "right": 887.88,
+          "bottom": 1547,
+          "width": 695.77,
+          "height": 77
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "I gave Doge a stock chart.",
+        "message": "<span> \"I gave Doge a stock chart.\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 1.035,
+        "lastSeen": 1.035,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          1.035
+        ]
+      },
+      {
+        "selector": "#sub1",
+        "dataAttributes": {
+          "data-start": "1.891",
+          "data-duration": "1.934",
+          "data-track-index": "5"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 188.55,
+          "y": 1470,
+          "width": 702.89,
+          "height": 141.39
+        },
+        "time": 3.105,
+        "rect": {
+          "left": 188.55,
+          "top": 1470,
+          "right": 891.44,
+          "bottom": 1611.39,
+          "width": 702.89,
+          "height": 141.39
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "Because someone in every group chat",
+        "message": "<span> \"Because someone in every group chat\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 3.105,
+        "lastSeen": 3.105,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          3.105
+        ]
+      },
+      {
+        "selector": "#sub2",
+        "dataAttributes": {
+          "data-start": "3.825",
+          "data-duration": "1.804",
+          "data-track-index": "5"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 175.98,
+          "y": 1470,
+          "width": 728.02,
+          "height": 141.39
+        },
+        "time": 5.175,
+        "rect": {
+          "left": 175.98,
+          "top": 1470,
+          "right": 904,
+          "bottom": 1611.39,
+          "width": 728.02,
+          "height": 141.39
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "swears they saw the meme first.",
+        "message": "<span> \"swears they saw the meme first.\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 5.175,
+        "lastSeen": 5.175,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          5.175
+        ]
+      },
+      {
+        "selector": "#sub4",
+        "dataAttributes": {
+          "data-start": "7.189",
+          "data-duration": "2.361",
+          "data-track-index": "5"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 149.28,
+          "y": 1470,
+          "width": 781.42,
+          "height": 141.39
+        },
+        "time": 7.245,
+        "rect": {
+          "left": 149.28,
+          "top": 1470,
+          "right": 930.7,
+          "bottom": 1611.39,
+          "width": 781.42,
+          "height": 141.39
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "Wikipedia views help set fair value.",
+        "message": "<span> \"Wikipedia views help set fair value.\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 7.245,
+        "lastSeen": 9.315,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          7.245,
+          9.315
+        ]
+      },
+      {
+        "selector": "#fair",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90,
+          "y": 820.2,
+          "width": 384.95,
+          "height": 84
+        },
+        "time": 9.315,
+        "rect": {
+          "left": 90,
+          "top": 820.2,
+          "right": 474.95,
+          "bottom": 904.2,
+          "width": 384.95,
+          "height": 84
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "104.21 coins",
+        "message": "<div> \"104.21 coins\" is outside the safe area: TikTok (left edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 9.315,
+        "lastSeen": 17.595,
+        "occurrences": 5,
+        "heldMs": 0,
+        "times": [
+          9.315,
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "selector": "#fair > small:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90,
+          "y": 777.2,
+          "width": 382.52,
+          "height": 43
+        },
+        "time": 9.315,
+        "rect": {
+          "left": 90,
+          "top": 777.2,
+          "right": 472.52,
+          "bottom": 820.2,
+          "width": 382.52,
+          "height": 43
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "DOGE / FAIR VALUE",
+        "message": "<small> \"DOGE / FAIR VALUE\" is outside the safe area: TikTok (left edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 9.315,
+        "lastSeen": 17.595,
+        "occurrences": 5,
+        "heldMs": 0,
+        "times": [
+          9.315,
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "selector": "#last",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90,
+          "y": 1007.2,
+          "width": 380.08,
+          "height": 84
+        },
+        "time": 11.385,
+        "rect": {
+          "left": 90,
+          "top": 1007.2,
+          "right": 470.08,
+          "bottom": 1091.2,
+          "width": 380.08,
+          "height": 84
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "132.52 coins",
+        "message": "<div> \"132.52 coins\" is outside the safe area: TikTok (left edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 11.385,
+        "lastSeen": 17.595,
+        "occurrences": 4,
+        "heldMs": 0,
+        "times": [
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "selector": "#last > small:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90,
+          "y": 964.2,
+          "width": 396.73,
+          "height": 43
+        },
+        "time": 11.385,
+        "rect": {
+          "left": 90,
+          "top": 964.2,
+          "right": 486.73,
+          "bottom": 1007.2,
+          "width": 396.73,
+          "height": 43
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "DOGE / LAST TRADE",
+        "message": "<small> \"DOGE / LAST TRADE\" is outside the safe area: TikTok (left edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 11.385,
+        "lastSeen": 17.595,
+        "occurrences": 4,
+        "heldMs": 0,
+        "times": [
+          11.385,
+          13.455,
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "selector": "#sub5",
+        "dataAttributes": {
+          "data-start": "9.55",
+          "data-duration": "2.218",
+          "data-track-index": "5"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 174.03,
+          "y": 1470,
+          "width": 731.94,
+          "height": 141.39
+        },
+        "time": 11.385,
+        "rect": {
+          "left": 174.03,
+          "top": 1470,
+          "right": 905.97,
+          "bottom": 1611.39,
+          "width": 731.94,
+          "height": 141.39
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "Players can move the price, too.",
+        "message": "<span> \"Players can move the price, too.\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 11.385,
+        "lastSeen": 11.385,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          11.385
+        ]
+      },
+      {
+        "selector": "#sub7",
+        "dataAttributes": {
+          "data-start": "13.324",
+          "data-duration": "2.053",
+          "data-track-index": "5"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 258.3,
+          "y": 1470,
+          "width": 563.4,
+          "height": 141.39
+        },
+        "time": 13.455,
+        "rect": {
+          "left": 258.3,
+          "top": 1470,
+          "right": 821.7,
+          "bottom": 1611.39,
+          "width": 563.4,
+          "height": 141.39
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "Here's the total, fees included.",
+        "message": "<span> \"Here's the total, fees included.\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 13.455,
+        "lastSeen": 13.455,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          13.455
+        ]
+      },
+      {
+        "selector": "#ticket",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90.57,
+          "y": 1296.5,
+          "width": 286.68,
+          "height": 112.5
+        },
+        "time": 15.525,
+        "rect": {
+          "left": 90.57,
+          "top": 1296.5,
+          "right": 377.25,
+          "bottom": 1409,
+          "width": 286.68,
+          "height": 112.5
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "PREVIEW",
+        "message": "<section> \"PREVIEW\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 15.525,
+        "lastSeen": 17.595,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          15.525,
+          17.595
+        ]
+      },
+      {
+        "selector": "#sub8",
+        "dataAttributes": {
+          "data-start": "15.377",
+          "data-duration": "1.334",
+          "data-track-index": "5"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 307.23,
+          "y": 1470,
+          "width": 465.52,
+          "height": 77
+        },
+        "time": 15.525,
+        "rect": {
+          "left": 307.23,
+          "top": 1470,
+          "right": 772.75,
+          "bottom": 1547,
+          "width": 465.52,
+          "height": 77
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "It's all play coins.",
+        "message": "<span> \"It's all play coins.\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 15.525,
+        "lastSeen": 15.525,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.525
+        ]
+      },
+      {
+        "selector": "#sub9",
+        "dataAttributes": {
+          "data-start": "16.711",
+          "data-duration": "1.919",
+          "data-track-index": "5"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 201.38,
+          "y": 1470,
+          "width": 677.25,
+          "height": 141.39
+        },
+        "time": 17.595,
+        "rect": {
+          "left": 201.38,
+          "top": 1470,
+          "right": 878.63,
+          "bottom": 1611.39,
+          "width": 677.25,
+          "height": 141.39
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "Which meme did you call early?",
+        "message": "<span> \"Which meme did you call early?\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 17.595,
+        "lastSeen": 17.595,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          17.595
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 5.837,
+        "selector": "#chat > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 90,
+          "top": 195,
+          "right": 469.36,
+          "bottom": 241,
+          "width": 379.36,
+          "height": 46
+        },
+        "containerSelector": "#build > div:nth-of-type(1)",
+        "text": "THE GROUP CHAT",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90,
+          "y": 195,
+          "width": 379.36,
+          "height": 46
+        },
+        "firstSeen": 5.837,
+        "lastSeen": 5.837,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          5.837
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 11.923,
+        "selector": "#build > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 90,
+          "top": 195,
+          "right": 604.17,
+          "bottom": 241,
+          "width": 514.17,
+          "height": 46
+        },
+        "containerSelector": "#ticket > div:nth-of-type(1)",
+        "text": "A MEME TRADING GAME",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90,
+          "y": 195,
+          "width": 514.17,
+          "height": 46
+        },
+        "firstSeen": 11.923,
+        "lastSeen": 11.923,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          11.923
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 11.923,
+        "selector": "#fair",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 90,
+          "top": 820.2,
+          "right": 474.95,
+          "bottom": 904.2,
+          "width": 384.95,
+          "height": 84
+        },
+        "containerSelector": "div.panel.receipt > div:nth-of-type(1)",
+        "text": "DOGE / FAIR VALUE 104.21 coins",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90,
+          "y": 820.2,
+          "width": 384.95,
+          "height": 84
+        },
+        "firstSeen": 11.923,
+        "lastSeen": 11.923,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          11.923
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 11.923,
+        "selector": "#last",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 90,
+          "top": 1007.2,
+          "right": 470.08,
+          "bottom": 1091.2,
+          "width": 380.08,
+          "height": 84
+        },
+        "containerSelector": "div.panel.receipt > div:nth-of-type(3)",
+        "text": "DOGE / LAST TRADE 132.52 coins",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90,
+          "y": 1007.2,
+          "width": 380.08,
+          "height": 84
+        },
+        "firstSeen": 11.923,
+        "lastSeen": 11.923,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          11.923
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 11.923,
+        "selector": "#build > div:nth-of-type(4)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 123.61,
+          "top": 1149.03,
+          "right": 678.17,
+          "bottom": 1246.38,
+          "width": 554.56,
+          "height": 97.35
+        },
+        "containerSelector": "div.panel.receipt > div:nth-of-type(4)",
+        "text": "LOCAL GAME SNAPSHOT",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 123.61,
+          "y": 1149.03,
+          "width": 554.56,
+          "height": 97.35
+        },
+        "firstSeen": 11.923,
+        "lastSeen": 11.923,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          11.923
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 15.401,
+        "selector": "#hook > div:nth-of-type(4)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 123.32,
+          "top": 1244.63,
+          "right": 433.28,
+          "bottom": 1324.87,
+          "width": 309.96,
+          "height": 80.24
+        },
+        "containerSelector": "div.tag.stamp",
+        "text": "DOGE • 132.52",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 123.32,
+          "y": 1244.63,
+          "width": 309.96,
+          "height": 80.24
+        },
+        "firstSeen": 15.401,
+        "lastSeen": 15.401,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.401
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 16.891,
+        "selector": "#ticket > div:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 90,
+          "top": 195,
+          "right": 450.94,
+          "bottom": 241,
+          "width": 360.94,
+          "height": 46
+        },
+        "containerSelector": "#end > div:nth-of-type(1)",
+        "text": "ORDER PREVIEW",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90,
+          "y": 195,
+          "width": 360.94,
+          "height": 46
+        },
+        "firstSeen": 16.891,
+        "lastSeen": 16.891,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          16.891
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 16.891,
+        "selector": "#ticket > div:nth-of-type(2)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 90,
+          "top": 267,
+          "right": 852.36,
+          "bottom": 583.13,
+          "width": 762.36,
+          "height": 316.13
+        },
+        "containerSelector": "#end > div:nth-of-type(2)",
+        "text": "TEN SHARES OF DOGE.",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply. Decoration nobody needs to read can take data-layout-ignore.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90,
+          "y": 267,
+          "width": 762.36,
+          "height": 316.13
+        },
+        "firstSeen": 16.891,
+        "lastSeen": 16.891,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          16.891
+        ]
+      }
+    ],
+    "duration": 18.63,
+    "samples": [
+      1.035,
+      3.105,
+      5.175,
+      7.245,
+      9.315,
+      11.385,
+      13.455,
+      15.525,
+      17.595
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 43,
+    "truncated": false,
+    "faceCheck": {
+      "ran": true,
+      "candidates": 0,
+      "faces": 0
+    }
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 2.57:1; WCAG AA requires 3:1.",
+        "text": "CHART.",
+        "fg": "rgb(16,125,74)",
+        "bg": "rgb(194,169,255)",
+        "ratio": 2.57,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(14,113,67)",
+        "large": true,
+        "selector": "main > section:nth-of-type(1) > div:nth-of-type(2) > span",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 209.828125,
+          "y": 407.125,
+          "width": 459.875,
+          "height": 176
+        },
+        "time": 5.175,
+        "times": [
+          5.175
+        ]
+      }
+    ],
+    "enabled": true,
+    "samples": [
+      1.035,
+      5.175,
+      9.315,
+      13.455,
+      17.595
+    ],
+    "checked": 42,
+    "passed": 41
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 6,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and \"DOGE • 132.52\" renders at 5 px for 0.75 s: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "DOGE • 132.52",
+        "selector": "#hook > div:nth-of-type(4)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 262.69,
+          "y": 1278.68,
+          "width": 31.21,
+          "height": 12.14
+        },
+        "time": 0,
+        "times": [
+          0
+        ],
+        "fontPx": 5.2,
+        "floorPx": 28,
+        "seconds": 0.745,
+        "elements": [
+          {
+            "selector": "#hook > div:nth-of-type(4)",
+            "text": "DOGE • 132.52",
+            "fontPx": 5.2,
+            "time": 0,
+            "seconds": 0.745
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"A MEME TRADING GAME DOGE / FAIR VALUE 104.21 coins DOGE /...\" (17 words) is on screen 2.00 s (±0.01 s), under its 4.20 s floor: hold it about 0.5 s + 0.3 s a word (5.60 s here) before it leaves or changes; see references/motion.md.",
+        "text": "A MEME TRADING GAME DOGE / FAIR VALUE 104.21 coins DOGE / LAST TRADE 132.52 coins LOCAL GAME SNAPSHOT",
+        "selector": "#build",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 208.13,
+          "y": 1163.86,
+          "width": 385.52,
+          "height": 67.68000000000006
+        },
+        "time": 9.967,
+        "words": 17,
+        "seconds": 2.002,
+        "floorSeconds": 4.2,
+        "measured": [
+          {
+            "time": 9.688,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 9.812,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 9.936,
+            "opacity": 1,
+            "heightPx": 25
+          },
+          {
+            "time": 10.06,
+            "opacity": 1,
+            "heightPx": 68
+          },
+          {
+            "time": 10.184,
+            "opacity": 1,
+            "heightPx": 96
+          },
+          {
+            "time": 10.309,
+            "opacity": 1,
+            "heightPx": 97
+          },
+          {
+            "time": 10.433,
+            "opacity": 1,
+            "heightPx": 97
+          },
+          {
+            "time": 11.551,
+            "opacity": 1,
+            "heightPx": 97
+          },
+          {
+            "time": 11.675,
+            "opacity": 1,
+            "heightPx": 97
+          },
+          {
+            "time": 11.799,
+            "opacity": 1,
+            "heightPx": 97
+          },
+          {
+            "time": 11.923,
+            "opacity": 1,
+            "heightPx": 97
+          },
+          {
+            "time": 12.047,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 12.172,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 12.296,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"ORDER PREVIEW TEN SHARES OF DOGE. DANKRUPT / BUY TICKET S...\" (20 words) is on screen 1.43 s (±0.01 s), under its 4.88 s floor: hold it about 0.5 s + 0.3 s a word (6.50 s here) before it leaves or changes; see references/motion.md.",
+        "text": "ORDER PREVIEW TEN SHARES OF DOGE. DANKRUPT / BUY TICKET Shares 10 Fee 1.30 TOTAL INCLUDING FEE 1,303.86 PLAY COINS PREVIEW",
+        "selector": "#ticket",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 90.57,
+          "y": 1296.5,
+          "width": 286.68,
+          "height": 112.5
+        },
+        "time": 15.44,
+        "words": 20,
+        "seconds": 1.428,
+        "floorSeconds": 4.875,
+        "measured": [
+          {
+            "time": 15.152,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 15.277,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 15.401,
+            "opacity": 0.35,
+            "heightPx": 198
+          },
+          {
+            "time": 15.525,
+            "opacity": 0.77,
+            "heightPx": 113
+          },
+          {
+            "time": 15.649,
+            "opacity": 1,
+            "heightPx": 74
+          },
+          {
+            "time": 15.773,
+            "opacity": 1,
+            "heightPx": 74
+          },
+          {
+            "time": 15.898,
+            "opacity": 1,
+            "heightPx": 74
+          },
+          {
+            "time": 16.394,
+            "opacity": 1,
+            "heightPx": 74
+          },
+          {
+            "time": 16.519,
+            "opacity": 1,
+            "heightPx": 74
+          },
+          {
+            "time": 16.643,
+            "opacity": 1,
+            "heightPx": 74
+          },
+          {
+            "time": 16.767,
+            "opacity": 1,
+            "heightPx": 74
+          },
+          {
+            "time": 16.891,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 17.015,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 17.14,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"Which meme did you call early?\" (6 words) is on screen 1.90 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "Which meme did you call early?",
+        "selector": "#sub9",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 201.38,
+          "y": 1470,
+          "width": 677.25,
+          "height": 141.38999999999987
+        },
+        "time": 16.736,
+        "words": 6,
+        "seconds": 1.898,
+        "floorSeconds": 2,
+        "measured": [
+          {
+            "time": 16.394,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 16.519,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 16.643,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 16.767,
+            "opacity": 1,
+            "heightPx": 141
+          },
+          {
+            "time": 16.891,
+            "opacity": 1,
+            "heightPx": 141
+          },
+          {
+            "time": 17.015,
+            "opacity": 1,
+            "heightPx": 141
+          },
+          {
+            "time": 17.14,
+            "opacity": 1,
+            "heightPx": 141
+          },
+          {
+            "time": 18.133,
+            "opacity": 1,
+            "heightPx": 141
+          },
+          {
+            "time": 18.257,
+            "opacity": 1,
+            "heightPx": 141
+          },
+          {
+            "time": 18.382,
+            "opacity": 1,
+            "heightPx": 141
+          },
+          {
+            "time": 18.506,
+            "opacity": 1,
+            "heightPx": 141
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"DANKRUPT EXCHANGE\" (2 words) is on screen 1.80 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "DANKRUPT EXCHANGE",
+        "selector": "#end > div:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 126.37,
+          "y": 195,
+          "width": 335.26,
+          "height": 46
+        },
+        "time": 16.837,
+        "words": 2,
+        "seconds": 1.797,
+        "floorSeconds": 2,
+        "measured": [
+          {
+            "time": 16.519,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 16.643,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 16.767,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 16.891,
+            "opacity": 1,
+            "heightPx": 46
+          },
+          {
+            "time": 17.015,
+            "opacity": 1,
+            "heightPx": 46
+          },
+          {
+            "time": 17.14,
+            "opacity": 1,
+            "heightPx": 46
+          },
+          {
+            "time": 17.264,
+            "opacity": 1,
+            "heightPx": 46
+          },
+          {
+            "time": 18.133,
+            "opacity": 1,
+            "heightPx": 46
+          },
+          {
+            "time": 18.257,
+            "opacity": 1,
+            "heightPx": 46
+          },
+          {
+            "time": 18.382,
+            "opacity": 1,
+            "heightPx": 46
+          },
+          {
+            "time": 18.506,
+            "opacity": 1,
+            "heightPx": 46
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"CALLED IT EARLY?\" (3 words) is on screen 1.80 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "CALLED IT EARLY?",
+        "selector": "#end > div:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 126.37,
+          "y": 267,
+          "width": 335.26,
+          "height": 316.13
+        },
+        "time": 16.837,
+        "words": 3,
+        "seconds": 1.797,
+        "floorSeconds": 2,
+        "measured": [
+          {
+            "time": 16.519,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 16.643,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 16.767,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 16.891,
+            "opacity": 1,
+            "heightPx": 316
+          },
+          {
+            "time": 17.015,
+            "opacity": 1,
+            "heightPx": 316
+          },
+          {
+            "time": 17.14,
+            "opacity": 1,
+            "heightPx": 316
+          },
+          {
+            "time": 17.264,
+            "opacity": 1,
+            "heightPx": 316
+          },
+          {
+            "time": 18.133,
+            "opacity": 1,
+            "heightPx": 316
+          },
+          {
+            "time": 18.257,
+            "opacity": 1,
+            "heightPx": 316
+          },
+          {
+            "time": 18.382,
+            "opacity": 1,
+            "heightPx": 316
+          },
+          {
+            "time": 18.506,
+            "opacity": 1,
+            "heightPx": 316
+          }
+        ]
+      }
+    ],
+    "enabled": true,
+    "step": 0.12400000000000055,
+    "samples": 150
+  },
+  "audio": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}

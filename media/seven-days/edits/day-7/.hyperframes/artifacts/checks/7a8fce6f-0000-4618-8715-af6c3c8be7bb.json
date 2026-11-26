@@ -1,0 +1,1658 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 7,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "timeline_track_too_dense",
+        "severity": "warning",
+        "message": "This HTML file has 7 timed elements. Smaller sub-compositions keep timelines easier to read, iterate on, and diff.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/Users/faazkhn/Documents/Dankrupt/media/seven-days/edits/day-7/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move coherent scene groups into separate .html files under compositions/ and mount them from the parent with data-composition-src so the timeline stays easier to inspect, revise, and validate."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<div id=\"screen\"> is a timeline element that contains nested <img>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#screen",
+        "dataAttributes": {},
+        "sourceFile": "/Users/faazkhn/Documents/Dankrupt/media/seven-days/edits/day-7/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <div id=\"screen\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<div id=\"day\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#day",
+        "dataAttributes": {},
+        "sourceFile": "/Users/faazkhn/Documents/Dankrupt/media/seven-days/edits/day-7/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <div id=\"day\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<div id=\"error\"> is a timeline element that contains nested <section>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#error",
+        "dataAttributes": {},
+        "sourceFile": "/Users/faazkhn/Documents/Dankrupt/media/seven-days/edits/day-7/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <div id=\"error\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<div id=\"edit1\"> is a timeline element that contains nested <section>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#edit1",
+        "dataAttributes": {},
+        "sourceFile": "/Users/faazkhn/Documents/Dankrupt/media/seven-days/edits/day-7/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <div id=\"edit1\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<div id=\"edit2\"> is a timeline element that contains nested <section>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#edit2",
+        "dataAttributes": {},
+        "sourceFile": "/Users/faazkhn/Documents/Dankrupt/media/seven-days/edits/day-7/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <div id=\"edit2\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<div id=\"card\"> is a timeline element that contains nested <div>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#card",
+        "dataAttributes": {},
+        "sourceFile": "/Users/faazkhn/Documents/Dankrupt/media/seven-days/edits/day-7/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <div id=\"card\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      }
+    ],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 22,
+    "infoCount": 0,
+    "findings": [
+      {
+        "selector": "#cap4",
+        "dataAttributes": {
+          "data-start": "0.000",
+          "data-duration": "1.475",
+          "data-track-index": "4"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 140.73,
+          "y": 747,
+          "width": 258.52,
+          "height": 34
+        },
+        "time": 1.204,
+        "rect": {
+          "left": 140.73,
+          "top": 747,
+          "right": 399.25,
+          "bottom": 781,
+          "width": 258.52,
+          "height": 34
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "Seven days ago, I was",
+        "message": "<div> \"Seven days ago, I was\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 1.204,
+        "lastSeen": 1.204,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          1.204
+        ]
+      },
+      {
+        "selector": "#cap13",
+        "dataAttributes": {
+          "data-start": "2.625",
+          "data-duration": "1.575",
+          "data-track-index": "4"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 146.81,
+          "y": 747,
+          "width": 246.38,
+          "height": 34
+        },
+        "time": 3.611,
+        "rect": {
+          "left": 146.81,
+          "top": 747,
+          "right": 393.19,
+          "bottom": 781,
+          "width": 246.38,
+          "height": 34
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "my doge order went.",
+        "message": "<div> \"my doge order went.\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 3.611,
+        "lastSeen": 3.611,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          3.611
+        ]
+      },
+      {
+        "selector": "#day > div:nth-of-type(1) > h1:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 130.5,
+          "y": 399.84,
+          "width": 279,
+          "height": 144
+        },
+        "time": 6.019,
+        "rect": {
+          "left": 130.5,
+          "top": 399.84,
+          "right": 409.5,
+          "bottom": 543.84,
+          "width": 279,
+          "height": 144
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "DAY 7",
+        "message": "<h1> \"DAY 7\" is outside the safe area: TikTok (right edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 6.019,
+        "lastSeen": 6.019,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          6.019
+        ]
+      },
+      {
+        "selector": "#cap17",
+        "dataAttributes": {
+          "data-start": "4.200",
+          "data-duration": "1.825",
+          "data-track-index": "4"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 166.36,
+          "y": 747,
+          "width": 207.27,
+          "height": 34
+        },
+        "time": 6.019,
+        "rect": {
+          "left": 166.36,
+          "top": 747,
+          "right": 373.63,
+          "bottom": 781,
+          "width": 207.27,
+          "height": 34
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "This is day seven.",
+        "message": "<div> \"This is day seven.\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 6.019,
+        "lastSeen": 6.019,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          6.019
+        ]
+      },
+      {
+        "selector": "section.terminal",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 45,
+          "y": 314.06,
+          "width": 190.41,
+          "height": 22
+        },
+        "time": 8.426,
+        "rect": {
+          "left": 45,
+          "top": 314.06,
+          "right": 235.41,
+          "bottom": 336.06,
+          "width": 190.41,
+          "height": 22
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "Signup validation",
+        "message": "<section> \"Signup validation\" is outside the safe area: TikTok (left edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 8.426,
+        "lastSeen": 10.833,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          8.426,
+          10.833
+        ]
+      },
+      {
+        "selector": "section.terminal > h2:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 45,
+          "y": 351.06,
+          "width": 155.53,
+          "height": 58
+        },
+        "time": 8.426,
+        "rect": {
+          "left": 45,
+          "top": 351.06,
+          "right": 200.53,
+          "bottom": 409.06,
+          "width": 155.53,
+          "height": 58
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "player@",
+        "message": "<h2> \"player@\" is outside the safe area: TikTok (left edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 8.426,
+        "lastSeen": 10.833,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          8.426,
+          10.833
+        ]
+      },
+      {
+        "selector": "section.terminal > p:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 45,
+          "y": 451.92,
+          "width": 204.8,
+          "height": 34
+        },
+        "time": 8.426,
+        "rect": {
+          "left": 45,
+          "top": 451.92,
+          "right": 249.8,
+          "bottom": 485.92,
+          "width": 204.8,
+          "height": 34
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "“Check for typos?”",
+        "message": "<p> \"“Check for typos?”\" is outside the safe area: TikTok (left edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 8.426,
+        "lastSeen": 10.833,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          8.426,
+          10.833
+        ]
+      },
+      {
+        "selector": "#cap23",
+        "dataAttributes": {
+          "data-start": "7.900",
+          "data-duration": "0.550",
+          "data-track-index": "4"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 238.48,
+          "y": 747,
+          "width": 63.02,
+          "height": 34
+        },
+        "time": 8.426,
+        "rect": {
+          "left": 238.48,
+          "top": 747,
+          "right": 301.5,
+          "bottom": 781,
+          "width": 63.02,
+          "height": 34
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "form.",
+        "message": "<div> \"form.\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 8.426,
+        "lastSeen": 8.426,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          8.426
+        ]
+      },
+      {
+        "selector": "#cap32",
+        "dataAttributes": {
+          "data-start": "9.925",
+          "data-duration": "1.550",
+          "data-track-index": "4"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 127.27,
+          "y": 747,
+          "width": 285.45,
+          "height": 34
+        },
+        "time": 10.833,
+        "rect": {
+          "left": 127.27,
+          "top": 747,
+          "right": 412.72,
+          "bottom": 781,
+          "width": 285.45,
+          "height": 34
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "the same address twice.",
+        "message": "<div> \"the same address twice.\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 10.833,
+        "lastSeen": 10.833,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          10.833
+        ]
+      },
+      {
+        "selector": "#edit1 > section:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 45,
+          "y": 300.17,
+          "width": 324.81,
+          "height": 22
+        },
+        "time": 13.241,
+        "rect": {
+          "left": 45,
+          "top": 300.17,
+          "right": 369.81,
+          "bottom": 322.17,
+          "width": 324.81,
+          "height": 22
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "LOCAL BUILD / waitlist.ts",
+        "message": "<section> \"LOCAL BUILD / waitlist.ts\" is outside the safe area: TikTok (left edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 13.241,
+        "lastSeen": 13.241,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          13.241
+        ]
+      },
+      {
+        "selector": "#edit1 > section:nth-of-type(1) > h2:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 45,
+          "y": 337.17,
+          "width": 336.27,
+          "height": 58
+        },
+        "time": 13.241,
+        "rect": {
+          "left": 45,
+          "top": 337.17,
+          "right": 381.27,
+          "bottom": 395.17,
+          "width": 336.27,
+          "height": 58
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "Validate the email",
+        "message": "<h2> \"Validate the email\" is outside the safe area: TikTok (left edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 13.241,
+        "lastSeen": 13.241,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          13.241
+        ]
+      },
+      {
+        "selector": "#edit1 > section:nth-of-type(1) > pre:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 61,
+          "y": 426.03,
+          "width": 369.61,
+          "height": 60.89
+        },
+        "time": 13.241,
+        "rect": {
+          "left": 61,
+          "top": 426.03,
+          "right": 430.61,
+          "bottom": 486.92,
+          "width": 369.61,
+          "height": 60.89
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "if (email.length > 254 || !EMAIL.test(email)) +",
+        "message": "<pre> \"if (email.length > 254 || !EMAIL.test(email)) +\" is outside the safe area: TikTok (right edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 13.241,
+        "lastSeen": 13.241,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          13.241
+        ]
+      },
+      {
+        "selector": "#cap38",
+        "dataAttributes": {
+          "data-start": "12.875",
+          "data-duration": "0.675",
+          "data-track-index": "4"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 227.33,
+          "y": 747,
+          "width": 85.34,
+          "height": 34
+        },
+        "time": 13.241,
+        "rect": {
+          "left": 227.33,
+          "top": 747,
+          "right": 312.67,
+          "bottom": 781,
+          "width": 85.34,
+          "height": 34
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "signup.",
+        "message": "<div> \"signup.\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 13.241,
+        "lastSeen": 13.241,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          13.241
+        ]
+      },
+      {
+        "selector": "#edit2 > section:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 45,
+          "y": 278.25,
+          "width": 324.81,
+          "height": 22
+        },
+        "time": 15.648,
+        "rect": {
+          "left": 45,
+          "top": 278.25,
+          "right": 369.81,
+          "bottom": 300.25,
+          "width": 324.81,
+          "height": 22
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "LOCAL BUILD / waitlist.ts",
+        "message": "<section> \"LOCAL BUILD / waitlist.ts\" is outside the safe area: TikTok (left edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 15.648,
+        "lastSeen": 15.648,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.648
+        ]
+      },
+      {
+        "selector": "#edit2 > section:nth-of-type(1) > h2:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 45,
+          "y": 315.25,
+          "width": 260.95,
+          "height": 101.86
+        },
+        "time": 15.648,
+        "rect": {
+          "left": 45,
+          "top": 315.25,
+          "right": 305.95,
+          "bottom": 417.11,
+          "width": 260.95,
+          "height": 101.86
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "Guard against duplicates",
+        "message": "<h2> \"Guard against duplicates\" is outside the safe area: TikTok (left edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 15.648,
+        "lastSeen": 15.648,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.648
+        ]
+      },
+      {
+        "selector": "#edit2 > section:nth-of-type(1) > pre:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 61,
+          "y": 447.97,
+          "width": 330.02,
+          "height": 60.89
+        },
+        "time": 15.648,
+        "rect": {
+          "left": 61,
+          "top": 447.97,
+          "right": 391.02,
+          "bottom": 508.86,
+          "width": 330.02,
+          "height": 60.89
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "on conflict (email) do nothing +",
+        "message": "<pre> \"on conflict (email) do nothing +\" is outside the safe area: TikTok (right edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 15.648,
+        "lastSeen": 15.648,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.648
+        ]
+      },
+      {
+        "selector": "#cap47",
+        "dataAttributes": {
+          "data-start": "15.000",
+          "data-duration": "2.025",
+          "data-track-index": "4"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 120.19,
+          "y": 747,
+          "width": 299.62,
+          "height": 34
+        },
+        "time": 15.648,
+        "rect": {
+          "left": 120.19,
+          "top": 747,
+          "right": 419.81,
+          "bottom": 781,
+          "width": 299.62,
+          "height": 34
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "then the duplicate guard.",
+        "message": "<div> \"then the duplicate guard.\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 15.648,
+        "lastSeen": 15.648,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          15.648
+        ]
+      },
+      {
+        "selector": "#result",
+        "dataAttributes": {
+          "data-start": "17.025",
+          "data-duration": "2.337",
+          "data-track-index": "3"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 158.41,
+          "y": 74,
+          "width": 223.18,
+          "height": 30
+        },
+        "time": 18.056,
+        "rect": {
+          "left": 158.41,
+          "top": 74,
+          "right": 381.59,
+          "bottom": 104,
+          "width": 223.18,
+          "height": 30
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "✓ Local signup ready",
+        "message": "<div> \"✓ Local signup ready\" is outside the safe area: TikTok (top edge), Instagram Reels (top edge), YouTube Shorts (top edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 18.056,
+        "lastSeen": 18.056,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          18.056
+        ]
+      },
+      {
+        "selector": "#cap52",
+        "dataAttributes": {
+          "data-start": "17.025",
+          "data-duration": "1.225",
+          "data-track-index": "4"
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 133.75,
+          "y": 747,
+          "width": 272.5,
+          "height": 34
+        },
+        "time": 18.056,
+        "rect": {
+          "left": 133.75,
+          "top": 747,
+          "right": 406.25,
+          "bottom": 781,
+          "width": 272.5,
+          "height": 34
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "The local form is ready",
+        "message": "<div> \"The local form is ready\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 18.056,
+        "lastSeen": 18.056,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          18.056
+        ]
+      },
+      {
+        "selector": "div.end > p:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 141.5,
+          "y": 462.69,
+          "width": 256.98,
+          "height": 28
+        },
+        "time": 20.463,
+        "rect": {
+          "left": 141.5,
+          "top": 462.69,
+          "right": 398.48,
+          "bottom": 490.69,
+          "width": 256.98,
+          "height": 28
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "Free. No real money, ever.",
+        "message": "<p> \"Free. No real money, ever.\" is outside the safe area: TikTok (right edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 20.463,
+        "lastSeen": 20.463,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          20.463
+        ]
+      },
+      {
+        "selector": "#soon",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 80.31,
+          "y": 522.69,
+          "width": 379.36,
+          "height": 69
+        },
+        "time": 20.463,
+        "rect": {
+          "left": 80.31,
+          "top": 522.69,
+          "right": 459.67,
+          "bottom": 591.69,
+          "width": 379.36,
+          "height": 69
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "COMING SOON",
+        "message": "<div> \"COMING SOON\" is outside the safe area: TikTok (right edge), YouTube Shorts (right edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 20.463,
+        "lastSeen": 20.463,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          20.463
+        ]
+      },
+      {
+        "selector": "#number",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 218.64,
+          "y": 613.11,
+          "width": 102.7,
+          "height": 46.15
+        },
+        "time": 20.463,
+        "rect": {
+          "left": 218.64,
+          "top": 613.11,
+          "right": 321.34,
+          "bottom": 659.26,
+          "width": 102.7,
+          "height": 46.15
+        },
+        "code": "outside_safe_zone",
+        "severity": "warning",
+        "text": "DAY 7",
+        "message": "<div> \"DAY 7\" is outside the safe area: TikTok (bottom edge), Instagram Reels (bottom edge), YouTube Shorts (bottom edge).",
+        "fixHint": "Move the text inside the safe area, or mark text meant to sit there with data-layout-allow-safe-zone.",
+        "firstSeen": 20.463,
+        "lastSeen": 20.463,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          20.463
+        ]
+      }
+    ],
+    "duration": 21.666666666666668,
+    "samples": [
+      1.204,
+      3.611,
+      6.019,
+      8.426,
+      10.833,
+      13.241,
+      15.648,
+      18.056,
+      20.463
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 22,
+    "truncated": false,
+    "faceCheck": {
+      "ran": true,
+      "candidates": 2,
+      "faces": 0
+    }
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      1.204,
+      6.019,
+      10.833,
+      15.648,
+      20.463
+    ],
+    "checked": 17,
+    "passed": 17
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 8,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"trying to figure out where\" (5 words) is on screen 1.14 s (±0.01 s), under its 1.50 s floor: hold it about 0.5 s + 0.3 s a word (2.00 s here) before it leaves or changes; see references/motion.md.",
+        "text": "trying to figure out where",
+        "selector": "#cap9",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 116.28,
+          "y": 747,
+          "width": 307.44000000000005,
+          "height": 34
+        },
+        "time": 1.502,
+        "words": 5,
+        "seconds": 1.136,
+        "floorSeconds": 1.5,
+        "measured": [
+          {
+            "time": 1.245,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 1.37,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 1.494,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 1.619,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 1.743,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 1.868,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 1.992,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 2.241,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 2.366,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 2.49,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 2.615,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 2.739,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 2.864,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 2.989,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"Should still give me one\" (5 words) is on screen 1.40 s (±0.01 s), under its 1.50 s floor: hold it about 0.5 s + 0.3 s a word (2.00 s here) before it leaves or changes; see references/motion.md.",
+        "text": "Should still give me one",
+        "selector": "#cap37",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 127.09,
+          "y": 747,
+          "width": 285.79999999999995,
+          "height": 34
+        },
+        "time": 11.503,
+        "words": 5,
+        "seconds": 1.401,
+        "floorSeconds": 1.5,
+        "measured": [
+          {
+            "time": 11.207,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 11.331,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 11.456,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 11.58,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 11.705,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 11.83,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 11.954,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 12.452,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 12.577,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 12.701,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 12.826,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 12.95,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 13.075,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 13.199,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"LOCAL BUILD / waitlist.ts Validate the email + if (email....\" (14 words) is on screen 3.04 s (±0.01 s), under its 3.53 s floor: hold it about 0.5 s + 0.3 s a word (4.70 s here) before it leaves or changes; see references/motion.md.",
+        "text": "LOCAL BUILD / waitlist.ts Validate the email + if (email.length > 254 || !EMAIL.test(email))",
+        "selector": "#edit1 > section:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 45,
+          "y": 300.17,
+          "width": 324.81,
+          "height": 22
+        },
+        "time": 11.97,
+        "words": 14,
+        "seconds": 3.035,
+        "floorSeconds": 3.525,
+        "measured": [
+          {
+            "time": 11.705,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 11.83,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 11.954,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 12.079,
+            "opacity": 1,
+            "heightPx": 22
+          },
+          {
+            "time": 12.203,
+            "opacity": 1,
+            "heightPx": 22
+          },
+          {
+            "time": 12.328,
+            "opacity": 1,
+            "heightPx": 22
+          },
+          {
+            "time": 12.452,
+            "opacity": 1,
+            "heightPx": 22
+          },
+          {
+            "time": 14.569,
+            "opacity": 1,
+            "heightPx": 22
+          },
+          {
+            "time": 14.693,
+            "opacity": 1,
+            "heightPx": 22
+          },
+          {
+            "time": 14.818,
+            "opacity": 1,
+            "heightPx": 22
+          },
+          {
+            "time": 14.943,
+            "opacity": 1,
+            "heightPx": 22
+          },
+          {
+            "time": 15.067,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 15.192,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 15.316,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"I check the email validation,\" (5 words) is on screen 1.43 s (±0.01 s), under its 1.50 s floor: hold it about 0.5 s + 0.3 s a word (2.00 s here) before it leaves or changes; see references/motion.md.",
+        "text": "I check the email validation,",
+        "selector": "#cap43",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 104.89,
+          "y": 747,
+          "width": 330.22,
+          "height": 34
+        },
+        "time": 13.573,
+        "words": 5,
+        "seconds": 1.432,
+        "floorSeconds": 1.5,
+        "measured": [
+          {
+            "time": 13.199,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 13.324,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 13.448,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 13.573,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 13.697,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 13.822,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 13.946,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 14.569,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 14.693,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 14.818,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 14.943,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 15.067,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 15.192,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 15.316,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"LOCAL BUILD / waitlist.ts Guard against duplicates + on c...\" (12 words) is on screen 2.03 s (±0.01 s), under its 3.07 s floor: hold it about 0.5 s + 0.3 s a word (4.10 s here) before it leaves or changes; see references/motion.md.",
+        "text": "LOCAL BUILD / waitlist.ts Guard against duplicates + on conflict (email) do nothing",
+        "selector": "#edit2 > section:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 45,
+          "y": 278.25,
+          "width": 324.81,
+          "height": 22
+        },
+        "time": 15.005,
+        "words": 12,
+        "seconds": 2.031,
+        "floorSeconds": 3.075,
+        "measured": [
+          {
+            "time": 14.693,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 14.818,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 14.943,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 15.067,
+            "opacity": 1,
+            "heightPx": 22
+          },
+          {
+            "time": 15.192,
+            "opacity": 1,
+            "heightPx": 22
+          },
+          {
+            "time": 15.316,
+            "opacity": 1,
+            "heightPx": 22
+          },
+          {
+            "time": 15.441,
+            "opacity": 1,
+            "heightPx": 22
+          },
+          {
+            "time": 16.561,
+            "opacity": 1,
+            "heightPx": 22
+          },
+          {
+            "time": 16.686,
+            "opacity": 1,
+            "heightPx": 22
+          },
+          {
+            "time": 16.81,
+            "opacity": 1,
+            "heightPx": 22
+          },
+          {
+            "time": 16.935,
+            "opacity": 1,
+            "heightPx": 22
+          },
+          {
+            "time": 17.059,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 17.184,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 17.308,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "\"The local form is ready\" (5 words) is on screen 1.24 s (±0.01 s), under its 1.50 s floor: hold it about 0.5 s + 0.3 s a word (2.00 s here) before it leaves or changes; see references/motion.md.",
+        "text": "The local form is ready",
+        "selector": "#cap52",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 133.75,
+          "y": 747,
+          "width": 272.5,
+          "height": 34
+        },
+        "time": 17.036,
+        "words": 5,
+        "seconds": 1.238,
+        "floorSeconds": 1.5,
+        "measured": [
+          {
+            "time": 16.686,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 16.81,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 16.935,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 17.059,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 17.184,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 17.308,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 17.433,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 17.807,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 17.931,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 18.056,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 18.18,
+            "opacity": 1,
+            "heightPx": 34
+          },
+          {
+            "time": 18.305,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 18.429,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 18.554,
+            "opacity": null,
+            "heightPx": null
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"COMING SOON\" (2 words) is on screen 1.73 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "COMING SOON",
+        "selector": "#soon",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 89.91,
+          "y": 522.2,
+          "width": 360.18000000000006,
+          "height": 70.02999999999997
+        },
+        "time": 19.939,
+        "words": 2,
+        "seconds": 1.732,
+        "floorSeconds": 2,
+        "measured": [
+          {
+            "time": 19.674,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 19.799,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 19.923,
+            "opacity": 0.37,
+            "heightPx": 181
+          },
+          {
+            "time": 20.048,
+            "opacity": 1,
+            "heightPx": 70
+          },
+          {
+            "time": 20.172,
+            "opacity": 1,
+            "heightPx": 69
+          },
+          {
+            "time": 20.297,
+            "opacity": 1,
+            "heightPx": 69
+          },
+          {
+            "time": 20.421,
+            "opacity": 1,
+            "heightPx": 69
+          },
+          {
+            "time": 21.169,
+            "opacity": 1,
+            "heightPx": 69
+          },
+          {
+            "time": 21.293,
+            "opacity": 1,
+            "heightPx": 69
+          },
+          {
+            "time": 21.418,
+            "opacity": 1,
+            "heightPx": 69
+          },
+          {
+            "time": 21.542,
+            "opacity": 1,
+            "heightPx": 69
+          }
+        ]
+      },
+      {
+        "code": "line_unread",
+        "severity": "warning",
+        "message": "The film's last line \"DAY 7\" (2 words) is on screen 1.33 s (±0.01 s), under the 2.00 s a closing line needs: hold it about 0.5 s + 0.3 s a word and at least 2 s before the film ends; see references/motion.md.",
+        "text": "DAY 7",
+        "selector": "#number",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 220.54,
+          "y": 613.58,
+          "width": 98.9,
+          "height": 45.22000000000003
+        },
+        "time": 20.336,
+        "words": 2,
+        "seconds": 1.335,
+        "floorSeconds": 2,
+        "measured": [
+          {
+            "time": 20.048,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 20.172,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 20.297,
+            "opacity": null,
+            "heightPx": null
+          },
+          {
+            "time": 20.421,
+            "opacity": 1,
+            "heightPx": 45
+          },
+          {
+            "time": 20.546,
+            "opacity": 1,
+            "heightPx": 47
+          },
+          {
+            "time": 20.67,
+            "opacity": 1,
+            "heightPx": 47
+          },
+          {
+            "time": 20.795,
+            "opacity": 1,
+            "heightPx": 47
+          },
+          {
+            "time": 21.169,
+            "opacity": 1,
+            "heightPx": 47
+          },
+          {
+            "time": 21.293,
+            "opacity": 1,
+            "heightPx": 47
+          },
+          {
+            "time": 21.418,
+            "opacity": 1,
+            "heightPx": 47
+          },
+          {
+            "time": 21.542,
+            "opacity": 1,
+            "heightPx": 47
+          }
+        ]
+      }
+    ],
+    "enabled": true,
+    "step": 0.125,
+    "samples": 174
+  },
+  "audio": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}

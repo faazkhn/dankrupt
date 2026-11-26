@@ -30,6 +30,8 @@ export type EventBody =
       price: number;
       /** Epoch ms after which the order is cancelled, or null for good-till-cancelled. */
       expiresAt?: number | null;
+      replaceOrderId?: number;
+      immediateOrCancel?: boolean;
     }
   | {
       type: "order.stop";
@@ -42,6 +44,9 @@ export type EventBody =
     }
   | { type: "order.cancel"; accountId: string; orderId: number }
   /** Operator changes tunable params live (PRD story 16); recorded in the log so replays stay exact. */
+  | { type: "dank.open" }
+  | { type: "basket.open" }
+  | { type: "liquidity.open" }
   | { type: "params.set"; params: Record<string, number> }
   /** A new fair value and heat from the attention pipeline (PRD §5). */
   | {
@@ -112,6 +117,7 @@ export type ClosedTrade = {
 };
 
 export type Output = {
+  dankTicks?: { time: number; price: number }[];
   fills: Fill[];
   trades: Trade[];
   journal: JournalLine[];

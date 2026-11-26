@@ -93,3 +93,64 @@ describe("live params (ticket 12)", () => {
     expect(e.params.driftHalfLifeHours).toBe(3);
   });
 });
+
+test("Dank opens once, moves the quiet meme every 100 ms and replays exactly", () => {
+  const e = listed(quiet, 100);
+  e.apply({ seq: 2, time: 2050, type: "dank.open" });
+  expect(e.dank?.level).toBe(1000);
+  const resumed = Engine.fromSnapshot(e.snapshot());
+  const quotes = e.advance(2100).prices;
+  expect(quotes).toHaveLength(1);
+  expect(e.dank?.level).not.toBe(1000);
+  expect(quotes[0].price / 100).toBeCloseTo(e.dank!.level / 1000, 12);
+  e.advance(4000);
+  resumed.advance(4000);
+  expect(e.snapshot()).toBe(resumed.snapshot());
+  const level = e.dank!.level;
+  e.apply({ seq: 3, time: 4000, type: "dank.open" });
+  expect(e.dank?.level).toBe(level);
+});
+
+test("Max uses executable depth for market buys and the configured fee for resting limits", () => {
+  const e = listed(quiet, 100);
+  e.apply({ seq: 2, time: 0, type: "account.open", accountId: "a" });
+  e.apply({ seq: 3, time: 0, type: "params.set", params: { takerFeeBps: 100 } });
+  const qty = e.preview("a", "m", "buy", 10_000_000).qty;
+  expect(e.preview("a", "m", "buy", qty + 1).qty).toBe(qty);
+  expect(e.maxLimitBuy("a", "m", 50, 10_000_000)).toBe(Math.floor(100_000 / 50.5));
+  const out = e.apply({ seq: 4, time: 0, type: "order.market", accountId: "a", memeId: "m", side: "buy", qty });
+  expect(out.fills.reduce((sum, f) => sum + f.qty, 0)).toBe(qty);
+});
+
+test("a delayed Dank clock returns every intermediate chart sample", () => {
+  const e = listed();
+  e.apply({ seq: 2, time: 0, type: "dank.open" });
+  const ticks = e.advance(5000).dankTicks!;
+  expect(ticks.map((p) => p.time)).toEqual(Array.from({ length: 50 }, (_, i) => (i + 1) * 100));
+  expect(ticks.at(-1)?.price).toBe(e.dank!.level);
+});
+
+test("a rejected amendment preserves the original reservation and queue entry", () => {
+  const e = listed(quiet, 100);
+  e.apply({ seq: 2, time: 0, type: "account.open", accountId: "a" });
+  const order = { type: "order.limit", accountId: "a", memeId: "m", side: "buy", qty: 5, price: 90 } as const;
+  expect(e.apply({ ...order, seq: 3, time: 0 }).rejects).toEqual([]);
+  const account = structuredClone(e.account("a"));
+  const orders = e.openOrders("a");
+  const out = e.apply({ ...order, seq: 4, time: 0, replaceOrderId: 3, qty: 1_000_000 });
+  expect(out.rejects).toHaveLength(1);
+  expect(out.orders).toEqual([]);
+  expect(e.account("a")).toEqual(account);
+  expect(e.openOrders("a")).toEqual(orders);
+});
+
+test("the single-member Dank basket tracks its midpoint return through replay", () => {
+  const e = listed(quiet, 100);
+  e.apply({ seq: 2, time: 0, type: "dank.open" });
+  e.apply({ seq: 3, time: 0, type: "basket.open" });
+  const resumed = Engine.fromSnapshot(e.snapshot());
+  const quotes = e.advance(1000).prices;
+  expect(e.dank!.level).toBeCloseTo(1000 * quotes.at(-1)!.mid / 100, 8);
+  resumed.advance(1000);
+  expect(resumed.snapshot()).toBe(e.snapshot());
+});

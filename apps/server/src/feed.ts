@@ -4,6 +4,8 @@ import type { EngineEvent, Output, PriceUpdate } from "@dankrupt/engine";
 import { WebSocketServer, WebSocket } from "ws";
 import { CandleBook, type Candle } from "./candles.ts";
 
+import { Receipts } from "./receipts.ts";
+
 const DAY = 86_400_000;
 
 export type MarketRow = {
@@ -28,10 +30,13 @@ export type MarketRow = {
 
 /**
  * Market data projection: 1-minute candles (persisted), last trade prices, 24h change, and a
- * websocket fan-out that sends each client the latest quotes at most once a second.
+ * websocket fan-out that sends each client the latest quotes at most ten times a second.
  * shortcut: runs inside the engine process; moves behind Redis when the gateway is split out (ticket 20).
  */
 export class Feed {
+  dank: () => { level: number; time: number } | null = () => null;
+  readonly receipts = new Receipts();
+  dankHistory: { time: number; price: number }[] = [];
   private book = new CandleBook();
   private history = new Map<string, Candle[]>(); // last 24h of closed candles, per meme
   private names = new Map<string, string>();
@@ -62,6 +67,11 @@ export class Feed {
   }
 
   readonly onApplied = (ev: EngineEvent | null, out: Output) => {
+    this.receipts.apply(ev, out);
+    if (out.dankTicks?.length) {
+      const ticks = out.dankTicks;
+      this.dankHistory = ticks.length >= 600 ? ticks.slice(-600) : this.dankHistory.slice(ticks.length - 600).concat(ticks);
+    }
     if (ev?.type === "meme.list") {
       this.names.set(ev.memeId, ev.name);
       this.features.set(ev.memeId, { fair: ev.fairValue ?? ev.price, heat: 1 });
@@ -137,17 +147,17 @@ export class Feed {
     return this.wss?.clients.size ?? 0;
   }
 
-  /** Websocket fan-out on /ws: a full snapshot on connect, then changed rows at most once a second. */
+  /** Websocket fan-out on /ws: a full snapshot on connect, then changed rows at most ten times a second. */
   attach(server: Server) {
     this.wss = new WebSocketServer({ server, path: "/ws" });
-    this.wss.on("connection", (ws) => ws.send(JSON.stringify({ type: "markets", rows: this.markets() })));
+    this.wss.on("connection", (ws) => ws.send(JSON.stringify({ type: "markets", dank: this.dank(), rows: this.markets() })));
     setInterval(() => {
       if (!this.dirty.size || !this.wss?.clients.size) return this.dirty.clear();
       const rows = this.markets().filter((r) => this.dirty.has(r.memeId));
       this.dirty.clear();
-      const msg = JSON.stringify({ type: "markets", rows });
-      for (const c of this.wss.clients) if (c.readyState === WebSocket.OPEN) c.send(msg);
-    }, 1_000).unref();
+      const msg = JSON.stringify({ type: "markets", dank: this.dank(), rows });
+      for (const c of this.wss.clients) if (c.readyState === WebSocket.OPEN && c.bufferedAmount < 65536) c.send(msg);
+    }, 100).unref();
     setInterval(() => this.flush().catch((e) => console.error("candle flush failed", e)), 5_000).unref();
   }
 }

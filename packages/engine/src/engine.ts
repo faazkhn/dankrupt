@@ -119,6 +119,10 @@ type Meme = {
   heat: number;
   /** Y₀: depth in coins at heat 1, from the listing. */
   depth0: number;
+  float?: number;
+  borrowPool?: number;
+  bandReference?: number;
+  volatilityAuction?: boolean;
   listedAt: number;
   rng: number;
   /** Last 61 one-minute closes of the house price, for realised volatility. */
@@ -157,6 +161,9 @@ type Account = {
 };
 
 type State = {
+  liquidityRules?: boolean;
+  basket?: { level: number; mids: Record<string, number> };
+  dank?: { level: number; rng: number };
   seq: number;
   time: number;
   /** Grid time of the last applied tick. */
@@ -227,6 +234,14 @@ export class Engine {
     return JSON.stringify(this.s);
   }
 
+  get dank() {
+    return this.s.dank ? { level: this.s.basket?.level ?? this.s.dank.level, time: this.s.tick } : null;
+  }
+
+  get liquidityOpen() { return !!this.s.liquidityRules; }
+
+  get basketOpen() { return !!this.s.basket; }
+
   get seq() {
     return this.s.seq;
   }
@@ -277,7 +292,9 @@ export class Engine {
       }
       return out;
     };
-    return { bids: levels(m.bids), asks: levels(m.asks), house: m.status === "preopen" ? null : { bid: this.houseBid(m), ask: this.houseAsk(m) } };
+    return { float: m.float, borrowAvailable: m.borrowPool === undefined ? undefined : Math.max(0,m.borrowPool-m.shortOI-this.reservedBorrows(m)),
+      auction: m.status === "preopen" && this.liquidityOpen ? (m.volatilityAuction ? "volatility" : "opening") : null,
+      bids: levels(m.bids), asks: levels(m.asks), house: m.status === "preopen" ? null : { bid: this.houseBid(m), ask: this.houseAsk(m) } };
   }
 
   /** Money view of an account. µc throughout. */
@@ -356,7 +373,7 @@ export class Engine {
     const before = a.shares[memeId] ?? 0;
     const cap = side === "sell" ? sim.sellCapacity(a, m) : null;
     const want = Math.min(qty, cap ? cap.total : qty);
-    const filled = want > 0 ? sim.take(em, a, m, side, want, limit, sim.s.seq) : 0;
+    const filled = want > 0 && !(sim.liquidityOpen && m.status === "preopen") ? sim.take(em, a, m, side, want, limit, sim.s.seq) : 0;
     const mine = out.fills.filter((f) => f.accountId === accountId);
     const gross = mine.reduce((s, f) => s + f.cost, 0);
     const fee = mine.reduce((s, f) => s + f.fee, 0);
@@ -376,6 +393,24 @@ export class Engine {
       shortQty: side === "sell" ? Math.max(0, filled - Math.max(0, before - (a.heldShares[memeId] ?? 0))) : 0,
       limitedBy,
     };
+  }
+
+  private limitHold(px: number) {
+    return px + Math.ceil(px * this.s.params.takerFeeBps / 10_000);
+  }
+
+  maxLimitBuy(accountId: string, memeId: string, price: number, cap: number) {
+    const a = this.s.accounts[accountId];
+    const m = this.s.memes[memeId];
+    if (!a || !m) return 0;
+    const hold = this.limitHold(Math.round(price * COIN));
+    const free = this.freeCash(a);
+    const release = this.coverRelease(a, m, cap);
+    const upper = Math.min(cap, Math.floor((free + release) / hold));
+    if (upper <= 0) return 0;
+    if (upper * hold <= free + this.coverRelease(a, m, upper)) return upper;
+    const net = hold - this.coverRelease(a, m, 1);
+    return net > 0 ? Math.max(0, Math.min(upper, Math.floor(free / net))) : 0;
   }
 
   /** Fair value with dormancy decay (PRD §8.5): halves every 7 days while dormant, never below 1. */
@@ -414,6 +449,21 @@ export class Engine {
   }
 
   /** How much a sell can do: free owned shares first, then short sales the margin allows. */
+  private setFloat(m: Meme) {
+    const virtual = Math.ceil(m.curve.L / Math.sqrt(m.curve.price));
+    m.float = Math.max(virtual, m.longOI - m.shortOI + virtual);
+    m.borrowPool = m.shortOI + this.reservedBorrows(m) + Math.ceil(m.float / 4);
+    m.bandReference = m.curve.price;
+  }
+
+  private reservedBorrows(m: Meme) {
+    return m.asks.reduce((sum, o) => sum + o.qty - o.heldLong, 0);
+  }
+
+  private houseInventory(m: Meme) {
+    return m.float === undefined ? INF : Math.max(0, m.float - m.longOI + m.shortOI);
+  }
+
   private sellCapacity(a: Account, m: Meme) {
     const owned = Math.max(0, (a.shares[m.memeId] ?? 0) - (a.heldShares[m.memeId] ?? 0));
     const r = this.risk(a);
@@ -421,7 +471,8 @@ export class Engine {
     // Dormant memes block new shorts once utilisation passes the cap (PRD §7.4): no farming the decay.
     const blocked = m.status === "dormant" && this.utilisation(m) > this.s.params.dormantShortMaxU;
     const short = perShare > 0 && !blocked ? Math.max(0, Math.floor((r.equity - r.im) / perShare)) : 0;
-    return { long: owned, short, total: owned + short };
+    const available = m.borrowPool === undefined ? short : Math.min(short, Math.max(0, m.borrowPool - m.shortOI - this.reservedBorrows(m)));
+    return { long: owned, short: available, total: owned + available };
   }
 
   private canReset(a: Account) {
@@ -460,6 +511,18 @@ export class Engine {
       this.s.tick = g;
       this.s.time = g;
       const em = new Emitter(out, `t${g}`, this.s.seq, g);
+      let marketReturn = 0;
+      if (this.s.dank) {
+        const index = this.s.dank;
+        const [shock, rng] = normal(index.rng);
+        const hours = P.tickMs / 3_600_000;
+        marketReturn = (1 - 2 ** (-hours / 24)) * Math.log(1000 / index.level) + 0.025 * Math.sqrt(hours) * shock;
+        index.level *= Math.exp(marketReturn);
+        index.rng = rng;
+        if (!this.s.basket) (out.dankTicks ??= []).push({ time: g, price: index.level });
+      }
+      let returnSum = 0;
+      let members = 0;
       for (const m of memes) {
         if (m.status === "halted") continue;
         this.expire(em, m, g);
@@ -469,13 +532,35 @@ export class Engine {
             out.prices.push(this.quote(m, g));
             continue;
           }
+          if (this.liquidityOpen) this.clearAuction(em, m);
+          m.volatilityAuction = false;
           m.status = "active"; // IPO: the house opens at the listing price; crossing orders fill below via no-cross
         }
-        this.drift(m, g);
+        if (this.liquidityOpen && m.status === "active" && m.bandReference && Math.abs(m.curve.price / m.bandReference - 1) >= 0.1) {
+          m.status = "preopen";
+          m.opensAt = g + MINUTE;
+          m.volatilityAuction = true;
+          out.prices.push(this.quote(m, g));
+          continue;
+        }
+        if (this.liquidityOpen && g % MINUTE === 0) m.bandReference = m.curve.price;
+        this.drift(m, g, marketReturn * (this.s.basket ? 0.7 + (seedFrom(m.memeId) >>> 0) % 61 / 100 : 1));
         this.noCross(em, m);
         this.triggerStops(em, m);
         this.checkMargins(em, m);
-        out.prices.push(this.quote(m, g));
+        const quote = this.quote(m, g);
+        out.prices.push(quote);
+        if (this.s.basket) {
+          if (m.status === "active") {
+            const last = this.s.basket.mids[m.memeId];
+            if (last) { returnSum += quote.mid / last - 1; members++; }
+            this.s.basket.mids[m.memeId] = quote.mid;
+          } else delete this.s.basket.mids[m.memeId];
+        }
+      }
+      if (this.s.basket) {
+        this.s.basket.level *= 1 + returnSum / Math.max(1, members);
+        (out.dankTicks ??= []).push({ time: g, price: this.s.basket.level });
       }
       if (g % MINUTE === 0) {
         this.chargeBorrow(em);
@@ -485,6 +570,39 @@ export class Engine {
     this.s.time = time;
   }
 
+  private clearAuction(em: Emitter, m: Meme) {
+    const reference = m.curve.price * COIN;
+    let clearing = reference, volume = 0, imbalance = Infinity;
+    if (m.bids.length && m.asks.length && m.bids[0].px >= m.asks[0].px) {
+      for (const px of new Set([...m.bids, ...m.asks].map(o => o.px))) {
+        const buy = m.bids.reduce((s,o) => s + (o.px >= px ? o.qty : 0), 0);
+        const sell = m.asks.reduce((s,o) => s + (o.px <= px ? o.qty : 0), 0);
+        const matched = Math.min(buy,sell), difference = Math.abs(buy-sell);
+        if (matched > volume || (matched === volume && (difference < imbalance ||
+            (difference === imbalance && Math.abs(px-reference) < Math.abs(clearing-reference))))) {
+          clearing = px; volume = matched; imbalance = difference;
+        }
+      }
+    }
+    while (volume > 0 && m.bids[0]?.px >= clearing && m.asks[0]?.px <= clearing) {
+      const bid = m.bids[0], ask = m.asks[0];
+      if (bid.accountId === ask.accountId) {
+        this.removeOrder(em, bid.orderId > ask.orderId ? bid : ask, "cancelled");
+        continue;
+      }
+      const qty = Math.min(volume, bid.qty, ask.qty);
+      const buyer = this.s.accounts[bid.accountId];
+      buyer.heldCash -= qty * bid.holdPerShare;
+      this.bookTrade(em, m, ask, buyer, qty, "buy", bid.orderId, clearing);
+      bid.qty -= qty;
+      volume -= qty;
+      if (!bid.qty) this.removeOrder(em, bid, "filled");
+      else em.out.orders.push({ orderId: bid.orderId, accountId: bid.accountId, memeId: m.memeId, status: "open", remaining: bid.qty });
+      m.curve.price = clearing / COIN;
+    }
+    m.bandReference = m.curve.price;
+  }
+
   private checkDormancy(m: Meme, t: number) {
     if (m.status === "active" && m.coldSince !== null && t - m.coldSince >= this.s.params.dormantDays * DAY) {
       m.status = "dormant";
@@ -492,7 +610,7 @@ export class Engine {
     }
   }
 
-  private drift(m: Meme, g: number) {
+  private drift(m: Meme, g: number, marketReturn: number) {
     const P = this.s.params;
     const dtH = P.tickMs / 3_600_000;
     const vwap = this.vwapOf(m, g);
@@ -502,6 +620,7 @@ export class Engine {
     const pull = 1 - 2 ** (-dtH / P.driftHalfLifeHours);
     let lnP = Math.log(m.curve.price);
     lnP += pull * (Math.log(target) - lnP) + P.noisePerSqrtHour * clipHeat(m.heat) * Math.sqrt(dtH) * z;
+    lnP += marketReturn;
     m.curve.price = Math.max(PRICE_FLOOR, Math.exp(lnP));
     if (g % MINUTE === 0) {
       m.closes.push(m.curve.price);
@@ -549,7 +668,7 @@ export class Engine {
 
   /** The house's quote; in pre-open the house is closed (no ask, no bid). */
   private houseAsk(m: Meme) {
-    return m.status === "preopen" ? INF : m.curve.price * (1 + m.spread / 2);
+    return m.status === "preopen" || this.houseInventory(m) < 1 ? INF : m.curve.price * (1 + m.spread / 2);
   }
   private houseBid(m: Meme) {
     return m.status === "preopen" ? 0 : m.curve.price * (1 - m.spread / 2);
@@ -573,7 +692,13 @@ export class Engine {
     this.tickTo(ev.time, out);
     this.s.seq = ev.seq;
     const em = new Emitter(out, `e${ev.seq}`, ev.seq, ev.time);
-    const reject = (reason: string) => (out.rejects.push({ seq: ev.seq, reason }), out);
+    let rollback: State | undefined;
+    const priorUpdates = out.orders.length;
+    const reject = (reason: string) => {
+      if (rollback) { this.s = rollback; out.orders.length = priorUpdates; }
+      out.rejects.push({ seq: ev.seq, reason });
+      return out;
+    };
     const settle = (m: Meme) => {
       this.noCross(em, m);
       this.triggerStops(em, m);
@@ -612,8 +737,29 @@ export class Engine {
           asks: [],
           stops: [],
         };
+        if (this.s.liquidityRules) this.setFloat(m);
         this.s.memes[ev.memeId] = m;
         out.prices.push(this.quote(m, ev.time));
+        return out;
+      }
+      case "liquidity.open": {
+        if (!this.s.liquidityRules) {
+          this.s.liquidityRules = true;
+          for (const m of Object.values(this.s.memes)) this.setFloat(m);
+        }
+        return out;
+      }
+      case "basket.open": {
+        this.s.basket ??= { level: this.s.dank?.level ?? 1000, mids: Object.fromEntries(
+          Object.values(this.s.memes).filter(m => m.status === "active").map(m => [m.memeId, this.quote(m, ev.time).mid])) };
+        return out;
+      }
+      case "dank.open": {
+        if (!this.s.dank) {
+          this.s.dank = { level: 1000, rng: seedFrom("DANK") };
+          this.s.params = { ...this.s.params, tickMs: 100 };
+          this.s.tick = Math.floor(ev.time / 100) * 100;
+        }
         return out;
       }
       case "params.set": {
@@ -704,15 +850,23 @@ export class Engine {
         if (!Number.isSafeInteger(ev.qty) || ev.qty <= 0) return reject("quantity must be a whole number above 0");
         if (m.status === "halted") return reject("this meme is halted");
         if (m.status === "preopen" && ev.type === "order.market") return reject("this meme is in pre-open: only limit orders until it opens");
+        let expiresAt = ev.type === "order.limit" ? ev.expiresAt : null;
         let limit = INF;
         let hold = 0;
         if (ev.type === "order.limit") {
+          if (ev.replaceOrderId !== undefined) {
+            const old = [...m.bids, ...m.asks].find(o => o.orderId === ev.replaceOrderId && o.accountId === a.accountId && o.side === ev.side);
+            if (!old) return reject("order already closed or unavailable");
+            expiresAt = old.expiresAt;
+            rollback = structuredClone(this.s);
+            this.removeOrder(em, old, "cancelled");
+          }
           const px = Math.round(ev.price * COIN);
           if (!(px >= PRICE_STEP) || px % PRICE_STEP !== 0 || Math.abs(px / COIN - ev.price) > 1e-9)
             return reject("price must be at least 0.01 and in steps of 0.01");
           if (ev.expiresAt != null && ev.expiresAt <= ev.time) return reject("expiry must be in the future");
           limit = px;
-          hold = px + Math.ceil((px * this.s.params.takerFeeBps) / 10_000);
+          hold = this.limitHold(px);
           if (ev.side === "buy" && ev.qty * hold > this.freeCash(a) + this.coverRelease(a, m, ev.qty))
             return reject("not enough free cash for this order");
         }
@@ -722,18 +876,28 @@ export class Engine {
           const cap = this.sellCapacity(a, m);
           if (cap.total <= 0) return reject(cap.long === 0 && (a.shares[m.memeId] ?? 0) <= 0 ? "not enough margin to short this" : "you have no free shares to sell");
           if (ev.type === "order.limit") {
+            if (m.borrowPool !== undefined && qty > cap.total) return reject("available borrow or margin is insufficient");
             const shortPart = Math.max(0, ev.qty - cap.long);
             marginPerShare = Math.ceil(this.s.params.initialMargin * Math.max(limit, this.mark(m)));
             const r = this.risk(a);
             if (shortPart > 0 && r.equity - r.im < shortPart * marginPerShare) return reject("not enough margin to short this many");
           } else qty = Math.min(ev.qty, cap.total);
         }
-        const filled = this.take(em, a, m, ev.side, qty, limit, ev.seq);
+        const auction = this.liquidityOpen && m.status === "preopen";
+        if (auction && ev.type === "order.limit") {
+          if (ev.immediateOrCancel) return reject("IOC is unavailable during the opening auction");
+          const opposite = ev.side === "buy" ? m.asks : m.bids;
+          if (opposite.some(o => o.accountId === ev.accountId && (ev.side === "buy" ? o.px <= limit : o.px >= limit)))
+            return reject("cancel your crossing order before entering the auction");
+        }
+        const filled = auction ? 0 : this.take(em, a, m, ev.side, qty, limit, ev.seq);
         const left = qty - filled;
-        if (ev.type === "order.limit" && left > 0) {
+        if (ev.type === "order.limit" && left > 0 && ev.immediateOrCancel) {
+          out.orders.push({ orderId: ev.seq, accountId: a.accountId, memeId: m.memeId, status: "cancelled", remaining: left });
+        } else if (ev.type === "order.limit" && left > 0) {
           const owned = Math.max(0, (a.shares[m.memeId] ?? 0) - (a.heldShares[m.memeId] ?? 0));
           const heldLong = ev.side === "sell" ? Math.min(left, owned) : 0;
-          this.rest(m, a, { orderId: ev.seq, accountId: a.accountId, memeId: m.memeId, side: ev.side, px: limit, qty: left, holdPerShare: hold, heldLong, marginPerShare, expiresAt: ev.expiresAt ?? null });
+          this.rest(m, a, { orderId: ev.seq, accountId: a.accountId, memeId: m.memeId, side: ev.side, px: limit, qty: left, holdPerShare: hold, heldLong, marginPerShare, expiresAt: expiresAt ?? null });
           out.orders.push({ orderId: ev.seq, accountId: a.accountId, memeId: m.memeId, status: "open", remaining: left });
         } else if (ev.type === "order.limit") out.orders.push({ orderId: ev.seq, accountId: a.accountId, memeId: m.memeId, status: "filled", remaining: 0 });
         if (filled === 0 && ev.type === "order.market") return reject(ev.side === "buy" ? "not enough free cash for even one share" : "nobody is buying right now");
@@ -781,6 +945,7 @@ export class Engine {
    * stop moves the price, which can fire the next one, so this loops until nothing else triggers.
    */
   private triggerStops(em: Emitter, m: Meme) {
+    if (this.liquidityOpen && m.status === "preopen") return;
     for (let guard = 0; guard < 1_000 && m.stops.length; guard++) {
       const mid = this.quote(m, em.time).mid;
       const hit = m.stops.find((o) => (o.side === "buy" ? mid >= o.stop : mid <= o.stop));
@@ -875,19 +1040,20 @@ export class Engine {
         if (Math.min(bookPx, houseAsk) > limit) break;
         const free = forced ? INF : Math.max(0, this.freeCash(a) + this.coverRelease(a, m, remaining));
         if (best && (bookPx <= houseAsk || this.oneHouseShareCost(m) > bookPx)) {
+          if (this.s.basket && best.accountId === a.accountId) { this.removeOrder(em, best, "cancelled"); continue; }
           const perShare = bookPx + Math.ceil(bookPx * feeRate);
           const q = Math.min(remaining, best.qty, Math.floor(free / perShare));
           if (q <= 0) break;
-          this.bookTrade(em, m, best, a, q, "buy");
+          this.bookTrade(em, m, best, a, q, "buy", orderId);
           filled += q;
         } else {
           if (m.status === "preopen") break; // book only until the house opens
           const stop = Math.min(bookPx, limit);
           const affordable = free === INF ? remaining : maxBuyable(m.curve, free / COIN, m.spread / 2, feeRate);
-          let d = Math.min(remaining, affordable, stop === INF ? remaining : this.sharesToAsk(m, stop / COIN));
+          let d = Math.min(this.houseInventory(m), remaining, affordable, stop === INF ? remaining : this.sharesToAsk(m, stop / COIN));
           if (d <= 0) {
             // A whole share would overshoot the stop on the margin; take it if its average still fits.
-            if (affordable >= 1 && this.oneHouseShareCost(m) <= stop) d = 1;
+            if (this.houseInventory(m) >= 1 && affordable >= 1 && this.oneHouseShareCost(m) <= stop) d = 1;
             else break;
           }
           // maxBuyable is a float estimate; step down if rounding tips it over the cash.
@@ -902,8 +1068,9 @@ export class Engine {
         const floor = limit === INF ? 0 : limit;
         if (Math.max(bookPx, houseBid) < floor) break;
         if (best && (bookPx >= houseBid || this.oneHouseShareProceeds(m) < bookPx)) {
+          if (this.s.basket && best.accountId === a.accountId) { this.removeOrder(em, best, "cancelled"); continue; }
           const q = Math.min(remaining, best.qty);
-          this.bookTrade(em, m, best, a, q, "sell");
+          this.bookTrade(em, m, best, a, q, "sell", orderId);
           filled += q;
         } else {
           if (m.status === "preopen") break;
@@ -985,9 +1152,9 @@ export class Engine {
   }
 
   /** Player-to-player trade at the resting order's price. The taker pays the fee; the maker pays none. */
-  private bookTrade(em: Emitter, m: Meme, resting: Order, taker: Account, q: number, takerSide: Side) {
+  private bookTrade(em: Emitter, m: Meme, resting: Order, taker: Account, q: number, takerSide: Side, orderId: number, executionPrice = resting.px) {
     const maker = this.s.accounts[resting.accountId];
-    const notional = resting.px * q;
+    const notional = executionPrice * q;
     const fee = Math.ceil((notional * this.s.params.takerFeeBps) / 10_000);
     const [buyer, seller] = takerSide === "buy" ? [taker, maker] : [maker, taker];
     const buyerPays = notional + (takerSide === "buy" ? fee : 0);
@@ -997,12 +1164,12 @@ export class Engine {
     this.move(em, buyer, m, q, -buyerPays);
     this.move(em, seller, m, -q, sellerGets);
     em.post("sink", "coin", fee);
-    const price = resting.px / COIN;
+    const price = executionPrice / COIN;
     em.out.trades.push({ memeId: m.memeId, time: em.time, qty: q, price });
     this.addVwap(m, em.time, price, q);
     this.updateEma(m, em.time, price);
     const base = { seq: em.seq, time: em.time, memeId: m.memeId, qty: q, cost: notional, source: "book" as const };
-    em.out.fills.push({ ...base, accountId: taker.accountId, orderId: em.seq, side: takerSide, fee, role: "taker" });
+    em.out.fills.push({ ...base, accountId: taker.accountId, orderId, side: takerSide, fee, role: "taker" });
     em.out.fills.push({ ...base, accountId: maker.accountId, orderId: resting.orderId, side: resting.side, fee: 0, role: "maker" });
     resting.qty -= q;
     if (resting.qty === 0) this.removeOrder(em, resting, "filled");
@@ -1133,10 +1300,11 @@ export class Engine {
    * fill against the house at once, as makers, at the curve price (never worse than their limit).
    */
   private noCross(em: Emitter, m: Meme) {
+    if (m.status === "preopen") return;
     for (let guard = 0; guard < 10_000; guard++) {
       const bid = m.bids[0];
       if (bid && bid.px >= this.houseAsk(m) * COIN) {
-        let d = Math.min(bid.qty, this.sharesToAsk(m, bid.px / COIN));
+        let d = Math.min(this.houseInventory(m), bid.qty, this.sharesToAsk(m, bid.px / COIN));
         if (d <= 0) d = this.oneHouseShareCost(m) <= bid.px ? 1 : 0;
         if (d <= 0) return;
         if (!this.houseSells(em, m, this.s.accounts[bid.accountId], d, false, bid, bid.orderId)) return;

@@ -28,6 +28,11 @@ export class Sequencer {
     const journalledTo = Number(j[0]?.t ?? -1);
     const missing: JournalLine[] = [];
     for (const ev of events) {
+      while (engine.dank && ev.time - engine.time > 60_000) {
+        const tick = engine.advance(engine.time + 60_000);
+        for (const fn of listeners) fn(null, tick);
+        for (const l of tick.journal) if (l.time >= journalledTo) missing.push(l);
+      }
       const out = engine.apply(ev);
       for (const fn of listeners) fn(ev, out); // projections catch up from the replay
       // Catch up a journal cut short by a crash; lines are keyed, so the overlapping instant is skipped on conflict.

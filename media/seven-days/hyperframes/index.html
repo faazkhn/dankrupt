@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Dankrupt devlog end card</title>
+<script src="assets/gsap.min.js"></script>
+<style>
+@font-face {font-family:Brand;src:url(assets/text.woff2);font-weight:200 1000}
+* {box-sizing:border-box} body {margin:0}
+#endcard {position:relative;width:1080px;height:1920px;overflow:hidden;background:#ffdb68}
+#lockup {position:absolute;inset:0;display:grid;align-content:center;justify-items:center;gap:48px}
+img {width:820px} p {margin:0;padding:16px 30px;background:#252019;color:#fff6dc;font:800 42px Brand,sans-serif;border-radius:8px}
+</style></head><body>
+<main id="endcard" data-composition-id="endcard" data-width="1080" data-height="1920" data-duration="1.4" data-fps="30">
+<section id="mark" class="clip" data-start="0" data-duration="1.4" data-track-index="0"><div id="lockup">
+<img src="assets/logo.webp" alt="Dankrupt"><p>Free. No real money, ever.</p></div></section></main>
+<script>
+const timeline = gsap.timeline({paused:true});
+timeline.from("#lockup img",{scale:1.45,rotation:-7,opacity:0,duration:.22,ease:"back.out(1.5)"},0)
+  .from("#lockup p",{y:28,opacity:0,duration:.17},.18);
+window.__timelines = window.__timelines || {};
+window.__timelines.endcard = timeline;
+</script></body></html>

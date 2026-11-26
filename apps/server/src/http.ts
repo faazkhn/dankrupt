@@ -52,6 +52,8 @@ export type OrderRequest = {
   price?: number;
   /** Minutes until a limit order expires; omit for good-till-cancelled. */
   expiresInMinutes?: number;
+  immediateOrCancel?: boolean;
+  replaceOrderId?: number;
 };
 
 /** Validates an order request at the trust boundary. */
@@ -73,6 +75,12 @@ export function parseOrder(input: unknown): OrderRequest {
     if (typeof o.price !== "number" || !Number.isFinite(o.price) || o.price < 0.01 || o.price > 10_000_000)
       throw new HttpError(400, "price must be a number from 0.01");
     out.price = o.price;
+    if (o.immediateOrCancel !== undefined && typeof o.immediateOrCancel !== "boolean") throw new HttpError(400, "invalid immediateOrCancel");
+    if (o.immediateOrCancel === true) out.immediateOrCancel = true;
+    if (o.replaceOrderId !== undefined) {
+      if (!Number.isSafeInteger(o.replaceOrderId) || Number(o.replaceOrderId) < 1) throw new HttpError(400, "invalid order ID");
+      out.replaceOrderId = Number(o.replaceOrderId);
+    }
     if (o.expiresInMinutes !== undefined && o.expiresInMinutes !== null) {
       if (!Number.isSafeInteger(o.expiresInMinutes) || (o.expiresInMinutes as number) < 1 || (o.expiresInMinutes as number) > 60 * 24 * 90)
         throw new HttpError(400, "expiry must be 1 minute to 90 days");
@@ -113,6 +121,7 @@ export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projec
       resets: a.resets,
       canReset: a.canReset,
       orders: e.openOrders(id),
+      receipts: feed?.receipts.recent(id) ?? [],
     };
   }
 
@@ -125,6 +134,7 @@ export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projec
 
     if (req.method === "GET" && url.pathname === "/api/health") return send(200, { ok: true, seq: e.seq });
     if (req.method === "GET" && url.pathname === "/api/memes") return send(200, e.memes());
+    if (req.method === "GET" && url.pathname === "/api/dank") return send(200, url.searchParams.has("history") ? feed?.dankHistory ?? [] : e.dank);
     if (req.method === "GET" && url.pathname === "/api/markets") return send(200, feed?.markets() ?? []);
     if (req.method === "GET" && url.pathname === "/api/candles") return send(200, feed?.candles(memeParam(url)) ?? []);
     if (req.method === "GET" && url.pathname === "/api/attention") {
@@ -241,6 +251,8 @@ export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projec
         type: url.searchParams.get("type") ?? "market",
         price: url.searchParams.has("price") ? Number(url.searchParams.get("price")) : undefined,
       });
+      if (url.searchParams.get("max") === "1" && o.side === "buy" && o.type === "limit")
+        return send(200, { qty: e.maxLimitBuy(me, o.memeId, o.price!, o.qty) });
       // A stop previews as the market order it becomes when it fires (at today's prices).
       const p = e.preview(me, o.memeId, o.side, o.qty, o.type === "limit" ? o.price : undefined);
       return send(200, { ...p, total: coins(p.total), fee: coins(p.fee) });
@@ -261,6 +273,7 @@ export function createApi(seq: Sequencer, feed?: Feed, signals?: Signals, projec
               side: o.side,
               qty: o.qty,
               price: o.price!,
+              replaceOrderId: o.replaceOrderId, immediateOrCancel: o.immediateOrCancel,
               expiresAt: o.expiresInMinutes ? Date.now() + o.expiresInMinutes * 60_000 : null,
             }
           : { type: "order.market", accountId: me, memeId: o.memeId, side: o.side, qty: o.qty },

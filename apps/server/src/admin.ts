@@ -81,13 +81,19 @@ export class Admin {
     if (c.status !== "candidate") throw new AdminError(`already ${c.status}`);
     const wiki = c.wikipedia as string[];
     if (!wiki.length) throw new AdminError("map at least one data source first");
+    const opens = new Date(Date.now() + PRE_OPEN_MS);
+    // Batch new listings at Friday 18:00 IST, allowing at least 30 minutes to submit bids.
+    const earliest = opens.getTime();
+    opens.setUTCDate(opens.getUTCDate() + (5 - opens.getUTCDay() + 7) % 7);
+    opens.setUTCHours(12, 30, 0, 0);
+    if (opens.getTime() < earliest) opens.setUTCDate(opens.getUTCDate() + 7);
     const out = await this.seq.submit({
       type: "meme.list",
       memeId: c.meme_id as string,
       name: c.name as string,
       price: 100,
       depth: 500_000,
-      preOpenUntil: Date.now() + PRE_OPEN_MS,
+      preOpenUntil: this.seq.engine.liquidityOpen ? opens.getTime() : earliest,
     });
     if (out.rejects.length) throw new AdminError(out.rejects[0].reason);
     await this.db.query(

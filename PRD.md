@@ -258,13 +258,28 @@ The house centre drifts toward a target that blends data fair value F (section 5
 T_i = F_i^{\,1-\omega}\; V_i^{\,\omega}, \qquad \omega = 0.3 \quad (V_i = F_i \text{ if there were no trades})
 ```
 
-Every tick of Δt = 2 seconds, with half-life τ = 6 hours:
+The original exchange uses a two-second tick and a six-hour half-life. Once Dank opens, the live exchange runs this model every 100 ms and adds the common log return defined below.
 
 ```latex
 \ln p \;\leftarrow\; \ln p + \big(1 - 2^{-\Delta t/\tau}\big)\big(\ln T_i - \ln p\big) + \sigma_n \sqrt{\Delta t}\,\epsilon, \qquad \epsilon \sim \mathcal{N}(0,1)
 ```
 
 This is an Ornstein–Uhlenbeck pull in log price. A whale can push a meme 40% above target, and the push decays by half every 6 hours unless others keep buying. That decay is what scalpers trade. σ\_n is optional chart noise (default 0.3% per √hour, scaled by heat), drawn from a seeded generator so every run can be replayed exactly.
+
+#### The Dank Index and live quotes
+
+Dank is a synthetic exchange benchmark. It opens at 1,000 points. Each tick generates one market-wide return before individual memes move. With elapsed time h in hours and an independent seeded standard normal Z, the engine computes
+
+```
+rDank = (1 − 2^(−h/24)) × ln(1000 / Dank) + 0.025 × √h × Z
+Dank  = Dank × exp(rDank)
+```
+
+Every open house curve adds rDank to its own log-price update. The initial sensitivity is 1 across memes. The existing fair-value pull, heat-scaled noise, player orders and available depth can still make their quoted midpoints diverge. The 2.5% hourly volatility coefficient is an initial gameplay tuning choice. A journaled opening event preserves the old model for historical replay.
+
+The Markets page shows Dank in points with a rolling minute of engine quotes, restored on entry and after delivery gaps of three seconds or more. Meme pages show the live midpoint on the same timescale, followed by minute candles. The quote shows the midpoint, bid and ask. The socket targets ten updates per second and polling samples every two seconds during fallback.
+
+Market Buy Max uses a matching-engine preview including fees, player liquidity and house price impact. Limit Buy Max uses the configured per-share reserve. Stop Buy Max estimates at current quotes. Sell Max uses available owned shares. A book price selects Limit, preserves the chosen side and quantity, and focuses the price for review. Submission is a separate action.
 
 ### 6.4 Router
 
@@ -603,3 +618,5 @@ The MVP is a web app with about 20 hand-picked memes, the full hybrid exchange, 
 - [Reddit Data API pricing and approval rules](https://data365.co/blog/reddit-api-pricing)
 - [Nishith Desai: India's online gaming law comes into force](https://nishithdesai.com/research-and-articles/hotline/gaming-law-wrap/setting-the-rules-of-the-game-indias-online-gaming-law-comes-into-force-15586)
 - [Gala Law: India's online gaming rulebook](https://blog.galalaw.com/post/102mqs2/indias-online-gaming-rulebook-has-arrived-but-the-game-is-far-from-over)
+
+Market display clarification (§6.3): Markets rows and meme headlines show the live midpoint. The live line has a labeled price axis. Minute candles default to 30 minutes with a 90-minute option and scale to their visible highs and lows. An off-scale fair value stays in the readout.

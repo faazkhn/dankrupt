@@ -27,7 +27,7 @@ const STEPS = [
 ];
 
 export default function Home() {
-  const discordUrl = process.env.NEXT_PUBLIC_DISCORD_URL;
+  const discordUrl = process.env.NEXT_PUBLIC_DISCORD_URL ?? "https://discord.gg/dankrupt";
   return (
     <main className="flex flex-1 flex-col overflow-x-hidden">
       {/* Hero + ticker fill the first screen on desktop, so the ticker is visible without scrolling. */}

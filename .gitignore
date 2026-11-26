@@ -3,3 +3,7 @@ node_modules/
 .env*
 .data/
 .next/
+.transcode-cache/
+.waveform-cache/
+.hyperframes/cache/
+.hyperframes/preview/

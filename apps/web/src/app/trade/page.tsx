@@ -1,5 +1,6 @@
 "use client";
 
+import { LiveQuoteChart } from "@/components/LiveQuoteChart";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
@@ -15,7 +16,7 @@ import { TradeHeader } from "@/components/TradeHeader";
 import { fmt, fmtInt, fmtPct, getWatchlist, useMarkets, useMe } from "@/lib/market";
 
 export default function Markets() {
-  const { list, error } = useMarkets();
+  const { list, error, dank } = useMarkets();
   const { me, status } = useMe();
   const [sort, setSort] = useState<"trending" | "movers" | "watchlist" | "graveyard">("trending");
   const [watched, setWatched] = useState<string[]>([]);
@@ -55,6 +56,13 @@ export default function Markets() {
               Live · {list?.length ?? "–"} memes trading
             </p>
           </div>
+
+          {dank && <section className="paper mt-5 p-5">
+            <h2 className="font-display text-2xl">Dank Index</h2>
+            <p className="text-sm font-bold">Equal-weighted · {list?.filter(m => m.status === "active").length ?? 0} active memes</p>
+            <p className="text-4xl font-black tabular-nums">{fmt(dank.level)} <span className="text-sm">points</span></p>
+            <LiveQuoteChart dankHistory time={dank.time} price={dank.level} />
+          </section>}
 
           {status === "signed-out" && (
             <p className="paper mt-4 p-4 font-bold">
@@ -130,7 +138,6 @@ export default function Markets() {
                 const up = m.change24h >= 0;
                 const Trend = up ? TrendUpIcon : TrendDownIcon;
                 const held = me?.shares[m.memeId] ?? 0;
-                const ltp = m.ltp ?? m.mid;
                 return (
                   <li key={m.memeId}>
                     <Link
@@ -159,18 +166,10 @@ export default function Markets() {
                       />
                       <span
                         className="text-right text-lg font-black tabular-nums"
-                        title={
-                          m.ltp === null
-                            ? "No trades yet: showing the house mid price"
-                            : "Last traded price"
-                        }
+                        title="Live midpoint"
                       >
-                        {fmt(ltp)}
-                        {m.ltp === null && (
-                          <span className="block text-[10px] font-bold text-ink-soft">
-                            no trades yet
-                          </span>
-                        )}
+                        {fmt(m.mid)}
+
                       </span>
                       {m.status === "preopen" && m.opensAt ? (
                         <span className="sticker px-2 py-0.5 text-center text-xs font-black">
