@@ -65,18 +65,18 @@
         "endpoint": "/internal/menu/post-create"
       },
       {
-        "label": "Halt a meme",
-        "description": "Dankrupt",
-        "location": "subreddit",
-        "forUserType": "moderator",
-        "endpoint": "/internal/menu/halt"
-      },
-      {
         "label": "Stage demo trade (temporary)",
         "description": "Dankrupt",
         "location": "subreddit",
         "forUserType": "moderator",
         "endpoint": "/internal/menu/stage-demo"
+      },
+      {
+        "label": "Halt a meme",
+        "description": "Dankrupt",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/halt"
       }
     ]
   },
