@@ -1,4 +1,6 @@
-# Devpost submission: Reddit's Game of the Day
+# Devpost: Reddit's Game of the Day
+
+For the Devpost submission form only; Reddit's developer settings are in `../reddit-developer-settings/`. Deadline: December 8, 6 pm Pacific (December 9, 7:30 am IST).
 
 Paste each section into the matching Devpost field. Fill in the two links marked TODO.
 

@@ -1,6 +1,6 @@
-# Submission kit
+# Reddit developer settings
 
-Everything for the developer portal (developers.reddit.com/apps/dankrupt-exchange) and Devpost, in one place. Each value is within the form's limit.
+Values and files for the app's page in Reddit's developer settings: developers.reddit.com/apps/dankrupt-exchange. Each value is within the form's limit. Devpost is separate (see `../devpost/`).
 
 ## Directory listing
 
@@ -26,11 +26,7 @@ Everything for the developer portal (developers.reddit.com/apps/dankrupt-exchang
 
 ## Subreddit (r/dankrupt → Mod Tools → Community appearance)
 
-- Banner: `../../../art/reddit/banner-1920x384.png`
-- Icon: `../../../art/reddit/community-icon-256.png`
+- Banner: `../../../../art/reddit/banner-1920x384.png`
+- Icon: `../../../../art/reddit/community-icon-256.png`
 - Sidebar: `Daily meme stock market. Fresh 100k coins every day, bell at 00:00 UTC.`
 - Pin the latest Market Day post. Keep the subreddit public and under 200 members.
-
-## Devpost
-
-Field-by-field text is in [`devpost.md`](devpost.md). Fill in the demo post link before submitting. The deadline is December 8, 6 pm Pacific (December 9, 7:30 am IST).
