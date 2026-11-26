@@ -292,6 +292,7 @@ export type Day = {
   me: { user: string; rank: number | null; equity: number | null; returnPct: number | null; played: boolean; streak: number; bestStreak: number; days: number; wins: number } | null;
   yesterday: { day: number; podium: DayResult[]; players: number; mine: DayResult | null; unseen: boolean };
   listing: { memeId: string; name: string; status: string; opensAt: number | null } | null;
+  movers: { memeId: string; name: string; mid: number; change24h: number }[];
 };
 export const getDay = () => api<Day>("day");
 export const markResultSeen = () => api<{ ok: boolean }>("day/seen", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });

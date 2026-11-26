@@ -4,20 +4,22 @@ import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { FireIcon, TimerIcon, TrendDownIcon, TrendUpIcon } from "@phosphor-icons/react";
 import { Logo } from "@/components/Logo";
-import { fmt, fmtPct, getDay, type Day, type MarketRow } from "@/lib/market";
-import { left, useNow } from "./daily.tsx";
+import type { Day } from "@/lib/market";
+
+// Kept local so the feed card doesn't load the game's API layer (realtime, hooks).
+const fmt = (n: number, digits = 2) => n.toLocaleString("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+const fmtPct = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(2)}%`;
+const getDay = (): Promise<Day> => fetch("/api/day").then((r) => r.json());
+import { left, useNow } from "./time.ts";
 
 /** The in-feed card: what today's round is, who's winning, and one button in. */
 function Splash() {
   const [day, setDay] = useState<Day | null>(null);
-  const [movers, setMovers] = useState<MarketRow[]>([]);
   const now = useNow();
   useEffect(() => {
     getDay().then(setDay).catch(() => {});
-    fetch("/api/markets").then((r) => r.json()).then((rows: MarketRow[]) =>
-      setMovers(rows.filter((m) => m.status === "active").sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h)).slice(0, 3)),
-    ).catch(() => {});
   }, []);
+  const movers = day?.movers ?? [];
   const me = day?.me;
   const leader = day?.leaders[0];
   return (

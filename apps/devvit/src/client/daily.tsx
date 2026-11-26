@@ -4,20 +4,7 @@ import { CalendarCheckIcon, CrownIcon, FireIcon, TimerIcon, TrophyIcon, XIcon } 
 import { TradeHeader } from "@/components/TradeHeader";
 import { fmt, fmtPct, markResultSeen, useMe, type Day, type DayResult } from "@/lib/market";
 import { navigate } from "./router.ts";
-
-export const left = (endsAt: number, now: number) => {
-  const m = Math.max(0, Math.floor((endsAt - now) / 60_000));
-  return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`;
-};
-
-export function useNow(ms = 30_000) {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), ms);
-    return () => clearInterval(id);
-  }, [ms]);
-  return now;
-}
+import { left, useNow } from "./time.ts";
 
 const tone = (pct: number | null) => (pct === null ? "" : pct >= 0 ? "text-mint" : "text-berry");
 const threadUrl = () => (context.postId ? `https://www.reddit.com/comments/${context.postId.replace(/^t3_/, "")}` : "https://www.reddit.com");

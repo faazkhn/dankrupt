@@ -6,7 +6,14 @@
     <title>Dankrupt</title>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- First frame, shown before any script runs; React replaces it. -->
+    <div id="root">
+      <main class="cardboard flex h-screen flex-col items-center justify-center gap-4 p-4 text-center">
+        <img src="../../../web/public/banner.webp" alt="Dankrupt Exchange" class="logo-outline w-48" />
+        <p class="font-display text-3xl">Today's Market Day</p>
+        <p class="text-sm font-black">Opening the market…</p>
+      </main>
+    </div>
     <script type="module" src="./splash.tsx"></script>
   </body>
 </html>

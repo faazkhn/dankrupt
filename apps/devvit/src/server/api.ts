@@ -195,6 +195,9 @@ api.get("/day", async (c) => {
     },
     yesterday: { day: daily.dayNumber(now - DAY), podium: yesterday.slice(0, 3), players: yesterday.length, mine: myYesterday, unseen: !!myYesterday && seen !== yesterdayKey },
     listing: listing ? { memeId: listing.memeId, name: listing.name, status: listing.status, opensAt: listing.opensAt } : null,
+    // The feed card's top movers, so it needs this one read-only call.
+    movers: world.markets().filter((m) => m.status === "active").sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h)).slice(0, 3)
+      .map(({ memeId, name, mid, change24h }) => ({ memeId, name, mid, change24h })),
   });
 });
 api.post("/day/seen", async (c) => {
