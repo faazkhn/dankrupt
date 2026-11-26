@@ -2,7 +2,7 @@ import { context, navigateTo } from "@devvit/web/client";
 import { useEffect, useState } from "react";
 import { CalendarCheckIcon, CrownIcon, FireIcon, TimerIcon, TrophyIcon, XIcon } from "@phosphor-icons/react";
 import { TradeHeader } from "@/components/TradeHeader";
-import { fmt, fmtPct, getWhoami, markResultSeen, useMe, type Day, type DayResult } from "@/lib/market";
+import { fmt, fmtPct, markResultSeen, useMe, type Day, type DayResult } from "@/lib/market";
 import { navigate } from "./router.ts";
 
 export const left = (endsAt: number, now: number) => {
@@ -140,10 +140,6 @@ export function Board({ day }: { day: Day | null }) {
   }, [tab, day?.players]);
   const list = full ?? rows;
   const s = day?.me;
-  const [operator, setOperator] = useState(false);
-  useEffect(() => {
-    getWhoami().then((w) => setOperator(w.operator)).catch(() => {});
-  }, []);
   return (
     <>
       <TradeHeader me={me} />
@@ -183,11 +179,6 @@ export function Board({ day }: { day: Day | null }) {
         <button type="button" className="btn-candy is-secondary w-full" onClick={() => navigateTo(threadUrl())}>
           Talk tactics in the thread
         </button>
-        {operator && (
-          <button type="button" className="btn-candy is-muted is-small w-full" onClick={() => navigate("/admin")}>
-            Operator desk (moderators)
-          </button>
-        )}
       </main>
     </>
   );

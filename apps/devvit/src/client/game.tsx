@@ -1,7 +1,6 @@
 import "./index.css";
 import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
-import AdminPage from "@/app/admin/page";
 import MePage from "@/app/me/page";
 import Markets from "@/app/trade/page";
 import { MemeView } from "@/components/MemeView";
@@ -18,7 +17,6 @@ function App() {
     meme ? <MemeView memeId={meme} /> :
     path === "/me" ? <MePage /> :
     path === "/leaderboard" ? <Board day={day} /> :
-    path === "/admin" ? <AdminPage /> :
     <Markets />;
   const showResult = !dismissed && !!day?.yesterday.unseen && !!day.yesterday.mine;
   const showWelcome = !dismissed && !showResult && !!day?.me && day.me.days === 0 && !day.me.played;

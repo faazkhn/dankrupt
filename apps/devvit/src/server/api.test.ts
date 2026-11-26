@@ -100,14 +100,26 @@ describe("the Reddit app API", () => {
     expect(fake.posts.filter((p) => p.startsWith("Market Day #2"))).toHaveLength(1);
   }, 60_000);
 
-  test("only subreddit moderators reach the operator screens", async () => {
+  test("a closed trade can be posted to the subreddit once, with percentages only", async () => {
     as("alice");
     await call("/markets");
-    expect((await call("/admin/listed")).status).toBe(403);
+    const memeId = (await peek()).engine.memes()[0].memeId;
+    await call("/orders", { memeId, side: "buy", qty: 20, type: "market" });
+    await call("/orders", { memeId, side: "sell", qty: 20, type: "market" });
+    const trade = (await call("/profile")).data.trades[0];
+    const first = await call("/share", { memeId, closedAt: trade.closedAt });
+    expect(first.status).toBe(200);
+    expect(first.data.url).toMatch(/^https:\/\/www\.reddit\.com\/r\/dankrupt_dev\/comments\//);
+    expect(fake.posts.at(-1)).toMatch(/^(Called it|Lesson learned): long .+, [+-]\d+\.\d% · Market Day #1$/);
+    expect((await call("/share", { memeId, closedAt: trade.closedAt })).status).toBe(409);
+    expect((await call("/share", { memeId, closedAt: 1 })).status).toBe(404);
+  });
+
+  test("whoami says who moderates", async () => {
+    as("alice");
+    expect((await call("/whoami")).data.operator).toBe(false);
     as("modname");
     expect((await call("/whoami")).data.operator).toBe(true);
-    expect((await call("/admin/listed")).data).toHaveLength(10);
-    expect((await call("/admin/dashboard")).data.accounts).toBeGreaterThanOrEqual(0);
   });
 
   test("bad input is refused at the boundary", async () => {

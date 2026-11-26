@@ -10,6 +10,10 @@
       },
       "game": {
         "entry": "game.html"
+      },
+      "card": {
+        "entry": "card.html",
+        "height": "regular"
       }
     }
   },
@@ -20,15 +24,17 @@
   "permissions": {
     "reddit": {
       "enable": true,
-      "scope": "user"
+      "scope": "user",
+      "asUser": [
+        "SUBMIT_POST"
+      ]
     },
     "redis": true,
     "realtime": true,
     "http": {
       "enable": true,
       "domains": [
-        "wikimedia.org",
-        "en.wikipedia.org"
+        "wikimedia.org"
       ]
     }
   },
@@ -59,6 +65,13 @@
         "endpoint": "/internal/menu/post-create"
       },
       {
+        "label": "Halt a meme",
+        "description": "Dankrupt",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/halt"
+      },
+      {
         "label": "Stage demo trade (temporary)",
         "description": "Dankrupt",
         "location": "subreddit",
@@ -73,5 +86,8 @@
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build"
+  },
+  "forms": {
+    "haltForm": "/internal/form/halt"
   }
 }

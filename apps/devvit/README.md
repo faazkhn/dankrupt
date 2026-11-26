@@ -29,16 +29,15 @@ There's no trade limit. Trade as much or as little as you like.
 
 - Installing the app opens the market and posts the first Market Day thread.
 - **Post today's Market Day** (subreddit menu) creates a Market Day post by hand.
-- Moderators get an **Operator desk** button at the bottom of the Standings screen. It lets them queue and approve new meme listings, halt a meme (every position settles at the mark), and tune market parameters within safe bounds. Every operator action is logged.
+- **Halt a meme** (subreddit menu) pulls a meme that breaks the content rules: trading stops and every open position settles at the mark.
 
 ## Fetch domains
 
-The app requests these domains:
+The app requests this domain:
 
 - `wikimedia.org`: daily per-article pageview counts from the [Wikimedia REST API](https://wikimedia.org/api/rest_v1/), one input to each meme's fair value. The app fetches each listed meme once a day.
-- `en.wikipedia.org`: resolves a Wikipedia article title (following redirects) when a moderator proposes a new listing, through the public MediaWiki API.
 
-Both are public, documented APIs. Only aggregate view counts are stored.
+It's a public, documented API. Only aggregate view counts are stored.
 
 ## How it works
 

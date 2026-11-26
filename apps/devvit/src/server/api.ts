@@ -1,8 +1,7 @@
 import { Hono, type Context } from "hono";
 import { context, reddit, redis } from "@devvit/web/server";
-import { PARAM_BOUNDS, type EventBody } from "@dankrupt/engine";
+import type { EventBody } from "@dankrupt/engine";
 import { parseOrder } from "../../../server/src/http.ts";
-import { AdminError, parseCandidate, parseMeta, wikipediaResolver } from "../../../server/src/admin.ts";
 import * as daily from "./daily.ts";
 import * as signals from "./signals.ts";
 import {
@@ -26,7 +25,7 @@ export const api = new Hono();
 api.onError((err, c) => {
   // The shared validators (apps/server) throw their own HttpError class: anything carrying a status is an HTTP error.
   const tagged = (err as { status?: unknown }).status;
-  const status = typeof tagged === "number" ? tagged : err instanceof AdminError ? 422 : err instanceof Busy ? 503 : 500;
+  const status = typeof tagged === "number" ? tagged : err instanceof Busy ? 503 : 500;
   if (status === 500) console.error(err);
   return c.json({ error: status === 500 ? "internal error" : err.message }, status as 400);
 });
@@ -39,8 +38,8 @@ async function user(): Promise<string> {
   return id;
 }
 
-/** Operators are the subreddit's moderators (cached for 10 minutes). */
-async function isOperator(id: string): Promise<boolean> {
+/** Moderators of the subreddit (cached for 10 minutes). */
+export async function isOperator(id: string): Promise<boolean> {
   const cached = await redis.get(`mod:${id}`);
   if (cached) return cached === "1";
   const sub = context.subredditName;
@@ -283,6 +282,47 @@ api.post("/reset", async (c) => {
   });
   return c.json({ rejects: out.rejects, account: await accountView(world, accountId, me) }, out.rejects.length ? 422 : 200);
 });
+/**
+ * Posts a closed trade to the subreddit as the player, after they confirmed in the app.
+ * The card shows percentages and per-share prices only, never balances (as on the web).
+ */
+api.post("/share", async (c) => {
+  const me = await user();
+  const { memeId, closedAt: rawAt } = await body(c);
+  if (typeof memeId !== "string" || !ID.test(memeId) || !Number.isSafeInteger(rawAt)) throw new HttpError(400, "bad trade reference");
+  const closedAt = rawAt as number;
+  const now = Date.now();
+  let trade: Awaited<ReturnType<typeof closedTrades>>[number] | undefined;
+  for (const t of [now, now - DAY]) {
+    trade = (await closedTrades(daily.roundAccount(me, t))).find((x) => x.memeId === memeId && x.closedAt === closedAt);
+    if (trade) break;
+  }
+  if (!trade || trade.basis <= 0) throw new HttpError(404, "no such trade");
+  const sub = context.subredditName;
+  if (!sub) throw new HttpError(400, "open this from the subreddit");
+  const key = `shared:${me}:${memeId}:${closedAt}`;
+  if (!(await redis.set(key, "1", { nx: true, expiration: new Date(now + 7 * DAY) }))) throw new HttpError(409, "you already posted this trade");
+  try {
+    const name = (await peek()).engine.memes().find((m) => m.memeId === memeId)?.name ?? memeId;
+    const returnPct = (trade.pnl / trade.basis) * 100;
+    const avgIn = trade.basis / trade.peakQty / 1e6;
+    const avgOut = (trade.side === "long" ? trade.basis + trade.pnl : trade.basis - trade.pnl) / trade.peakQty / 1e6;
+    const pct = `${returnPct >= 0 ? "+" : ""}${returnPct.toFixed(1)}%`;
+    const title = `${returnPct >= 0 ? "Called it" : "Lesson learned"}: ${trade.side === "long" ? "long" : "short"} ${name}, ${pct} · Market Day #${daily.dayNumber(closedAt)}`;
+    const post = await reddit.submitCustomPost({
+      runAs: "USER",
+      userGeneratedContent: { text: title },
+      subredditName: sub,
+      title,
+      entry: "card",
+      postData: { user: me, memeId, name, side: trade.side, returnPct, avgIn, avgOut, openedAt: trade.openedAt, closedAt, day: daily.dayNumber(closedAt) },
+    });
+    return c.json({ url: `https://www.reddit.com/r/${sub}/comments/${post.id.replace(/^t3_/, "")}` });
+  } catch (e) {
+    await redis.del(key);
+    throw e;
+  }
+});
 api.get("/notices", async (c) => c.json(await notices(daily.roundAccount(await user(), Date.now()))));
 api.post("/notices/read", async (c) => {
   await markNoticesRead(daily.roundAccount(await user(), Date.now()));
@@ -315,127 +355,5 @@ api.post("/watchlist", async (c) => {
   return c.json(await signals.watchlist(me));
 });
 
-// ---------- operators (subreddit moderators) ----------
 
-const admin = new Hono<{ Variables: { me: string } }>();
-admin.use(async (c, next) => {
-  const me = await user();
-  if (!(await isOperator(me))) throw new HttpError(403, "moderators only");
-  c.set("me", me);
-  await next();
-});
-
-async function log(operator: string, action: string, detail: unknown) {
-  const time = Date.now();
-  await redis.zAdd(K.actions, { member: JSON.stringify({ time: new Date(time).toISOString(), operator, action, detail }), score: time });
-  await redis.zRemRangeByRank(K.actions, 0, -501);
-}
-
-type Candidate = { id: number; meme_id: string; name: string; description: string; links: string[]; wikipedia: string[]; youtube: string[]; status: string; reason: string | null; source: string; created_at: string; decided_at: string | null; decided_by: string | null };
-
-async function candidate(id: number): Promise<Candidate> {
-  const raw = await redis.hGet(K.candidates, String(id));
-  if (!raw) throw new AdminError("no such candidate");
-  return JSON.parse(raw);
-}
-
-admin.get("/candidates", async (c) => {
-  const all = Object.values(await redis.hGetAll(K.candidates)).map((v) => JSON.parse(v) as Candidate);
-  return c.json(all.sort((a, b) => b.id - a.id).slice(0, 200));
-});
-admin.post("/candidates", async (c) => {
-  const input = parseCandidate(await body(c));
-  if ((await peek()).engine.memes().some((m) => m.memeId === input.memeId)) throw new AdminError("a meme with that id is already listed");
-  const resolve = wikipediaResolver(await signals.userAgent());
-  const wikipedia: string[] = [];
-  for (const t of input.wikipedia) {
-    const canonical = await resolve(t);
-    if (!canonical) throw new AdminError(`no Wikipedia article called "${t}"`);
-    wikipedia.push(canonical);
-  }
-  const id = await redis.incrBy(K.candidateSeq, 1);
-  const cand: Candidate = { id, meme_id: input.memeId, name: input.name, description: input.description, links: input.links, wikipedia, youtube: input.youtube,
-    status: "candidate", reason: null, source: "operator", created_at: new Date().toISOString(), decided_at: null, decided_by: null };
-  await redis.hSet(K.candidates, { [String(id)]: JSON.stringify(cand) });
-  await log(c.get("me"), "candidate.add", cand);
-  return c.json({ id });
-});
-admin.post("/candidates/:id/:verb", async (c) => {
-  const id = Number(c.req.param("id"));
-  const verb = c.req.param("verb");
-  const cand = await candidate(id);
-  if (cand.status !== "candidate") throw new AdminError(`already ${cand.status}`);
-  const me = c.get("me");
-  if (verb === "approve") {
-    if (!cand.wikipedia.length) throw new AdminError("map at least one data source first");
-    const { out } = await submit({ type: "meme.list", memeId: cand.meme_id, name: cand.name, price: 100, depth: 500_000, preOpenUntil: Date.now() + 30 * 60_000 });
-    if (out.rejects.length) throw new AdminError(out.rejects[0].reason);
-    await redis.hSet(K.meta, { [cand.meme_id]: JSON.stringify({ description: cand.description, links: cand.links }) });
-    await signals.mapSources(cand.meme_id, cand.wikipedia, cand.youtube);
-    Object.assign(cand, { status: "approved" });
-  } else if (verb === "reject") {
-    const { reason } = await body(c);
-    const why = typeof reason === "string" ? reason.trim().slice(0, 200) : "";
-    if (!why) throw new AdminError("say which content-screen rule it fails");
-    Object.assign(cand, { status: "rejected", reason: why });
-  } else throw new HttpError(404, "not found");
-  Object.assign(cand, { decided_at: new Date().toISOString(), decided_by: me });
-  await redis.hSet(K.candidates, { [String(id)]: JSON.stringify(cand) });
-  await log(me, `candidate.${verb}`, { id, memeId: cand.meme_id });
-  return c.json({ ok: true });
-});
-admin.get("/listed", async (c) =>
-  c.json((await peek()).engine.memes().map((m) => ({ memeId: m.memeId, name: m.name, status: m.status, price: m.price, heat: m.heat }))),
-);
-admin.post("/halt", async (c) => {
-  const { memeId, reason } = await body(c);
-  const why = typeof reason === "string" ? reason.trim().slice(0, 200) : "";
-  if (typeof memeId !== "string" || !why) throw new AdminError("say which meme and why");
-  const { out } = await submit({ type: "meme.halt", memeId, reason: why });
-  if (out.rejects.length) throw new AdminError(out.rejects[0].reason);
-  await log(c.get("me"), "meme.halt", { memeId, reason: why });
-  return c.json({ ok: true });
-});
-admin.get("/params", async (c) => c.json({ values: (await peek()).engine.params, bounds: PARAM_BOUNDS }));
-admin.post("/params", async (c) => {
-  const clean = Object.fromEntries(Object.entries(await body(c)).map(([k, v]) => [k, Number(v)]));
-  const { out, world } = await submit({ type: "params.set", params: clean });
-  if (out.rejects.length) throw new AdminError(out.rejects[0].reason);
-  await log(c.get("me"), "params.set", clean);
-  return c.json({ values: world.engine.params, bounds: PARAM_BOUNDS });
-});
-admin.get("/actions", async (c) => {
-  const rows = await redis.zRange(K.actions, 0, 49, { by: "rank", reverse: true });
-  return c.json(rows.map((r) => JSON.parse(r.member)));
-});
-admin.post("/meme-meta", async (c) => {
-  const b = await body(c);
-  if (typeof b.memeId !== "string" || !ID.test(b.memeId)) throw new HttpError(400, "memeId is required");
-  const meta = parseMeta(b);
-  await redis.hSet(K.meta, { [b.memeId]: JSON.stringify(meta) });
-  await log(c.get("me"), "meme.meta", { memeId: b.memeId, ...meta });
-  return c.json({ ok: true });
-});
-admin.get("/dashboard", async (c) => {
-  const w = await peek();
-  const eco = w.engine.economy();
-  const ids = w.engine.memes().map((m) => m.memeId);
-  return c.json({
-    supply: coins(eco.supply),
-    supplyWeekAgo: null,
-    weeklyGrowthPerActivePlayerPct: null,
-    targetPct: 2,
-    accounts: eco.accounts,
-    activePlayers7d: await signals.activePlayers(),
-    signups7d: 0,
-    resets7d: 0,
-    feesAllTime: null,
-    fees24h: null,
-    minted: null,
-    house: eco.house.map((h) => ({ ...h, cash: coins(h.cash), pnl: coins(h.pnl) })).sort((a, b) => a.pnl - b.pnl),
-    housePnl: coins(eco.house.reduce((s, h) => s + h.pnl, 0)),
-    health: { seq: w.engine.seq, tickLagMs: Math.max(0, Date.now() - w.engine.time), orderP50Ms: null, orderP99Ms: null, orderSamples: 0, wsClients: 0, lastFeatures: await signals.lastUpdates(ids) },
-  });
-});
-api.route("/admin", admin);
 
