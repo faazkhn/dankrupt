@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "devvit-app",
+  "name": "dankrupt-exchange",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
@@ -36,5 +36,6 @@
     "typescript": "6.0.3",
     "vite": "8.3.7",
     "vitest": "^5.1.1"
-  }
+  },
+  "license": "BSD-3-Clause"
 }

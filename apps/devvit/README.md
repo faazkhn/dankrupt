@@ -52,8 +52,8 @@ The game is a port of the Dankrupt Exchange web app, rebuilt to run entirely on 
 
 ```sh
 pnpm install
-pnpm --filter devvit-app test        # API tests against an in-memory Devvit fake
-pnpm --filter devvit-app typecheck
+pnpm --filter dankrupt-exchange test        # API tests against an in-memory Devvit fake
+pnpm --filter dankrupt-exchange typecheck
 cd apps/devvit && npx devvit login && npx devvit playtest <your-test-subreddit>
 npx devvit settings set wikiContact   # contact for the Wikimedia User-Agent
 ```
