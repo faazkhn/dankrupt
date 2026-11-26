@@ -135,6 +135,7 @@ export const reddit = {
   async submitCustomPost({ title }: { title: string }) { posts.push(title); return { id: `t3_${posts.length}` }; },
   async setUserFlair({ username, text }: { username: string; text: string }) { flairs.set(username, text); },
   async removeUserFlair(_s: string, username: string) { flairs.delete(username); },
+  async setPostFlair(_: { postId: string; text?: string }) {},
 };
 export const settings = { async get() { return undefined; } };
 

@@ -13,6 +13,9 @@ export const LAUNCH = Date.UTC(2026, 10, 26);
 const LAUNCH_SET = 10;
 const OPENING_AUCTION_MS = 2 * HOUR;
 
+/** Post flair on every Market Day thread; the developer settings feature posts with it. */
+export const MARKET_DAY_FLAIR = "Market Day";
+
 export const dayStart = (t: number) => t - (t % DAY);
 export const dayKey = (t: number) => new Date(t).toISOString().slice(0, 10).replaceAll("-", "");
 export const dayNumber = (t: number) => Math.floor((dayStart(t) - LAUNCH) / DAY) + 1;
@@ -157,5 +160,7 @@ export async function postMarketDay(now: number, listing: string | null) {
     entry: "default",
   });
   await redis.zAdd(DK.posts, { member: post.id, score: now });
+  // The "Market Day" flair lets Reddit's featured surfaces always pick the current day's thread.
+  await reddit.setPostFlair({ subredditName, postId: post.id, text: MARKET_DAY_FLAIR, backgroundColor: "#ff7a2f", textColor: "dark" }).catch((e) => console.error("post flair failed", e));
   return post;
 }

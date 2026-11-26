@@ -317,6 +317,7 @@ api.post("/share", async (c) => {
       entry: "card",
       postData: { user: me, memeId, name, side: trade.side, returnPct, avgIn, avgOut, openedAt: trade.openedAt, closedAt, day: daily.dayNumber(closedAt) },
     });
+    await reddit.setPostFlair({ subredditName: sub, postId: post.id, text: "Trade call", backgroundColor: "#1d8a4a", textColor: "light" }).catch((e) => console.error("post flair failed", e));
     return c.json({ url: `https://www.reddit.com/r/${sub}/comments/${post.id.replace(/^t3_/, "")}` });
   } catch (e) {
     await redis.del(key);
