@@ -63,12 +63,26 @@ export type OrderTicket = { memeId: string; side: "buy" | "sell"; qty: number; t
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api/${path}`, { cache: "no-store", ...init });
-  const data = await res.json();
+  // Reddit's gateway can answer with a non-JSON error page (timeouts, overload): say so plainly.
+  const text = await res.text();
+  let data: { error?: string };
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw Object.assign(new Error(init?.method === "POST" ? "Reddit didn't confirm that in time. Check your open orders before trying again." : "The market is busy, retrying…"), { status: res.status });
+  }
   if (!res.ok && res.status !== 422) throw Object.assign(new Error(data.error ?? "request failed"), { status: res.status });
   return data as T;
 }
 
-/** Live market rows: Devvit realtime pushes after every commit, and a 1 s poll keeps the house clock moving. */
+type Tick = { time: number; price: number };
+type Tape = { dank: { level: number; time: number } | null; recent?: Tick[]; rows: MarketRow[] };
+
+/**
+ * Live market rows. A 1 s poll (which also advances the house clock) and Devvit realtime pushes
+ * both deliver the last few 100 ms Dank Index ticks; they're replayed at 10 per second so the
+ * index moves as smoothly as on the web, about a second behind.
+ */
 export function useMarkets() {
   const [dank, setDank] = useState<{ level: number; time: number } | null>(null);
   const [rows, setRows] = useState<Map<string, MarketRow> | null>(null);
@@ -85,27 +99,39 @@ export function useMarkets() {
   useEffect(() => {
     let closed = false;
     let pushedAt = 0;
+    let shown = 0;
+    let queue: Tick[] = [];
+    const take = (t: Tape) => {
+      merge(t.rows);
+      setError(null);
+      const fresh = (t.recent ?? []).filter((x) => x.time > shown);
+      if (fresh.length) queue = [...queue, ...fresh].slice(-30);
+      else if (t.dank && t.dank.time > shown) queue.push({ time: t.dank.time, price: t.dank.level });
+      if (queue.length) shown = queue.at(-1)!.time;
+    };
+    const play = setInterval(() => {
+      const next = queue.length > 12 ? queue.splice(0, queue.length - 10).at(-1) : queue.shift(); // never fall more than ~1 s behind
+      if (next && !closed) setDank({ level: next.price, time: next.time });
+    }, 100);
     const tick = () =>
-      Promise.all([api<MarketRow[]>("markets"), api<typeof dank>("dank")])
-        .then(([r, index]) => { if (!closed) { merge(r); setDank(index); setError(null); } })
+      api<Tape>("tape")
+        .then((t) => { if (!closed) take(t); })
         .catch((e: Error) => setError(e.message));
     tick();
-    // Polls are what advance the clock when nobody trades; skip one if a push just arrived.
     const poll = setInterval(() => { if (Date.now() - pushedAt > 900) tick(); }, 1_000);
     const conn = connectRealtime({
       channel: "markets",
       onMessage: (msg) => {
-        const m = msg as { type?: string; dank: typeof dank; rows: MarketRow[] };
+        const m = msg as Tape & { type?: string };
         if (m.type !== "markets" || closed) return;
         pushedAt = Date.now();
-        setDank(m.dank);
-        merge(m.rows);
-        setError(null);
+        take(m);
       },
     });
     return () => {
       closed = true;
       clearInterval(poll);
+      clearInterval(play);
       void Promise.resolve(conn.disconnect()).catch(() => {});
     };
   }, [merge]);

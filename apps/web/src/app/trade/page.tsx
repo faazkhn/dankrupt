@@ -87,7 +87,7 @@ export default function Markets() {
             </p>
           )}
 
-          <div role="tablist" aria-label="Sort markets" className="mt-6 flex gap-3">
+          <div role="tablist" aria-label="Sort markets" className="mt-6 -mx-3 flex gap-2 overflow-x-auto px-3 pb-2 sm:gap-3">
             {(
               [
                 ["trending", "Trending"],
@@ -101,7 +101,7 @@ export default function Markets() {
                 role="tab"
                 aria-selected={sort === k}
                 onClick={() => setSort(k)}
-                className={`btn-candy is-small px-4 ${sort === k ? "" : "is-muted"}`}
+                className={`btn-candy is-small shrink-0 px-4 whitespace-nowrap ${sort === k ? "" : "is-muted"}`}
               >
                 {k === "trending" && <FlameIcon weight="fill" aria-hidden="true" />} {label}
               </button>

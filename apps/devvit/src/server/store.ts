@@ -19,6 +19,7 @@ export const K = {
   sources: "sources",
   wiki: (memeId: string) => `wiki:${memeId}`,
   wikiFetched: "wiki:fetched",
+  wikiFailed: "wiki:failed",
   features: (memeId: string) => `feat:${memeId}`,
   views: (memeId: string) => `views:${memeId}`,
   viewers: "viewers",
@@ -77,8 +78,8 @@ export async function mutate<T>(fn: (ctx: Ctx) => T | Promise<T>): Promise<T> {
     try {
       const res = await tx.exec();
       committed = Array.isArray(res) && res.length > 0;
-    } catch (e) {
-      console.warn("world commit aborted", e);
+    } catch {
+      // Devvit's exec throws when a watched key changed under us: another commit won, so retry.
     }
     if (committed) {
       await broadcast(world).catch((e) => console.error("realtime send failed", e));
@@ -97,9 +98,13 @@ export async function peek(): Promise<World> {
 }
 
 /** Persists the clock at most about once a second, whoever asks first, so polling viewers drive live prices. */
-export async function heartbeat() {
+export async function heartbeat(): Promise<World> {
   const won = await redis.set(K.beat, "1", { nx: true, expiration: new Date(Date.now() + 1_000) });
-  if (won) await mutate(() => undefined).catch((e) => { if (!(e instanceof Busy)) throw e; });
+  if (won) {
+    const w = await mutate(({ world }) => world).catch((e) => { if (!(e instanceof Busy)) throw e; return null; });
+    if (w) return w;
+  }
+  return peek();
 }
 
 export async function submit(body: EventBody): Promise<{ out: Output; world: World }> {
@@ -107,7 +112,7 @@ export async function submit(body: EventBody): Promise<{ out: Output; world: Wor
 }
 
 async function broadcast(world: World) {
-  await realtime.send(CHANNEL, { type: "markets", dank: world.engine.dank, rows: world.markets() });
+  await realtime.send(CHANNEL, { type: "markets", dank: world.engine.dank, recent: world.dankHistory().slice(-30), rows: world.markets() });
 }
 
 const parse = <T>(raw: string | null | undefined, fallback: T): T => (raw ? (JSON.parse(raw) as T) : fallback);

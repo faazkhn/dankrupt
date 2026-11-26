@@ -37,8 +37,8 @@ export async function fetchDue(now: number, budgetMs = 15_000): Promise<string[]
   const started = Date.now();
   const today = day(now);
   const yesterday = day(now - DAY);
-  const [maps, fetched] = await Promise.all([sources(), redis.hGetAll(K.wikiFetched)]);
-  const due = Object.entries(maps).filter(([id, s]) => s.wikipedia.length && fetched[id] !== today);
+  const [maps, fetched, failed] = await Promise.all([sources(), redis.hGetAll(K.wikiFetched), redis.hGetAll(K.wikiFailed)]);
+  const due = Object.entries(maps).filter(([id, s]) => s.wikipedia.length && fetched[id] !== today && now - Number(failed[id] ?? 0) > HOUR);
   if (!due.length) return [];
   const fetchWiki = await wiki();
   const done: string[] = [];
@@ -51,7 +51,8 @@ export async function fetchDue(now: number, budgetMs = 15_000): Promise<string[]
     try {
       for (const t of wikipedia) for (const [d, v] of Object.entries(await fetchWiki(t, from, yesterday))) sum[d] = (sum[d] ?? 0) + v;
     } catch (e) {
-      console.error(`wikipedia fetch failed for ${memeId}`, e);
+      console.error(`wikipedia fetch failed for ${memeId}: ${(e as Error).message}`);
+      await redis.hSet(K.wikiFailed, { [memeId]: String(now) });
       continue; // stale until a later run; features mark it delayed if this lasts
     }
     for (let t = Date.parse(from); day(t) < yesterday; t += DAY) sum[day(t)] ??= 0;

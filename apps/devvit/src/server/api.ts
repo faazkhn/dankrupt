@@ -105,7 +105,27 @@ async function withRound(me: string) {
   return { world, accountId, now };
 }
 
+// Slow or failed requests show in the playtest log; routine polls stay quiet.
+api.use(async (c, next) => {
+  const t = Date.now();
+  await next();
+  const ms = Date.now() - t;
+  if (c.res.status >= 400 || ms > 1_500 || c.req.method !== "GET") console.log(`${c.req.method} ${c.req.path} ${c.res.status} ${ms}ms`);
+});
+
 // ---------- public market data ----------
+
+/** One poll for the live screens: every quote, the Dank Index and its last few 100 ms ticks. */
+api.get("/tape", async (c) => {
+  let w = await heartbeat();
+  if (!w.engine.seq) {
+    await daily.ensureSeeded();
+    w = await peek();
+  }
+  return c.json({ dank: w.engine.dank, recent: w.dankHistory().slice(-30), rows: w.markets() });
+});
+/** The shared web chart asks for its history at the web app's path; serve it here too. */
+api.get("/engine/dank", async (c) => c.json((await peek()).dankHistory()));
 
 api.get("/health", async (c) => {
   const w = await peek();
@@ -113,13 +133,11 @@ api.get("/health", async (c) => {
 });
 api.get("/memes", async (c) => c.json((await peek()).engine.memes()));
 api.get("/dank", async (c) => {
-  await heartbeat();
-  const w = await peek();
+  const w = await heartbeat();
   return c.json(c.req.query("history") !== undefined ? w.dankHistory() : w.engine.dank);
 });
 api.get("/markets", async (c) => {
-  await heartbeat();
-  let w = await peek();
+  let w = await heartbeat();
   if (!w.engine.seq) {
     await daily.ensureSeeded();
     w = await peek();

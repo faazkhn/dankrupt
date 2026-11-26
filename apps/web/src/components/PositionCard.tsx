@@ -32,6 +32,9 @@ export function PositionCard({ me, memeId }: { me: Me; memeId: string }) {
               {fmt(Math.abs(p.pnl))}
             </dd>
           </dl>
+          <p className="mt-1 text-xs font-bold text-ink-soft">
+            The mark is the middle of the live price, the 5-minute trade average and fair value, so one big order can&apos;t swing everyone&apos;s profit.
+          </p>
         </>
       )}
       {held > 0 && <p className="mt-2 text-sm font-bold text-ink-soft">{fmtInt(held)} held by your sell orders</p>}
