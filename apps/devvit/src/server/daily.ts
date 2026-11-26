@@ -8,7 +8,7 @@ import type { World } from "./world.ts";
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
 /** Market Day #1. Rounds run 00:00–24:00 UTC. */
-export const LAUNCH = Date.UTC(2026, 10, 27);
+export const LAUNCH = Date.UTC(2026, 10, 26);
 /** How many approved memes trade from day one; the rest list one per day as the Market Day listing. */
 const LAUNCH_SET = 10;
 const OPENING_AUCTION_MS = 2 * HOUR;

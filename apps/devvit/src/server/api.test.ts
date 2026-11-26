@@ -6,7 +6,7 @@ const { api } = await import("./api.ts");
 const { tick } = await import("./jobs.ts");
 const { peek } = await import("./store.ts");
 
-const T0 = Date.UTC(2026, 10, 27, 10); // Market Day #1, 10:00 UTC
+const T0 = Date.UTC(2026, 10, 26, 10); // Market Day #1, 10:00 UTC
 
 const as = (user: string | undefined) => (fake.context.username = user);
 async function call<T = any>(path: string, body?: unknown): Promise<{ status: number; data: T }> {
@@ -75,13 +75,13 @@ describe("the Reddit app API", () => {
     expect(w.engine.accounts().some((id) => id.startsWith("@desk"))).toBe(true);
     expect(Object.keys(await fake.redis.hGetAll(`wiki:${memeId}`)).length).toBeGreaterThan(0);
 
-    vi.setSystemTime(Date.UTC(2026, 10, 28, 0, 1));
+    vi.setSystemTime(Date.UTC(2026, 10, 27, 0, 1));
     await tick();
     w = await peek();
-    expect(w.engine.hasAccount("alice--d20261127")).toBe(false);
+    expect(w.engine.hasAccount("alice--d20261126")).toBe(false);
     expect(w.engine.memes()).toHaveLength(11); // Market Day #2's listing
     expect(w.engine.memes().filter((m) => m.status === "preopen")).toHaveLength(1);
-    expect(fake.posts.at(-1)).toMatch(/^Market Day #2 · Nov 28 · .+ lists today$/);
+    expect(fake.posts.at(-1)).toMatch(/^Market Day #2 · Nov 27 · .+ lists today$/);
     expect([...fake.flairs.values()].some((f) => f.includes("Day 1 top trader"))).toBe(true);
 
     as("alice");

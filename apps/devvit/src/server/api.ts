@@ -154,7 +154,10 @@ api.get("/day", async (c) => {
   const mine = me ? today.find((r) => r.user === me) ?? null : null;
   const seen = me ? await redis.get(daily.DK.seenResult(me)) : null;
   const myYesterday = me ? yesterday.find((r) => r.user === me) ?? null : null;
-  const listing = world.engine.memes().filter((m) => m.status === "preopen" || now - m.listedAt < DAY).sort((a, b) => b.listedAt - a.listedAt)[0];
+  // The day's listing: the newest meme listed after launch (the launch set all share the first listing time).
+  const all = world.engine.memes();
+  const launchedAt = Math.min(...all.map((m) => m.listedAt));
+  const listing = all.filter((m) => m.listedAt > launchedAt + 60_000 && (m.status === "preopen" || now - m.listedAt < DAY)).sort((a, b) => b.listedAt - a.listedAt)[0];
   return c.json({
     day: daily.dayNumber(now),
     key: daily.dayKey(now),
