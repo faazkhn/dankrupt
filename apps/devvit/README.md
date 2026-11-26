@@ -4,12 +4,7 @@
 
 Prices aren't random. Each meme has a fair value that follows real internet attention: Wikipedia pageviews for its article plus what players on Reddit are looking at and starring. A meme the internet is talking about drifts up. One the internet has forgotten drifts down. You're trading on your read of the culture.
 
-<p>
-  <img src="https://raw.githubusercontent.com/faazkhn/dankrupt/devvit/apps/devvit/docs/feed-card.jpg" alt="The Market Day card in the feed" width="200">
-  <img src="https://raw.githubusercontent.com/faazkhn/dankrupt/devvit/apps/devvit/docs/meme.jpg" alt="A meme's live price and candle chart" width="200">
-  <img src="https://raw.githubusercontent.com/faazkhn/dankrupt/devvit/apps/devvit/docs/ticket.jpg" alt="The order ticket with a live fill preview" width="200">
-  <img src="https://raw.githubusercontent.com/faazkhn/dankrupt/devvit/apps/devvit/docs/standings.jpg" alt="Today's standings and your streak" width="200">
-</p>
+![The Market Day card in the feed](https://raw.githubusercontent.com/faazkhn/dankrupt/devvit/apps/devvit/docs/feed-card.jpg) ![A meme's live price and candle chart](https://raw.githubusercontent.com/faazkhn/dankrupt/devvit/apps/devvit/docs/meme.jpg) ![The order ticket with a live fill preview](https://raw.githubusercontent.com/faazkhn/dankrupt/devvit/apps/devvit/docs/ticket.jpg) ![Today's standings and your streak](https://raw.githubusercontent.com/faazkhn/dankrupt/devvit/apps/devvit/docs/standings.jpg)
 
 Play coins have no money value. They can never be bought, sold or cashed out.
 
