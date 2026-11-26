@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1920, height=1080"><title>Dankrupt Exchange · Devpost demo</title>
+<script src="assets/gsap.min.js"></script><style>
+@font-face{font-family:Lilita;src:url(assets/fonts/lilita.woff2)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#0c0c0c}
+#root{position:relative;width:1920px;height:1080px;overflow:hidden;font-family:Lilita,sans-serif;color:#fff;background:#0c0c0c}
+#bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.clip{position:absolute}
+.full{inset:0}
+.center{display:flex;align-items:center;justify-content:center}
+.left{left:150px;top:150px;width:900px}
+.up{color:#19f26b}.down{color:#ff3b3b}
+.sticker{display:inline-block;font-size:64px;line-height:1;padding:18px 30px;background:#fff;color:#0c0c0c;border:6px solid #0c0c0c;border-radius:22px;box-shadow:8px 8px 0 #19f26b}
+.sticker span{color:#0a9c43}
+.sticker.yellow{background:#ffd400}
+.slam{font-size:170px;line-height:.92;-webkit-text-stroke:10px #000;paint-order:stroke fill;text-shadow:8px 8px 0 #19f26b}
+.slam.big{font-size:230px}
+.kicker{font-size:54px;color:#19f26b;margin-bottom:10px;-webkit-text-stroke:6px #000;paint-order:stroke fill}
+.sub{font-size:48px;margin-top:26px;color:#fff;-webkit-text-stroke:6px #000;paint-order:stroke fill;max-width:880px;line-height:1.1}
+.count{left:120px;top:250px;width:1000px}
+.count b{display:block;font-size:230px;font-weight:400;-webkit-text-stroke:12px #000;paint-order:stroke fill;text-shadow:10px 10px 0 #19f26b;font-variant-numeric:tabular-nums}
+#zero{left:0;width:1920px;top:250px;text-align:center}
+#b0,#b1,#b2{left:0;width:1920px;text-align:center}
+#ding{display:inline-block;margin-top:10px;font-size:180px;color:#ffd400;-webkit-text-stroke:12px #000;paint-order:stroke fill}
+.chip{left:130px;top:560px}
+.soh{left:120px;top:690px}
+.stamp{display:inline-block;font-size:110px;line-height:.95;padding:6px 26px;border:10px solid currentColor;border-radius:18px;background:#0c0c0c;text-align:center}
+.stamp.huge{font-size:150px}
+.or{font-size:60px;margin:0 22px;vertical-align:middle;color:#fff}
+.rw{background:#0c0c0cdd;display:flex;align-items:center;justify-content:center}
+#rwin{text-align:center}
+#rwclock{font-size:220px;-webkit-text-stroke:12px #000;paint-order:stroke fill;text-shadow:10px 10px 0 #ff3b3b;font-variant-numeric:tabular-nums}
+#rwlabel{font-size:90px;color:#ff3b3b;margin-top:10px}
+.scan{position:absolute;inset:-120px 0 0 0;background:repeating-linear-gradient(0deg,#ffffff10 0 3px,transparent 3px 12px)}
+#newpost{margin-top:36px}
+#revin{display:flex;flex-direction:column;align-items:center}
+#logo1,#logo2{width:1300px}
+#tag{font-size:84px;margin-top:20px;-webkit-text-stroke:8px #000;paint-order:stroke fill}
+#tag span{color:#19f26b}
+.coinrow{display:flex;align-items:center;gap:30px}
+.coin{display:inline-grid;place-items:center;width:150px;height:150px;border-radius:50%;background:#ffd400;border:10px solid #000;color:#000;font-style:normal;font-size:90px;box-shadow:8px 8px 0 #19f26b}
+#cnum{font-size:190px;font-weight:400;-webkit-text-stroke:12px #000;paint-order:stroke fill;font-variant-numeric:tabular-nums}
+.eq{display:flex;align-items:center;gap:24px;font-size:150px;line-height:1;-webkit-text-stroke:10px #000;paint-order:stroke fill;margin-bottom:10px}
+.arrow{font-size:120px}
+.stampbox{padding-top:120px}
+.flair{display:flex;align-items:center;gap:26px;margin-top:40px;background:#fff;color:#0c0c0c;border:6px solid #000;border-radius:24px;padding:20px 34px;box-shadow:8px 8px 0 #ffd400;width:max-content}
+.flair b{display:block;font-size:58px;font-weight:400}
+.flair small{display:block;font-size:34px;color:#555;font-family:Nunito,sans-serif;font-weight:800}
+.medal{display:grid;place-items:center;width:110px;height:110px;border-radius:50%;background:#ffd400;border:8px solid #000;font-style:normal;font-size:70px;color:#000}
+#sharein{position:relative;display:flex;align-items:center;justify-content:center}
+#post{width:1120px;border:8px solid #fff;border-radius:28px;box-shadow:14px 14px 0 #19f26b}
+#brag{position:absolute;right:-80px;top:-50px}
+.bar{width:820px;height:46px;margin-top:30px;border:8px solid #000;border-radius:24px;background:#fff;overflow:hidden}
+#barfill{display:block;height:100%;background:#19f26b;transform-origin:left center}
+#endin{display:flex;flex-direction:column;align-items:center}
+#cta{margin-top:30px;font-size:80px}
+#endsub{font-size:52px;margin-top:30px;-webkit-text-stroke:6px #000;paint-order:stroke fill}
+#flashin{position:absolute;inset:0;background:#fff}
+#phone{position:absolute;left:1260px;top:70px;width:422px;height:896px}
+#phonein{position:absolute;inset:0;border-radius:52px;border:8px solid #fff;outline:8px solid #000;background:#000;box-shadow:16px 16px 0 #19f26b;overflow:hidden}
+.vid{position:absolute;left:0;top:0;width:406px;height:880px;object-fit:cover}
+.cap{left:0;width:1920px;bottom:52px;text-align:center}
+.capin{display:inline-block;font-size:66px;line-height:1.1;-webkit-text-stroke:10px #000;paint-order:stroke fill;max-width:1500px}
+.capin .w{display:inline-block}
+</style></head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="52.0" data-width="1920" data-height="1080" data-fps="30">
+<img id="bg" src="assets/img/bg.jpg" alt="">
+<div id="phone"><div id="phonein">
+<video id="v1" class="clip vid" muted playsinline src="assets/clips/meme.mp4" data-start="0" data-duration="6.4" data-media-start="4.57" data-track-index="1" style="position:absolute;left:0;top:0;width:406px;height:880px;object-fit:cover"></video>
+<video id="v2" class="clip vid" muted playsinline src="assets/clips/splash.mp4" data-start="9.4" data-duration="3.5" data-media-start="0.2" data-track-index="1" style="position:absolute;left:0;top:0;width:406px;height:880px;object-fit:cover"></video>
+<video id="v3" class="clip vid" muted playsinline src="assets/clips/markets.mp4" data-start="17.9" data-duration="3.9" data-media-start="2.92" data-track-index="1" style="position:absolute;left:0;top:0;width:406px;height:880px;object-fit:cover"></video>
+<video id="v4" class="clip vid" muted playsinline src="assets/clips/meme.mp4" data-start="21.8" data-duration="4.3" data-media-start="4.87" data-track-index="1" style="position:absolute;left:0;top:0;width:406px;height:880px;object-fit:cover"></video>
+<video id="v5" class="clip vid" muted playsinline src="assets/clips/buy.mp4" data-start="26.1" data-duration="2.7" data-media-start="5.67" data-track-index="1" style="position:absolute;left:0;top:0;width:406px;height:880px;object-fit:cover"></video>
+<video id="v6" class="clip vid" muted playsinline src="assets/clips/short.mp4" data-start="28.8" data-duration="3.6" data-media-start="5.65" data-track-index="1" style="position:absolute;left:0;top:0;width:406px;height:880px;object-fit:cover"></video>
+<video id="v7" class="clip vid" muted playsinline src="assets/clips/result.mp4" data-start="36.0" data-duration="3.4" data-media-start="0.8" data-track-index="1" style="position:absolute;left:0;top:0;width:406px;height:880px;object-fit:cover"></video>
+<video id="v8" class="clip vid" muted playsinline src="assets/clips/board.mp4" data-start="42.4" data-duration="4.2" data-media-start="4.05" data-track-index="1" style="position:absolute;left:0;top:0;width:406px;height:880px;object-fit:cover"></video>
+</div></div>
+<div id="c0" class="clip count" data-start="0.0" data-duration="0.98" data-track-index="3" ><b id="c0b">00:00:10</b></div>
+<div id="c1" class="clip count" data-start="0.98" data-duration="0.98" data-track-index="3" ><b id="c1b">00:00:09</b></div>
+<div id="c2" class="clip count" data-start="1.97" data-duration="0.98" data-track-index="3" ><b id="c2b">00:00:08</b></div>
+<div id="c3" class="clip count" data-start="2.96" data-duration="0.98" data-track-index="3" ><b id="c3b">00:00:07</b></div>
+<div id="c4" class="clip count" data-start="3.94" data-duration="0.98" data-track-index="3" ><b id="c4b">00:00:06</b></div>
+<div id="c5" class="clip count" data-start="4.92" data-duration="0.98" data-track-index="3" ><b id="c5b">00:00:05</b></div>
+<div id="c6" class="clip count" data-start="5.91" data-duration="0.98" data-track-index="3" ><b id="c6b">00:00:04</b></div>
+<div id="tick" class="clip chip" data-start="2.8" data-duration="4.1" data-track-index="4" ><div id="tickin" class="sticker up">SKIBIDI TOILET <span>▲ +31%</span></div></div>
+<div id="soh" class="clip soh" data-start="5.55" data-duration="1.35" data-track-index="5" ><div id="sohin"><span id="sell" class="stamp down">SELL</span><span class="or">or</span><span id="hold" class="stamp up">HOLD?</span></div></div>
+<div id="rw" class="clip full rw" data-start="6.9" data-duration="2.5" data-track-index="6" ><div id="rwin"><div id="rwclock">23:59:56</div><div id="rwlabel">◀◀ REWIND</div></div><div class="scan"></div></div>
+<div id="md" class="clip left" data-start="9.5" data-duration="3.4" data-track-index="4" ><div id="mdin"><div class="kicker">08:00 UTC</div><div class="slam">MARKET<br>DAY #12</div><div id="newpost" class="sticker yellow">NEW POST</div></div></div>
+<div id="rev" class="clip full center" data-start="12.9" data-duration="5.0" data-track-index="6" ><div id="revin"><img id="logo1" src="assets/img/logo.png" alt="Dankrupt Exchange"><div id="tag">stocks, but they're <span>memes</span></div></div></div>
+<div id="coins" class="clip left" data-start="17.95" data-duration="3.85" data-track-index="4" ><div id="coinsin"><div class="coinrow"><i class="coin">D</i><b id="cnum">100,000</b></div><div class="sub">fresh wallet, every round</div></div></div>
+<div id="att" class="clip left" data-start="21.85" data-duration="4.25" data-track-index="4" ><div id="attin"><div class="eq"><span class="w1">ATTENTION</span><span class="up arrow">▲</span></div><div class="eq"><span class="w1">PRICE</span><span class="up arrow">▲</span></div><div class="sub">live Wikipedia pageviews drive fair value</div></div></div>
+<div id="vb0" class="clip left" data-start="26.4" data-duration="0.9" data-track-index="4" ><div class="slam big " id="vb0b">PICK</div></div>
+<div id="vb1" class="clip left" data-start="27.3" data-duration="0.95" data-track-index="4" ><div class="slam big " id="vb1b">CHECK</div></div>
+<div id="vb2" class="clip left" data-start="28.25" data-duration="0.55" data-track-index="4" ><div class="slam big up" id="vb2b">BUY</div></div>
+<div id="sh" class="clip left" data-start="29.75" data-duration="2.65" data-track-index="4" ><div class="stampbox"><span id="shb" class="stamp down huge">SHORT THE<br>CRINGE</span></div></div>
+<div id="b0" class="clip count" data-start="32.4" data-duration="0.74" data-track-index="3" ><b id="b0b">00:00:03</b></div>
+<div id="b1" class="clip count" data-start="33.14" data-duration="0.74" data-track-index="3" ><b id="b1b">00:00:02</b></div>
+<div id="b2" class="clip count" data-start="33.88" data-duration="0.74" data-track-index="3" ><b id="b2b">00:00:01</b></div>
+<div id="zero" class="clip count" data-start="34.62" data-duration="1.4" data-track-index="6" ><b id="zerob">00:00:00</b><div id="ding">DING!</div></div>
+<div id="flash" class="clip full" data-start="34.62" data-duration="0.3" data-track-index="8" ><div id="flashin"></div></div>
+<div id="rank" class="clip left" data-start="36.05" data-duration="3.35" data-track-index="4" ><div id="rankin"><div class="slam">YOU'RE<br><span class="up">#1</span></div><div id="medal" class="flair"><i class="medal">1</i><div><b>Day 11 top trader</b><small>u/faazkhn · flair unlocked</small></div></div></div></div>
+<div id="share" class="clip full center" data-start="39.45" data-duration="2.95" data-track-index="4" ><div id="sharein"><img id="post" src="assets/img/trade-post.jpg" alt="A trade card post"><span id="brag" class="stamp up">BRAG IT</span></div></div>
+<div id="tmr" class="clip left" data-start="42.45" data-duration="4.15" data-track-index="4" ><div id="tmrin"><div class="kicker">next bell 00:00 UTC</div><div class="slam">DAY 13</div><div class="bar"><i id="barfill"></i></div><div class="sub">new listing · fresh 100k</div></div></div>
+<div id="end" class="clip full center" data-start="46.65" data-duration="5.35" data-track-index="6" ><div id="endin"><img id="logo2" src="assets/img/logo.png" alt="Dankrupt Exchange"><div id="cta" class="sticker yellow">PLAY FREE · r/dankrupt</div></div></div>
+<div id="cap0" class="clip cap" data-start="0.31" data-duration="0.45" data-track-index="9"><div class="capin"><span id="cw0_0" class="w">Ten</span></div></div>
+<div id="cap1" class="clip cap" data-start="0.76" data-duration="0.81" data-track-index="9"><div class="capin"><span id="cw1_0" class="w">seconds</span> <span id="cw1_1" class="w">to</span> <span id="cw1_2" class="w">the</span></div></div>
+<div id="cap2" class="clip cap" data-start="1.57" data-duration="0.84" data-track-index="9"><div class="capin"><span id="cw2_0" class="w">bell,</span></div></div>
+<div id="cap3" class="clip cap" data-start="2.41" data-duration="1.17" data-track-index="9"><div class="capin"><span id="cw3_0" class="w">You&#x27;re</span> <span id="cw3_1" class="w">up</span> <span id="cw3_2" class="w">31%</span></div></div>
+<div id="cap4" class="clip cap" data-start="3.58" data-duration="2.00" data-track-index="9"><div class="capin"><span id="cw4_0" class="w">on</span> <span id="cw4_1" class="w">Skibidi</span> <span id="cw4_2" class="w">Toilet,</span></div></div>
+<div id="cap5" class="clip cap" data-start="5.58" data-duration="0.75" data-track-index="9"><div class="capin"><span id="cw5_0" class="w">sell</span> <span id="cw5_1" class="w">or</span></div></div>
+<div id="cap6" class="clip cap" data-start="6.33" data-duration="1.57" data-track-index="9"><div class="capin"><span id="cw6_0" class="w">hold?</span></div></div>
+<div id="cap7" class="clip cap" data-start="7.90" data-duration="0.50" data-track-index="9"><div class="capin"><span id="cw7_0" class="w">Okay,</span></div></div>
+<div id="cap8" class="clip cap" data-start="8.40" data-duration="1.03" data-track-index="9"><div class="capin"><span id="cw8_0" class="w">rewind.</span></div></div>
+<div id="cap9" class="clip cap" data-start="9.43" data-duration="0.87" data-track-index="9"><div class="capin"><span id="cw9_0" class="w">This</span> <span id="cw9_1" class="w">morning</span> <span id="cw9_2" class="w">a</span></div></div>
+<div id="cap10" class="clip cap" data-start="10.30" data-duration="1.02" data-track-index="9"><div class="capin"><span id="cw10_0" class="w">brand</span> <span id="cw10_1" class="w">new</span> <span id="cw10_2" class="w">market</span></div></div>
+<div id="cap11" class="clip cap" data-start="11.32" data-duration="0.92" data-track-index="9"><div class="capin"><span id="cw11_0" class="w">day</span> <span id="cw11_1" class="w">dropped</span> <span id="cw11_2" class="w">on</span></div></div>
+<div id="cap12" class="clip cap" data-start="12.24" data-duration="0.65" data-track-index="9"><div class="capin"><span id="cw12_0" class="w">Reddit.</span></div></div>
+<div id="cap13" class="clip cap" data-start="12.89" data-duration="1.03" data-track-index="9"><div class="capin"><span id="cw13_0" class="w">This</span> <span id="cw13_1" class="w">is</span> <span id="cw13_2" class="w">Dankrupt</span></div></div>
+<div id="cap14" class="clip cap" data-start="13.92" data-duration="0.73" data-track-index="9"><div class="capin"><span id="cw14_0" class="w">Exchange,</span></div></div>
+<div id="cap15" class="clip cap" data-start="14.65" data-duration="0.70" data-track-index="9"><div class="capin"><span id="cw15_0" class="w">a</span> <span id="cw15_1" class="w">stock</span></div></div>
+<div id="cap16" class="clip cap" data-start="15.35" data-duration="0.35" data-track-index="9"><div class="capin"><span id="cw16_0" class="w">market</span></div></div>
+<div id="cap17" class="clip cap" data-start="15.70" data-duration="1.09" data-track-index="9"><div class="capin"><span id="cw17_0" class="w">where</span> <span id="cw17_1" class="w">the</span> <span id="cw17_2" class="w">companies</span></div></div>
+<div id="cap18" class="clip cap" data-start="16.79" data-duration="1.27" data-track-index="9"><div class="capin"><span id="cw18_0" class="w">are</span> <span id="cw18_1" class="w">memes.</span></div></div>
+<div id="cap19" class="clip cap" data-start="18.06" data-duration="0.44" data-track-index="9"><div class="capin"><span id="cw19_0" class="w">Everyone</span></div></div>
+<div id="cap20" class="clip cap" data-start="18.50" data-duration="1.65" data-track-index="9"><div class="capin"><span id="cw20_0" class="w">gets</span> <span id="cw20_1" class="w">100,000</span></div></div>
+<div id="cap21" class="clip cap" data-start="20.15" data-duration="0.35" data-track-index="9"><div class="capin"><span id="cw21_0" class="w">coins,</span></div></div>
+<div id="cap22" class="clip cap" data-start="20.50" data-duration="1.21" data-track-index="9"><div class="capin"><span id="cw22_0" class="w">every</span> <span id="cw22_1" class="w">single</span> <span id="cw22_2" class="w">day.</span></div></div>
+<div id="cap23" class="clip cap" data-start="21.71" data-duration="0.66" data-track-index="9"><div class="capin"><span id="cw23_0" class="w">And</span> <span id="cw23_1" class="w">the</span> <span id="cw23_2" class="w">prices</span></div></div>
+<div id="cap24" class="clip cap" data-start="22.37" data-duration="0.37" data-track-index="9"><div class="capin"><span id="cw24_0" class="w">follow</span> <span id="cw24_1" class="w">the</span> <span id="cw24_2" class="w">real</span></div></div>
+<div id="cap25" class="clip cap" data-start="22.74" data-duration="0.51" data-track-index="9"><div class="capin"><span id="cw25_0" class="w">internet.</span></div></div>
+<div id="cap26" class="clip cap" data-start="23.25" data-duration="0.83" data-track-index="9"><div class="capin"><span id="cw26_0" class="w">When</span> <span id="cw26_1" class="w">a</span> <span id="cw26_2" class="w">meme</span></div></div>
+<div id="cap27" class="clip cap" data-start="24.08" data-duration="0.73" data-track-index="9"><div class="capin"><span id="cw27_0" class="w">blows</span> <span id="cw27_1" class="w">up,</span></div></div>
+<div id="cap28" class="clip cap" data-start="24.81" data-duration="1.05" data-track-index="9"><div class="capin"><span id="cw28_0" class="w">its</span> <span id="cw28_1" class="w">price</span></div></div>
+<div id="cap29" class="clip cap" data-start="26.04" data-duration="0.32" data-track-index="9"><div class="capin"><span id="cw29_0" class="w">climbs.</span></div></div>
+<div id="cap30" class="clip cap" data-start="26.36" data-duration="0.67" data-track-index="9"><div class="capin"><span id="cw30_0" class="w">Pick</span> <span id="cw30_1" class="w">your</span></div></div>
+<div id="cap31" class="clip cap" data-start="27.03" data-duration="0.21" data-track-index="9"><div class="capin"><span id="cw31_0" class="w">meme,</span></div></div>
+<div id="cap32" class="clip cap" data-start="27.24" data-duration="0.95" data-track-index="9"><div class="capin"><span id="cw32_0" class="w">check</span> <span id="cw32_1" class="w">the</span> <span id="cw32_2" class="w">chart,</span></div></div>
+<div id="cap33" class="clip cap" data-start="28.19" data-duration="0.32" data-track-index="9"><div class="capin"><span id="cw33_0" class="w">buy</span></div></div>
+<div id="cap34" class="clip cap" data-start="28.51" data-duration="0.26" data-track-index="9"><div class="capin"><span id="cw34_0" class="w">in.</span></div></div>
+<div id="cap35" class="clip cap" data-start="28.77" data-duration="0.99" data-track-index="9"><div class="capin"><span id="cw35_0" class="w">Think</span> <span id="cw35_1" class="w">something</span> <span id="cw35_2" class="w">is</span></div></div>
+<div id="cap36" class="clip cap" data-start="29.76" data-duration="0.94" data-track-index="9"><div class="capin"><span id="cw36_0" class="w">cringe?</span></div></div>
+<div id="cap37" class="clip cap" data-start="30.70" data-duration="0.46" data-track-index="9"><div class="capin"><span id="cw37_0" class="w">Then</span></div></div>
+<div id="cap38" class="clip cap" data-start="31.16" data-duration="1.26" data-track-index="9"><div class="capin"><span id="cw38_0" class="w">short</span> <span id="cw38_1" class="w">it.</span></div></div>
+<div id="cap39" class="clip cap" data-start="32.42" data-duration="1.09" data-track-index="9"><div class="capin"><span id="cw39_0" class="w">Then</span> <span id="cw39_1" class="w">at</span> <span id="cw39_2" class="w">midnight</span></div></div>
+<div id="cap40" class="clip cap" data-start="33.51" data-duration="0.50" data-track-index="9"><div class="capin"><span id="cw40_0" class="w">UTC,</span></div></div>
+<div id="cap41" class="clip cap" data-start="34.01" data-duration="0.57" data-track-index="9"><div class="capin"><span id="cw41_0" class="w">the</span></div></div>
+<div id="cap42" class="clip cap" data-start="34.58" data-duration="1.66" data-track-index="9"><div class="capin"><span id="cw42_0" class="w">bell</span> <span id="cw42_1" class="w">rings.</span></div></div>
+<div id="cap43" class="clip cap" data-start="36.24" data-duration="1.08" data-track-index="9"><div class="capin"><span id="cw43_0" class="w">Everyone</span> <span id="cw43_1" class="w">gets</span> <span id="cw43_2" class="w">ranked,</span></div></div>
+<div id="cap44" class="clip cap" data-start="37.32" data-duration="0.79" data-track-index="9"><div class="capin"><span id="cw44_0" class="w">the</span> <span id="cw44_1" class="w">top</span> <span id="cw44_2" class="w">three</span></div></div>
+<div id="cap45" class="clip cap" data-start="38.11" data-duration="1.35" data-track-index="9"><div class="capin"><span id="cw45_0" class="w">get</span> <span id="cw45_1" class="w">flair.</span></div></div>
+<div id="cap46" class="clip cap" data-start="39.46" data-duration="0.29" data-track-index="9"><div class="capin"><span id="cw46_0" class="w">Called</span></div></div>
+<div id="cap47" class="clip cap" data-start="39.75" data-duration="0.18" data-track-index="9"><div class="capin"><span id="cw47_0" class="w">it,</span></div></div>
+<div id="cap48" class="clip cap" data-start="39.93" data-duration="1.02" data-track-index="9"><div class="capin"><span id="cw48_0" class="w">post</span> <span id="cw48_1" class="w">your</span> <span id="cw48_2" class="w">trade</span></div></div>
+<div id="cap49" class="clip cap" data-start="40.95" data-duration="1.36" data-track-index="9"><div class="capin"><span id="cw49_0" class="w">to</span> <span id="cw49_1" class="w">the</span> <span id="cw49_2" class="w">subreddit.</span></div></div>
+<div id="cap50" class="clip cap" data-start="42.31" data-duration="1.28" data-track-index="9"><div class="capin"><span id="cw50_0" class="w">And</span> <span id="cw50_1" class="w">tomorrow,</span></div></div>
+<div id="cap51" class="clip cap" data-start="43.59" data-duration="1.33" data-track-index="9"><div class="capin"><span id="cw51_0" class="w">fresh</span> <span id="cw51_1" class="w">coins,</span></div></div>
+<div id="cap52" class="clip cap" data-start="44.92" data-duration="0.24" data-track-index="9"><div class="capin"><span id="cw52_0" class="w">new</span></div></div>
+<div id="cap53" class="clip cap" data-start="45.16" data-duration="0.48" data-track-index="9"><div class="capin"><span id="cw53_0" class="w">meme,</span></div></div>
+<div id="cap54" class="clip cap" data-start="45.64" data-duration="1.15" data-track-index="9"><div class="capin"><span id="cw54_0" class="w">run</span> <span id="cw54_1" class="w">it</span> <span id="cw54_2" class="w">back.</span></div></div>
+<div id="cap55" class="clip cap" data-start="46.79" data-duration="1.68" data-track-index="9"><div class="capin"><span id="cw55_0" class="w">Dankrupt</span> <span id="cw55_1" class="w">Exchange.</span></div></div>
+<div id="cap56" class="clip cap" data-start="48.47" data-duration="1.23" data-track-index="9"><div class="capin"><span id="cw56_0" class="w">Only</span> <span id="cw56_1" class="w">on</span> <span id="cw56_2" class="w">Reddit.</span></div></div>
+<audio id="voice" class="clip" src="assets/audio/voice.wav" data-start="0" data-duration="49.33" data-track-index="10" data-volume="1"></audio>
+<audio id="s_tick" class="clip" src="assets/audio/sfx_005.mp3" data-start="0.0" data-duration="5.9" data-track-index="11" data-volume="0.35"></audio>
+<audio id="s_up" class="clip" src="assets/audio/sfx_007.mp3" data-start="2.6" data-duration="1.8" data-track-index="11" data-volume="0.35"></audio>
+<audio id="s_rw" class="clip" src="assets/audio/sfx_006.mp3" data-start="6.9" data-duration="2.6" data-track-index="11" data-volume="0.6"></audio>
+<audio id="s_w1" class="clip" src="assets/audio/sfx_002.mp3" data-start="9.35" data-duration="0.6" data-track-index="11" data-volume="0.6"></audio>
+<audio id="s_slam" class="clip" src="assets/audio/sfx_003.mp3" data-start="13.32" data-duration="2.0" data-track-index="11" data-volume="0.8"></audio>
+<audio id="s_coin" class="clip" src="assets/audio/sfx_004.mp3" data-start="18.5" data-duration="1.5" data-track-index="11" data-volume="0.7"></audio>
+<audio id="s_w2" class="clip" src="assets/audio/sfx_008.mp3" data-start="21.75" data-duration="1.2" data-track-index="11" data-volume="0.5"></audio>
+<audio id="s_w3" class="clip" src="assets/audio/sfx_002.mp3" data-start="26.05" data-duration="0.6" data-track-index="11" data-volume="0.5"></audio>
+<audio id="s_slam2" class="clip" src="assets/audio/sfx_003.mp3" data-start="31.2" data-duration="2.0" data-track-index="11" data-volume="0.55"></audio>
+<audio id="s_tick2" class="clip" src="assets/audio/sfx_005.mp3" data-start="32.4" data-duration="2.2" data-track-index="11" data-volume="0.4"></audio>
+<audio id="s_bell" class="clip" src="assets/audio/sfx_001.mp3" data-start="34.6" data-duration="2.6" data-track-index="11" data-volume="0.9"></audio>
+<audio id="s_w4" class="clip" src="assets/audio/sfx_008.mp3" data-start="39.4" data-duration="1.2" data-track-index="11" data-volume="0.5"></audio>
+<audio id="s_rise" class="clip" src="assets/audio/sfx_007.mp3" data-start="45.1" data-duration="1.8" data-track-index="11" data-volume="0.5"></audio>
+<audio id="s_slam3" class="clip" src="assets/audio/sfx_003.mp3" data-start="46.85" data-duration="2.0" data-track-index="11" data-volume="0.85"></audio>
+</div>
+<script>
+const tl = gsap.timeline({ paused: true });
+tl.fromTo("#c0b",{scale:1.18},{scale:1,duration:.18,ease:"power3.out"},0.00);
+tl.fromTo("#c1b",{scale:1.18},{scale:1,duration:.18,ease:"power3.out"},0.98);
+tl.fromTo("#c2b",{scale:1.18},{scale:1,duration:.18,ease:"power3.out"},1.97);
+tl.fromTo("#c3b",{scale:1.18},{scale:1,duration:.18,ease:"power3.out"},2.96);
+tl.fromTo("#c4b",{scale:1.18},{scale:1,duration:.18,ease:"power3.out"},3.94);
+tl.fromTo("#c5b",{scale:1.18},{scale:1,duration:.18,ease:"power3.out"},4.92);
+tl.fromTo("#c6b",{scale:1.18},{scale:1,duration:.18,ease:"power3.out"},5.91);
+tl.fromTo("#tickin",{x:-120,opacity:0},{x:0,opacity:1,duration:.32,ease:"back.out(1.6)"},2.8);
+tl.fromTo("#sell",{scale:2.2,opacity:0},{scale:1,opacity:1,duration:.2,ease:"power4.out"},5.6);tl.fromTo("#hold",{scale:2.2,opacity:0},{scale:1,opacity:1,duration:.2,ease:"power4.out"},6.35);
+tl.fromTo("#rwin",{scale:1.25,opacity:0},{scale:1,opacity:1,duration:.15},6.9);
+tl.set("#rwclock",{textContent:"21:14:03"},7.3);
+tl.set("#rwclock",{textContent:"17:42:51"},7.6);
+tl.set("#rwclock",{textContent:"13:06:20"},7.9);
+tl.set("#rwclock",{textContent:"10:31:44"},8.2);
+tl.set("#rwclock",{textContent:"08:00:00"},8.5);
+tl.fromTo(".scan",{y:0},{y:-120,duration:2.5,ease:"none"},6.9);
+tl.fromTo("#mdin .slam",{scale:1.8,opacity:0},{scale:1,opacity:1,duration:.22,ease:"power4.out"},9.55);tl.fromTo("#newpost",{scale:0,rotation:-20},{scale:1,rotation:-6,duration:.3,ease:"back.out(2)"},11.45);
+tl.fromTo("#logo1",{scale:2.4,opacity:0},{scale:1,opacity:1,duration:.24,ease:"power4.out"},13.3);tl.fromTo("#revin",{x:0},{x:6,duration:.04,repeat:5,yoyo:true},13.54);tl.fromTo("#tag",{y:40,opacity:0},{y:0,opacity:1,duration:.3,ease:"back.out(1.6)"},15.3);
+tl.fromTo("#coinsin .coinrow",{scale:1.6,opacity:0},{scale:1,opacity:1,duration:.22,ease:"power4.out"},18.5);tl.fromTo("#coinsin .sub",{x:-60,opacity:0},{x:0,opacity:1,duration:.3,ease:"back.out(1.6)"},20.4);
+tl.set("#cnum",{textContent:"0"},18.5);
+tl.set("#cnum",{textContent:"23,481"},18.65);
+tl.set("#cnum",{textContent:"61,904"},18.8);
+tl.set("#cnum",{textContent:"88,312"},18.95);
+tl.set("#cnum",{textContent:"100,000"},19.1);
+tl.fromTo("#attin .eq:nth-child(1)",{x:-80,opacity:0},{x:0,opacity:1,duration:.28,ease:"back.out(1.6)"},22.0);tl.fromTo("#attin .eq:nth-child(2)",{x:-80,opacity:0},{x:0,opacity:1,duration:.28,ease:"back.out(1.6)"},24.1);tl.fromTo("#attin .sub",{opacity:0},{opacity:1,duration:.3},24.6);
+tl.fromTo("#vb0b",{scale:2.2,opacity:0},{scale:1,opacity:1,duration:.18,ease:"power4.out"},26.4);
+tl.fromTo("#vb1b",{scale:2.2,opacity:0},{scale:1,opacity:1,duration:.18,ease:"power4.out"},27.3);
+tl.fromTo("#vb2b",{scale:2.2,opacity:0},{scale:1,opacity:1,duration:.18,ease:"power4.out"},28.25);
+tl.fromTo("#shb",{scale:2.4,rotation:0,opacity:0},{scale:1,rotation:-6,opacity:1,duration:.2,ease:"power4.out"},31.2);
+tl.fromTo("#b0b",{scale:1.18},{scale:1,duration:.18,ease:"power3.out"},32.40);
+tl.fromTo("#b1b",{scale:1.18},{scale:1,duration:.18,ease:"power3.out"},33.14);
+tl.fromTo("#b2b",{scale:1.18},{scale:1,duration:.18,ease:"power3.out"},33.88);
+tl.fromTo("#zerob",{scale:1.3,color:"#ffffff"},{scale:1,color:"#19f26b",duration:.2,ease:"power3.out"},34.62);tl.fromTo("#ding",{scale:3,opacity:0,rotation:8},{scale:1,opacity:1,rotation:-5,duration:.18,ease:"power4.out"},34.66);
+tl.fromTo("#flashin",{opacity:.9},{opacity:0,duration:.3,ease:"power2.out"},34.62);
+tl.fromTo("#rankin .slam",{scale:1.8,opacity:0},{scale:1,opacity:1,duration:.22,ease:"power4.out"},36.3);tl.fromTo("#medal",{y:80,opacity:0,scale:.7},{y:0,opacity:1,scale:1,duration:.34,ease:"back.out(2)"},38.45);
+tl.fromTo("#post",{y:120,opacity:0},{y:0,opacity:1,duration:.34,ease:"back.out(1.4)"},39.5);tl.fromTo("#brag",{scale:2.4,opacity:0,rotation:0},{scale:1,opacity:1,rotation:8,duration:.2,ease:"power4.out"},40.0);
+tl.fromTo("#tmrin .slam",{scale:1.8,opacity:0},{scale:1,opacity:1,duration:.22,ease:"power4.out"},43.2);tl.fromTo("#barfill",{scaleX:0},{scaleX:1,duration:3.2,ease:"power1.inOut"},43.3);tl.fromTo("#tmrin .sub",{opacity:0,x:-50},{opacity:1,x:0,duration:.3},44.6);
+tl.fromTo("#logo2",{scale:2.4,opacity:0},{scale:1,opacity:1,duration:.24,ease:"power4.out"},46.85);tl.fromTo("#endin",{x:0},{x:6,duration:.04,repeat:5,yoyo:true},47.09);tl.fromTo("#cta",{scale:0,rotation:-12},{scale:1,rotation:-3,duration:.34,ease:"back.out(2)"},48.5);
+
+const ph="#phonein";
+tl.fromTo(ph,{x:300,opacity:0},{x:0,opacity:1,duration:.35,ease:"back.out(1.4)"},0.05);
+tl.to(ph,{x:300,opacity:0,duration:.18,ease:"power2.in"},6.2);
+tl.to(ph,{x:0,opacity:1,duration:.3,ease:"back.out(1.4)"},9.4);
+tl.to(ph,{y:900,opacity:0,duration:.2,ease:"power2.in"},12.75);
+tl.to(ph,{y:0,opacity:1,duration:.32,ease:"back.out(1.4)"},17.9);
+tl.to(ph,{x:300,opacity:0,duration:.18,ease:"power2.in"},32.2);
+tl.to(ph,{x:0,opacity:1,duration:.3,ease:"back.out(1.4)"},36.0);
+tl.to(ph,{x:300,opacity:0,duration:.18,ease:"power2.in"},39.3);
+tl.to(ph,{x:0,opacity:1,duration:.3,ease:"back.out(1.4)"},42.4);
+tl.to(ph,{y:900,opacity:0,duration:.2,ease:"power2.in"},46.5);
+
+tl.fromTo("#cw0_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},0.32);
+tl.to("#cw0_0",{color:"#19f26b",duration:.05},0.36);tl.to("#cw0_0",{color:"#ffffff",duration:.08},0.54);
+tl.fromTo("#cw1_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},0.77);
+tl.to("#cw1_0",{color:"#19f26b",duration:.05},0.81);tl.to("#cw1_0",{color:"#ffffff",duration:.08},1.17);
+tl.fromTo("#cw1_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},1.13);
+tl.to("#cw1_1",{color:"#19f26b",duration:.05},1.17);tl.to("#cw1_1",{color:"#ffffff",duration:.08},1.34);
+tl.fromTo("#cw1_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},1.33);
+tl.to("#cw1_2",{color:"#19f26b",duration:.05},1.37);tl.to("#cw1_2",{color:"#ffffff",duration:.08},1.62);
+tl.fromTo("#cw2_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},1.58);
+tl.to("#cw2_0",{color:"#19f26b",duration:.05},1.62);tl.to("#cw2_0",{color:"#ffffff",duration:.08},2.00);
+tl.fromTo("#cw3_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},2.42);
+tl.to("#cw3_0",{color:"#19f26b",duration:.05},2.46);tl.to("#cw3_0",{color:"#ffffff",duration:.08},2.82);
+tl.fromTo("#cw3_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},2.78);
+tl.to("#cw3_1",{color:"#19f26b",duration:.05},2.82);tl.to("#cw3_1",{color:"#ffffff",duration:.08},3.00);
+tl.fromTo("#cw3_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},2.96);
+tl.to("#cw3_2",{color:"#19f26b",duration:.05},3.00);tl.to("#cw3_2",{color:"#ffffff",duration:.08},3.63);
+tl.fromTo("#cw4_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},3.59);
+tl.to("#cw4_0",{color:"#19f26b",duration:.05},3.63);tl.to("#cw4_0",{color:"#ffffff",duration:.08},3.81);
+tl.fromTo("#cw4_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},3.77);
+tl.to("#cw4_1",{color:"#19f26b",duration:.05},3.81);tl.to("#cw4_1",{color:"#ffffff",duration:.08},4.56);
+tl.fromTo("#cw4_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},4.52);
+tl.to("#cw4_2",{color:"#19f26b",duration:.05},4.56);tl.to("#cw4_2",{color:"#ffffff",duration:.08},5.12);
+tl.fromTo("#cw5_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},5.59);
+tl.to("#cw5_0",{color:"#19f26b",duration:.05},5.63);tl.to("#cw5_0",{color:"#ffffff",duration:.08},5.99);
+tl.fromTo("#cw5_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},5.95);
+tl.to("#cw5_1",{color:"#19f26b",duration:.05},5.99);tl.to("#cw5_1",{color:"#ffffff",duration:.08},6.03);
+tl.fromTo("#cw6_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},6.34);
+tl.to("#cw6_0",{color:"#19f26b",duration:.05},6.38);tl.to("#cw6_0",{color:"#ffffff",duration:.08},7.58);
+tl.fromTo("#cw7_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},7.91);
+tl.to("#cw7_0",{color:"#19f26b",duration:.05},7.95);tl.to("#cw7_0",{color:"#ffffff",duration:.08},8.45);
+tl.fromTo("#cw8_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},8.41);
+tl.to("#cw8_0",{color:"#19f26b",duration:.05},8.45);tl.to("#cw8_0",{color:"#ffffff",duration:.08},9.48);
+tl.fromTo("#cw9_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},9.44);
+tl.to("#cw9_0",{color:"#19f26b",duration:.05},9.48);tl.to("#cw9_0",{color:"#ffffff",duration:.08},9.89);
+tl.fromTo("#cw9_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},9.86);
+tl.to("#cw9_1",{color:"#19f26b",duration:.05},9.89);tl.to("#cw9_1",{color:"#ffffff",duration:.08},10.31);
+tl.fromTo("#cw9_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},10.27);
+tl.to("#cw9_2",{color:"#19f26b",duration:.05},10.31);tl.to("#cw9_2",{color:"#ffffff",duration:.08},10.35);
+tl.fromTo("#cw10_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},10.31);
+tl.to("#cw10_0",{color:"#19f26b",duration:.05},10.35);tl.to("#cw10_0",{color:"#ffffff",duration:.08},10.71);
+tl.fromTo("#cw10_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},10.67);
+tl.to("#cw10_1",{color:"#19f26b",duration:.05},10.71);tl.to("#cw10_1",{color:"#ffffff",duration:.08},10.93);
+tl.fromTo("#cw10_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},10.89);
+tl.to("#cw10_2",{color:"#19f26b",duration:.05},10.93);tl.to("#cw10_2",{color:"#ffffff",duration:.08},11.37);
+tl.fromTo("#cw11_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},11.33);
+tl.to("#cw11_0",{color:"#19f26b",duration:.05},11.37);tl.to("#cw11_0",{color:"#ffffff",duration:.08},11.44);
+tl.fromTo("#cw11_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},11.40);
+tl.to("#cw11_1",{color:"#19f26b",duration:.05},11.44);tl.to("#cw11_1",{color:"#ffffff",duration:.08},11.87);
+tl.fromTo("#cw11_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},11.83);
+tl.to("#cw11_2",{color:"#19f26b",duration:.05},11.87);tl.to("#cw11_2",{color:"#ffffff",duration:.08},12.29);
+tl.fromTo("#cw12_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},12.25);
+tl.to("#cw12_0",{color:"#19f26b",duration:.05},12.29);tl.to("#cw12_0",{color:"#ffffff",duration:.08},12.94);
+tl.fromTo("#cw13_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},12.90);
+tl.to("#cw13_0",{color:"#19f26b",duration:.05},12.94);tl.to("#cw13_0",{color:"#ffffff",duration:.08},13.29);
+tl.fromTo("#cw13_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},13.25);
+tl.to("#cw13_1",{color:"#19f26b",duration:.05},13.29);tl.to("#cw13_1",{color:"#ffffff",duration:.08},13.39);
+tl.fromTo("#cw13_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},13.35);
+tl.to("#cw13_2",{color:"#19f26b",duration:.05},13.39);tl.to("#cw13_2",{color:"#ffffff",duration:.08},13.97);
+tl.fromTo("#cw14_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},13.93);
+tl.to("#cw14_0",{color:"#19f26b",duration:.05},13.97);tl.to("#cw14_0",{color:"#ffffff",duration:.08},14.70);
+tl.fromTo("#cw15_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},14.66);
+tl.to("#cw15_0",{color:"#19f26b",duration:.05},14.70);tl.to("#cw15_0",{color:"#ffffff",duration:.08},14.77);
+tl.fromTo("#cw15_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},14.73);
+tl.to("#cw15_1",{color:"#19f26b",duration:.05},14.77);tl.to("#cw15_1",{color:"#ffffff",duration:.08},14.90);
+tl.fromTo("#cw16_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},15.36);
+tl.to("#cw16_0",{color:"#19f26b",duration:.05},15.40);tl.to("#cw16_0",{color:"#ffffff",duration:.08},15.58);
+tl.fromTo("#cw17_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},15.71);
+tl.to("#cw17_0",{color:"#19f26b",duration:.05},15.75);tl.to("#cw17_0",{color:"#ffffff",duration:.08},15.95);
+tl.fromTo("#cw17_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},15.91);
+tl.to("#cw17_1",{color:"#19f26b",duration:.05},15.95);tl.to("#cw17_1",{color:"#ffffff",duration:.08},16.15);
+tl.fromTo("#cw17_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},16.19);
+tl.to("#cw17_2",{color:"#19f26b",duration:.05},16.23);tl.to("#cw17_2",{color:"#ffffff",duration:.08},16.84);
+tl.fromTo("#cw18_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},16.80);
+tl.to("#cw18_0",{color:"#19f26b",duration:.05},16.84);tl.to("#cw18_0",{color:"#ffffff",duration:.08},17.06);
+tl.fromTo("#cw18_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},17.02);
+tl.to("#cw18_1",{color:"#19f26b",duration:.05},17.06);tl.to("#cw18_1",{color:"#ffffff",duration:.08},17.74);
+tl.fromTo("#cw19_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},18.07);
+tl.to("#cw19_0",{color:"#19f26b",duration:.05},18.11);tl.to("#cw19_0",{color:"#ffffff",duration:.08},18.25);
+tl.fromTo("#cw20_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},18.51);
+tl.to("#cw20_0",{color:"#19f26b",duration:.05},18.55);tl.to("#cw20_0",{color:"#ffffff",duration:.08},18.59);
+tl.fromTo("#cw20_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},18.55);
+tl.to("#cw20_1",{color:"#19f26b",duration:.05},18.59);tl.to("#cw20_1",{color:"#ffffff",duration:.08},19.69);
+tl.fromTo("#cw21_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},20.16);
+tl.to("#cw21_0",{color:"#19f26b",duration:.05},20.20);tl.to("#cw21_0",{color:"#ffffff",duration:.08},20.50);
+tl.fromTo("#cw22_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},20.51);
+tl.to("#cw22_0",{color:"#19f26b",duration:.05},20.55);tl.to("#cw22_0",{color:"#ffffff",duration:.08},20.85);
+tl.fromTo("#cw22_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},20.88);
+tl.to("#cw22_1",{color:"#19f26b",duration:.05},20.92);tl.to("#cw22_1",{color:"#ffffff",duration:.08},21.28);
+tl.fromTo("#cw22_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},21.24);
+tl.to("#cw22_2",{color:"#19f26b",duration:.05},21.28);tl.to("#cw22_2",{color:"#ffffff",duration:.08},21.76);
+tl.fromTo("#cw23_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},21.72);
+tl.to("#cw23_0",{color:"#19f26b",duration:.05},21.76);tl.to("#cw23_0",{color:"#ffffff",duration:.08},21.88);
+tl.fromTo("#cw23_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},21.84);
+tl.to("#cw23_1",{color:"#19f26b",duration:.05},21.88);tl.to("#cw23_1",{color:"#ffffff",duration:.08},22.11);
+tl.fromTo("#cw23_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},22.07);
+tl.to("#cw23_2",{color:"#19f26b",duration:.05},22.11);tl.to("#cw23_2",{color:"#ffffff",duration:.08},22.25);
+tl.fromTo("#cw24_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},22.38);
+tl.to("#cw24_0",{color:"#19f26b",duration:.05},22.42);tl.to("#cw24_0",{color:"#ffffff",duration:.08},22.44);
+tl.fromTo("#cw24_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},22.53);
+tl.to("#cw24_1",{color:"#19f26b",duration:.05},22.57);tl.to("#cw24_1",{color:"#ffffff",duration:.08},22.62);
+tl.fromTo("#cw24_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},22.58);
+tl.to("#cw24_2",{color:"#19f26b",duration:.05},22.62);tl.to("#cw24_2",{color:"#ffffff",duration:.08},22.79);
+tl.fromTo("#cw25_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},22.75);
+tl.to("#cw25_0",{color:"#19f26b",duration:.05},22.79);tl.to("#cw25_0",{color:"#ffffff",duration:.08},23.30);
+tl.fromTo("#cw26_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},23.26);
+tl.to("#cw26_0",{color:"#19f26b",duration:.05},23.30);tl.to("#cw26_0",{color:"#ffffff",duration:.08},23.65);
+tl.fromTo("#cw26_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},23.61);
+tl.to("#cw26_1",{color:"#19f26b",duration:.05},23.65);tl.to("#cw26_1",{color:"#ffffff",duration:.08},23.73);
+tl.fromTo("#cw26_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},23.69);
+tl.to("#cw26_2",{color:"#19f26b",duration:.05},23.73);tl.to("#cw26_2",{color:"#ffffff",duration:.08},24.13);
+tl.fromTo("#cw27_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},24.09);
+tl.to("#cw27_0",{color:"#19f26b",duration:.05},24.13);tl.to("#cw27_0",{color:"#ffffff",duration:.08},24.52);
+tl.fromTo("#cw27_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},24.48);
+tl.to("#cw27_1",{color:"#19f26b",duration:.05},24.52);tl.to("#cw27_1",{color:"#ffffff",duration:.08},24.86);
+tl.fromTo("#cw28_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},24.82);
+tl.to("#cw28_0",{color:"#19f26b",duration:.05},24.86);tl.to("#cw28_0",{color:"#ffffff",duration:.08},25.12);
+tl.fromTo("#cw28_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},25.08);
+tl.to("#cw28_1",{color:"#19f26b",duration:.05},25.12);tl.to("#cw28_1",{color:"#ffffff",duration:.08},25.26);
+tl.fromTo("#cw29_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},26.05);
+tl.to("#cw29_0",{color:"#19f26b",duration:.05},26.09);tl.to("#cw29_0",{color:"#ffffff",duration:.08},26.41);
+tl.fromTo("#cw30_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},26.37);
+tl.to("#cw30_0",{color:"#19f26b",duration:.05},26.41);tl.to("#cw30_0",{color:"#ffffff",duration:.08},26.77);
+tl.fromTo("#cw30_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},26.73);
+tl.to("#cw30_1",{color:"#19f26b",duration:.05},26.77);tl.to("#cw30_1",{color:"#ffffff",duration:.08},26.92);
+tl.fromTo("#cw31_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},27.04);
+tl.to("#cw31_0",{color:"#19f26b",duration:.05},27.08);tl.to("#cw31_0",{color:"#ffffff",duration:.08},27.29);
+tl.fromTo("#cw32_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},27.25);
+tl.to("#cw32_0",{color:"#19f26b",duration:.05},27.29);tl.to("#cw32_0",{color:"#ffffff",duration:.08},27.61);
+tl.fromTo("#cw32_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},27.57);
+tl.to("#cw32_1",{color:"#19f26b",duration:.05},27.61);tl.to("#cw32_1",{color:"#ffffff",duration:.08},27.80);
+tl.fromTo("#cw32_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},27.76);
+tl.to("#cw32_2",{color:"#19f26b",duration:.05},27.80);tl.to("#cw32_2",{color:"#ffffff",duration:.08},28.24);
+tl.fromTo("#cw33_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},28.20);
+tl.to("#cw33_0",{color:"#19f26b",duration:.05},28.24);tl.to("#cw33_0",{color:"#ffffff",duration:.08},28.37);
+tl.fromTo("#cw34_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},28.52);
+tl.to("#cw34_0",{color:"#19f26b",duration:.05},28.56);tl.to("#cw34_0",{color:"#ffffff",duration:.08},28.82);
+tl.fromTo("#cw35_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},28.78);
+tl.to("#cw35_0",{color:"#19f26b",duration:.05},28.82);tl.to("#cw35_0",{color:"#ffffff",duration:.08},29.63);
+tl.fromTo("#cw35_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},29.59);
+tl.to("#cw35_1",{color:"#19f26b",duration:.05},29.63);tl.to("#cw35_1",{color:"#ffffff",duration:.08},29.69);
+tl.fromTo("#cw35_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},29.65);
+tl.to("#cw35_2",{color:"#19f26b",duration:.05},29.69);tl.to("#cw35_2",{color:"#ffffff",duration:.08},29.81);
+tl.fromTo("#cw36_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},29.77);
+tl.to("#cw36_0",{color:"#19f26b",duration:.05},29.81);tl.to("#cw36_0",{color:"#ffffff",duration:.08},30.40);
+tl.fromTo("#cw37_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},30.71);
+tl.to("#cw37_0",{color:"#19f26b",duration:.05},30.75);tl.to("#cw37_0",{color:"#ffffff",duration:.08},30.92);
+tl.fromTo("#cw38_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},31.17);
+tl.to("#cw38_0",{color:"#19f26b",duration:.05},31.21);tl.to("#cw38_0",{color:"#ffffff",duration:.08},31.44);
+tl.fromTo("#cw38_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},31.40);
+tl.to("#cw38_1",{color:"#19f26b",duration:.05},31.44);tl.to("#cw38_1",{color:"#ffffff",duration:.08},32.12);
+tl.fromTo("#cw39_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},32.43);
+tl.to("#cw39_0",{color:"#19f26b",duration:.05},32.47);tl.to("#cw39_0",{color:"#ffffff",duration:.08},32.53);
+tl.fromTo("#cw39_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},32.49);
+tl.to("#cw39_1",{color:"#19f26b",duration:.05},32.53);tl.to("#cw39_1",{color:"#ffffff",duration:.08},32.93);
+tl.fromTo("#cw39_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},32.89);
+tl.to("#cw39_2",{color:"#19f26b",duration:.05},32.93);tl.to("#cw39_2",{color:"#ffffff",duration:.08},33.51);
+tl.fromTo("#cw40_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},33.52);
+tl.to("#cw40_0",{color:"#19f26b",duration:.05},33.56);tl.to("#cw40_0",{color:"#ffffff",duration:.08},34.06);
+tl.fromTo("#cw41_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},34.02);
+tl.to("#cw41_0",{color:"#19f26b",duration:.05},34.06);tl.to("#cw41_0",{color:"#ffffff",duration:.08},34.10);
+tl.fromTo("#cw42_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},34.59);
+tl.to("#cw42_0",{color:"#19f26b",duration:.05},34.63);tl.to("#cw42_0",{color:"#ffffff",duration:.08},34.78);
+tl.fromTo("#cw42_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},34.89);
+tl.to("#cw42_1",{color:"#19f26b",duration:.05},34.93);tl.to("#cw42_1",{color:"#ffffff",duration:.08},35.64);
+tl.fromTo("#cw43_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},36.25);
+tl.to("#cw43_0",{color:"#19f26b",duration:.05},36.29);tl.to("#cw43_0",{color:"#ffffff",duration:.08},36.34);
+tl.fromTo("#cw43_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},36.41);
+tl.to("#cw43_1",{color:"#19f26b",duration:.05},36.45);tl.to("#cw43_1",{color:"#ffffff",duration:.08},36.69);
+tl.fromTo("#cw43_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},36.65);
+tl.to("#cw43_2",{color:"#19f26b",duration:.05},36.69);tl.to("#cw43_2",{color:"#ffffff",duration:.08},37.35);
+tl.fromTo("#cw44_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},37.33);
+tl.to("#cw44_0",{color:"#19f26b",duration:.05},37.37);tl.to("#cw44_0",{color:"#ffffff",duration:.08},37.59);
+tl.fromTo("#cw44_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},37.55);
+tl.to("#cw44_1",{color:"#19f26b",duration:.05},37.59);tl.to("#cw44_1",{color:"#ffffff",duration:.08},38.09);
+tl.fromTo("#cw44_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},38.05);
+tl.to("#cw44_2",{color:"#19f26b",duration:.05},38.09);tl.to("#cw44_2",{color:"#ffffff",duration:.08},38.16);
+tl.fromTo("#cw45_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},38.12);
+tl.to("#cw45_0",{color:"#19f26b",duration:.05},38.16);tl.to("#cw45_0",{color:"#ffffff",duration:.08},38.45);
+tl.fromTo("#cw45_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},38.41);
+tl.to("#cw45_1",{color:"#19f26b",duration:.05},38.45);tl.to("#cw45_1",{color:"#ffffff",duration:.08},39.16);
+tl.fromTo("#cw46_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},39.47);
+tl.to("#cw46_0",{color:"#19f26b",duration:.05},39.51);tl.to("#cw46_0",{color:"#ffffff",duration:.08},39.64);
+tl.fromTo("#cw47_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},39.76);
+tl.to("#cw47_0",{color:"#19f26b",duration:.05},39.80);tl.to("#cw47_0",{color:"#ffffff",duration:.08},39.96);
+tl.fromTo("#cw48_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},39.94);
+tl.to("#cw48_0",{color:"#19f26b",duration:.05},39.98);tl.to("#cw48_0",{color:"#ffffff",duration:.08},40.28);
+tl.fromTo("#cw48_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},40.24);
+tl.to("#cw48_1",{color:"#19f26b",duration:.05},40.28);tl.to("#cw48_1",{color:"#ffffff",duration:.08},40.54);
+tl.fromTo("#cw48_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},40.56);
+tl.to("#cw48_2",{color:"#19f26b",duration:.05},40.60);tl.to("#cw48_2",{color:"#ffffff",duration:.08},41.00);
+tl.fromTo("#cw49_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},40.96);
+tl.to("#cw49_0",{color:"#19f26b",duration:.05},41.00);tl.to("#cw49_0",{color:"#ffffff",duration:.08},41.11);
+tl.fromTo("#cw49_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},41.07);
+tl.to("#cw49_1",{color:"#19f26b",duration:.05},41.11);tl.to("#cw49_1",{color:"#ffffff",duration:.08},41.97);
+tl.fromTo("#cw49_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},41.93);
+tl.to("#cw49_2",{color:"#19f26b",duration:.05},41.97);tl.to("#cw49_2",{color:"#ffffff",duration:.08},42.36);
+tl.fromTo("#cw50_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},42.32);
+tl.to("#cw50_0",{color:"#19f26b",duration:.05},42.36);tl.to("#cw50_0",{color:"#ffffff",duration:.08},43.21);
+tl.fromTo("#cw50_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},43.17);
+tl.to("#cw50_1",{color:"#19f26b",duration:.05},43.21);tl.to("#cw50_1",{color:"#ffffff",duration:.08},43.64);
+tl.fromTo("#cw51_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},43.60);
+tl.to("#cw51_0",{color:"#19f26b",duration:.05},43.64);tl.to("#cw51_0",{color:"#ffffff",duration:.08},44.12);
+tl.fromTo("#cw51_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},44.08);
+tl.to("#cw51_1",{color:"#19f26b",duration:.05},44.12);tl.to("#cw51_1",{color:"#ffffff",duration:.08},44.79);
+tl.fromTo("#cw52_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},44.93);
+tl.to("#cw52_0",{color:"#19f26b",duration:.05},44.97);tl.to("#cw52_0",{color:"#ffffff",duration:.08},45.05);
+tl.fromTo("#cw53_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},45.17);
+tl.to("#cw53_0",{color:"#19f26b",duration:.05},45.21);tl.to("#cw53_0",{color:"#ffffff",duration:.08},45.61);
+tl.fromTo("#cw54_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},45.65);
+tl.to("#cw54_0",{color:"#19f26b",duration:.05},45.69);tl.to("#cw54_0",{color:"#ffffff",duration:.08},45.92);
+tl.fromTo("#cw54_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},45.88);
+tl.to("#cw54_1",{color:"#19f26b",duration:.05},45.92);tl.to("#cw54_1",{color:"#ffffff",duration:.08},46.11);
+tl.fromTo("#cw54_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},46.07);
+tl.to("#cw54_2",{color:"#19f26b",duration:.05},46.11);tl.to("#cw54_2",{color:"#ffffff",duration:.08},46.84);
+tl.fromTo("#cw55_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},46.80);
+tl.to("#cw55_0",{color:"#19f26b",duration:.05},46.84);tl.to("#cw55_0",{color:"#ffffff",duration:.08},47.66);
+tl.fromTo("#cw55_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},47.63);
+tl.to("#cw55_1",{color:"#19f26b",duration:.05},47.67);tl.to("#cw55_1",{color:"#ffffff",duration:.08},48.52);
+tl.fromTo("#cw56_0",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},48.48);
+tl.to("#cw56_0",{color:"#19f26b",duration:.05},48.52);tl.to("#cw56_0",{color:"#ffffff",duration:.08},48.72);
+tl.fromTo("#cw56_1",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},48.68);
+tl.to("#cw56_1",{color:"#19f26b",duration:.05},48.72);tl.to("#cw56_1",{color:"#ffffff",duration:.08},48.89);
+tl.fromTo("#cw56_2",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.12,ease:"back.out(2)"},48.85);
+tl.to("#cw56_2",{color:"#19f26b",duration:.05},48.89);tl.to("#cw56_2",{color:"#ffffff",duration:.08},49.30);
+window.__timelines = window.__timelines || {};
+window.__timelines["main"] = tl;
+</script>
+</body></html>

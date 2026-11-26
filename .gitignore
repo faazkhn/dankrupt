@@ -7,3 +7,11 @@ node_modules/
 .waveform-cache/
 .hyperframes/cache/
 .hyperframes/preview/
+media/devpost-demo/work/rec*/
+media/devpost-demo/work/raw/
+media/devpost-demo/work/v2*/
+media/devpost-demo/work/takes/
+media/devpost-demo/work/chk*/
+media/devpost-demo/work/energy/
+media/devpost-demo/.hyperframes/
+media/devpost-demo/.media/
