@@ -8,7 +8,14 @@ const here = (p: string) => fileURLToPath(new URL(p, import.meta.url));
 
 /** The client reuses the web app's pages and components; these aliases swap in the Devvit pieces. */
 export default defineConfig({
-  plugins: [react(), tailwind(), devvit()],
+  plugins: [
+    react(),
+    tailwind(),
+    devvit({
+      // The reused web components carry Next's "use client"; it means nothing in a Vite bundle.
+      client: { build: { rollupOptions: { onwarn: (w, warn) => w.code !== "MODULE_LEVEL_DIRECTIVE" && warn(w) } } },
+    }),
+  ],
   resolve: {
     alias: [
       { find: "@/lib/market", replacement: here("./src/client/market.ts") },
